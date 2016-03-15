@@ -23,7 +23,7 @@ from numpy.random import rand
 from scipy.cluster.vq import kmeans,vq
 
 
-test = False
+test = True
 
 ini_file = "config.ini"
 k_mean = 2
@@ -56,7 +56,7 @@ except:
 ###################################### CHANGE DEPENDING ON MODELING VARIABLES
 #root = "/home/bioinfo/workspace/genome/"+prefix+"_output_0.2_-0.2_7000_without_2_and_3_4_6_7_8/"
 root = "/home/bioinfo/workspace/genome/data/"+prefix+"_final_output_0.2_-0.2_7000/"
-root = "/home/bioinfo/workspace/genome/data/wnt_final_output_0.2_-0.2_25000/"
+root = "/home/bioinfo/workspace/genome/IrxB_final_output_0.7_-0.3_8000/"
 # root = "/home/bioinfo/workspace/genome/data/"+prefix+"_output_0.2_-0.2_7000.0/"
 
 subset = 200
@@ -67,13 +67,15 @@ only_python_files = []
 for pyfile in listdir(root):
     if pyfile.endswith(".py"):
         only_python_files.append(pyfile)
-
 print only_python_files
 only_python_files = only_python_files[:subset]
+print only_python_files
+print len(only_python_files)
 
 # generate a chimera file with match. Chimera when matched, it calculates the RMSD 
 NFRAGMENTS = NFRAGMENTS -1
-NFRAGMENTS = 165
+NFRAGMENTS = 155
+
 # combi = combinations(range(len(only_python_files)),2)
 combi = combinations(range(subset),2)
 if not test:
@@ -109,6 +111,7 @@ if not test:
     
             exp = re.search(r"(\d+\.\d+) angstroms",line2)
             if (exp):
+                
                 value = exp.group(1)
     
                 if matrix[counter_line][counter_column] == 0:
@@ -159,8 +162,10 @@ with open ("{}matrix.txt".format(root), "r") as f:
 
 
 print matrix
+print type(matrix)
 print matrix2
-D = matrix
+print type(matrix2)
+D = matrix2
 
 # Compute and plot first dendrogram.
 fig = pylab.figure(figsize=(8,8))
