@@ -23,7 +23,7 @@ from numpy.random import rand
 from scipy.cluster.vq import kmeans,vq
 
 
-test = True
+test = False
 
 ini_file = "config.ini"
 k_mean = 2
@@ -37,12 +37,8 @@ try:
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
-    number_of_models = int(config.get("ModelingValues", "number_of_models"))
 
     subset = int(config.get("AnalysisValues", "subset"))
-    std_dev = int(config.get("AnalysisValues", "std_dev"))
-    jump = int(config.get("AnalysisValues", "jump"))
-    cut_off_percentage = int(config.get("AnalysisValues", "cut_off_percentage"))
     
 except:
     print "\nError reading the configuration file.\n"
@@ -56,7 +52,7 @@ except:
 ###################################### CHANGE DEPENDING ON MODELING VARIABLES
 #root = "/home/bioinfo/workspace/genome/"+prefix+"_output_0.2_-0.2_7000_without_2_and_3_4_6_7_8/"
 root = "/home/bioinfo/workspace/genome/data/"+prefix+"_final_output_0.2_-0.2_7000/"
-root = "/home/bioinfo/workspace/genome/IrxB_final_output_0.7_-0.3_8000/"
+root = "/home/bioinfo/workspace/4c2vhic/IrxB_final_output_0.7_-0.3_8000/"
 # root = "/home/bioinfo/workspace/genome/data/"+prefix+"_output_0.2_-0.2_7000.0/"
 
 subset = 200
@@ -74,7 +70,6 @@ print len(only_python_files)
 
 # generate a chimera file with match. Chimera when matched, it calculates the RMSD 
 NFRAGMENTS = NFRAGMENTS -1
-NFRAGMENTS = 155
 
 # combi = combinations(range(len(only_python_files)),2)
 combi = combinations(range(subset),2)
@@ -165,7 +160,7 @@ print matrix
 print type(matrix)
 print matrix2
 print type(matrix2)
-D = matrix2
+D = matrix
 
 # Compute and plot first dendrogram.
 fig = pylab.figure(figsize=(8,8))
