@@ -8,7 +8,7 @@ import sys
 import operator
 import re
 import subprocess
-from os import listdir
+from os import listdir, remove
 from os.path import isfile, join
 import numpy as np
 from itertools import combinations
@@ -83,7 +83,7 @@ if not test:
     
             
         print "line: {}, column {}".format(counter_line,counter_column)
-        rmsd_file = open ("../{}_calculate_rmsd.py".format(prefix), "w")
+        rmsd_file = open ("../{}_calculate_rmsd{}.py".format(prefix,counter_column), "w")
         rmsd_file.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
         rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_line]))
         rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_column]))
@@ -91,8 +91,8 @@ if not test:
         
         rmsd_file.close()
         #         output = os.system("chimera --nogui ../{}_calculate_rmsd.py".format(prefix))
-        rmsd_output = subprocess.check_output(["chimera", "--nogui", "../{}_calculate_rmsd.py".format(prefix)])
-        
+        rmsd_output = subprocess.check_output(["chimera", "--nogui", "../{}_calculate_rmsd{}.py".format(prefix,counter_column)])
+        remove("../{}_calculate_rmsd{}.py".format(prefix,counter_column)) 
         string = ""
         lista = []
         for line2 in rmsd_output:
@@ -102,18 +102,22 @@ if not test:
                 string = ""
              
         #RMSD between 103 atom pairs is 4404.816 angstroms
+        print lista
         for line2 in lista:
     
             exp = re.search(r"(\d+\.\d+) angstroms",line2)
             if (exp):
+                print exp,
                 
                 value = exp.group(1)
+                print value
     
-                if matrix[counter_line][counter_column] == 0:
-                    matrix[counter_line][counter_column] = value
-                if matrix[counter_column][counter_line] == 0:
-                    matrix[counter_column][counter_line] = value    
+#                if matrix[counter_line][counter_column] == 0:
+                matrix[counter_line][counter_column] = value
+#                if matrix[counter_column][counter_line] == 0:
+                matrix[counter_column][counter_line] = value    
         #                 matrix.write(str(value)+"\t")
+                value = 0
           
           
           
