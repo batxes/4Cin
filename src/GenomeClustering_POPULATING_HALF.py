@@ -93,6 +93,7 @@ if not test:
         #         output = os.system("chimera --nogui ../{}_calculate_rmsd.py".format(prefix))
         rmsd_output = subprocess.check_output(["chimera", "--nogui", "../{}_calculate_rmsd{}.py".format(prefix,counter_column)])
         remove("../{}_calculate_rmsd{}.py".format(prefix,counter_column)) 
+        remove("../{}_calculate_rmsd{}.pyc".format(prefix,counter_column)) 
         string = ""
         lista = []
         for line2 in rmsd_output:
