@@ -9,9 +9,6 @@ except ImportError:
 #from variables import WINDOW, prefix, NFRAGMENTS, files, genes, zebrafish, amphioxus, mouse,IrxA, IrxB, bmp7, tbx, wnt, IrxAa, IrxAb, IrxBa,myf5_wt, myf5_mut, drome
 
 
-
-
-
 #############################################################################################################
 # code that calculates the average and standard deviation of the given 4c data file
 #
