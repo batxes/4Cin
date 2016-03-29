@@ -230,8 +230,8 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
 
             figManager = plt.get_current_fig_manager()
             plt.subplots_adjust(bottom=0.01, right=0.99, top=0.99, left=0.05)
-            figManager.window.showMaximized()
-#             figManager.Maximize(True)
+            #figManager.window.showMaximized()
+            #figManager.Maximize(True)
             
             plt.show()
             
