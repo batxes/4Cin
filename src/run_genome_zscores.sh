@@ -11,7 +11,8 @@ do
     for j in {1..12}
     do
        lZ=$(echo "$lZ_init * $j" | bc)
-        qsub run_genome.sh $uZ $lZ $y2
+        #qsub run_genome.sh $uZ $lZ $y2
+        /bin/bash run_genome.sh $uZ $lZ $y2 0 config.ini False
         echo $uZ $lZ $y2
     done
 done

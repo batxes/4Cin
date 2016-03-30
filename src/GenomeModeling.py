@@ -1,9 +1,5 @@
-#   # \example core/simple.py
-# Illustration of simple usage of the IMP library from Python.
+#!/usr/bin/python
 
-#   ##################################### ###################################### 
-###################################### ###################################### 
-############ Libraries
 import sys
 import time
 import os
@@ -21,17 +17,13 @@ import IMP.container
 import RMF
 import numpy as np
 import ConfigParser
-
-# WE NEED 4 ARGUMENTS: uZ, lZ, y2, starting_point, config.ini
-
-#sys.path.insert(0, '/home/bioinfo/workspace/genome/utils')
 from normal_distribution import fileCheck, sizeReader,  calculateNWindowedDistances
 
 drome = False
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 6 and number_of_arguments != 1: #Or all parameters, or no parameters 
-    print "Not enought parameters. uZ lZ and y2 are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 7 and number_of_arguments != 1: #Or all parameters, or no parameters 
+    print "Not enought parameters. uZ, lZ, maxDis, starting_point and config_file  are required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     uZ = float(sys.argv[1])
@@ -39,12 +31,13 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     y2 = float(sys.argv[3])
     starting_point = int(sys.argv[4])
     ini_file = sys.argv[5]
-else: #if no arguments, set the default values
-    uZ = 0.1 #upper bound Z-score
-    lZ = -0.1 #lower bound Z-score 
-    y2 = 6000.0  # Max distance BETWEEN bead
-    starting_point = 0
-    ini_file = "config.ini"
+    big_sampling = sys.argv[6]
+#else: #if no arguments, set the default values
+#    uZ = 0.1 #upper bound Z-score
+#    lZ = -0.1 #lower bound Z-score 
+#    y2 = 6000.0  # Max distance BETWEEN bead
+#    starting_point = 0
+#    ini_file = "config.ini"
 #read the config file
 config = ConfigParser.ConfigParser()
 try:
@@ -72,9 +65,10 @@ try:
     
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
-    
-    number_of_models = int(config.get("ModelingValues", "number_of_models"))
-
+    if big_sampling == "True":
+        number_of_models = int(config.get("ModelingValues", "number_of_models"))
+    else:
+        number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
 except:
     print "\nError reading the configuration file.\n"
     e = sys.exc_info()[1]

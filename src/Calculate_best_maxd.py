@@ -8,17 +8,14 @@ import sys
 import subprocess
 import numpy as np
 import ConfigParser
-sys.path.insert(1,'/home/bioinfo/workspace/genome/utils')
-#for each model (500 normally) we will get the length of the chromatin 
+#for each model (50 normally) we will get the length of the chromatin 
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 4 and number_of_arguments != 1: #Or all parameters, or no parameters 
-    print "Not enought parameters. start_dist, end_dist, dist_bins number_of_models and config file are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 2: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config file is required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
-else: #if no arguments, set the default values
-    ini_file = "config.ini"
 #read the config file
 config = ConfigParser.ConfigParser()
 try:
@@ -80,17 +77,11 @@ with open (results_path,"w") as output_results:
             all_distances.append(distance_sum)
         #print all_distances
         size = np.mean(all_distances)
-        output_results.write("With max distance {}: {}A Equivalent to a genome of {} Mbp".format(maxd,size,size/0.0846/1000000)) #in Mbp
+        print "{}: {}".format(root,size)
+        output_results.write("With max distance {}: {}A Equivalent to a genome of {} Mbp\n".format(maxd,size,size/0.0846/1000000)) #in Mbp
+        print "With max distance {}: {}A Equivalent to a genome of {} Mbp".format(maxd,size,size/0.0846/1000000)
 if os.path.isfile(aux_file):
     os.remove(aux_file) 
     os.remove(aux_file+"c")   
-  
-    
- 
 
-
-         
-
-
-            
-
+print "Results writen in: {}".format(results_path)
