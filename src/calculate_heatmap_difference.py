@@ -8,12 +8,6 @@ import ConfigParser
 #from variables import WINDOW, prefix, NFRAGMENTS, files, genes, hox_genes, zebrafish, amphioxus, mouse, bmp7
 from normal_distribution import  calculateNWindowedDistances
 
-
-
-
-
-
-
 def calculate_heatdifference(path, n_files_inside,names,files,prefix):        
 
     #FIRST CALCULATE OUR MODELS HEATMAP

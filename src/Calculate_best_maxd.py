@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+############# code that evaluates all the models with different distances and gives you which distance is the optimum
+
 import re
 import os
 import sys
@@ -14,16 +16,8 @@ if number_of_arguments != 4 and number_of_arguments != 1: #Or all parameters, or
     print "Not enought parameters. start_dist, end_dist, dist_bins number_of_models and config file are required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
-    start_dist = float(sys.argv[1])
-    end_dist = float(sys.argv[2])
-    dist_bins = float(sys.argv[3])
-    number_of_models = float(sys.argv[4])
-    ini_file = sys.argv[5]
+    ini_file = sys.argv[1]
 else: #if no arguments, set the default values
-    start_dist = 6000.0 #upper bound Z-score
-    end_dist = 6000.0 #lower bound Z-score 
-    dist_bins = 1000.0  # Max distance BETWEEN bead
-    number_of_models = 50
     ini_file = "config.ini"
 #read the config file
 config = ConfigParser.ConfigParser()
@@ -34,28 +28,16 @@ try:
     
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
     
-    files = config.get("ModelingValues", "files")
-    files = re.sub('[\n\s\t]','',files)
-    files = files.split(",")    
-    
-    viewpoints = config.get("ModelingValues", "viewpoints")
-    viewpoints = re.sub('[\n\s\t]','',viewpoints)
-    viewpoints = viewpoints.split(",")
-    viewpoints = [ int(i) for i in viewpoints]
-    viewpoints = [int(round(i/WINDOW)) for i in viewpoints]
-    
-    genes = config.get("ModelingValues", "genes")
-    genes = re.sub('[\n\s\t]','',genes)
-    genes = genes.split(",")
-    genes = [ int(i) for i in genes]
-    genes = [int(round(i/WINDOW)) for i in genes]
-    
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
     
-    number_of_models = int(config.get("ModelingValues", "number_of_models"))
-    
     working_dir = config.get("ModelingValues", "working_dir")
+
+    min_dist = float(config.get("Pre-ModelingValues", "min_dist"))
+    max_dist = float(config.get("Pre-ModelingValues", "max_dist"))
+    dist_bins = int(config.get("Pre-ModelingValues", "dist_bins"))
+    number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
+
 except:
     print "\nError reading the configuration file.\n"
     e = sys.exc_info()[1]
@@ -68,7 +50,7 @@ number_of_spheres = NFRAGMENTS - 1
 
 print "!! NOTE !! remember that we need models with 0.1 and -0.1 of uZ and lZ for the best calculation."
 with open (results_path,"w") as output_results:
-    for maxd in np.arange(start_dist,end_dist+1,dist_bins):
+    for maxd in np.arange(min_dist,max_dist+1,dist_bins):
         root = "{}data/{}_output_0.1_-0.1_{}/".format(working_dir,prefix,maxd)
         all_distances = []
         for i in range(number_of_models):
