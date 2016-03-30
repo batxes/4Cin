@@ -7,6 +7,7 @@ import subprocess
 from multiprocessing import Pool
 from itertools import combinations, chain
 import time
+import ConfigParser
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -14,9 +15,6 @@ from matplotlib.backends.backend_pdf import PdfPages
 def chimera_worker(chimera_file):
     distance_output = subprocess.check_output(["chimera", "--nogui", chimera_file])
     return distance_output
-
-
-number_of_cpu = 6
 
 calculate_the_matrix = True #to get only the HIC from the text use TADS_generate_matrix
 verbose = 2
@@ -39,10 +37,6 @@ try:
     
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
     
-    files = config.get("ModelingValues", "files")
-    files = re.sub('[\n\s\t]','',files)
-    files = files.split(",")    
-    
     viewpoints = config.get("ModelingValues", "viewpoints")
     viewpoints = re.sub('[\n\s\t]','',viewpoints)
     viewpoints = viewpoints.split(",")
@@ -60,7 +54,11 @@ try:
     
     number_of_models = int(config.get("ModelingValues", "number_of_models"))
     
-    gene_names = int(config.get("TADs", "gene_names"))
+    gene_names = config.get("TADs", "gene_names")
+    gene_names = re.sub('[\n\s\t]','',gene_names)
+    gene_names = gene_names.split(",")
+    
+    number_of_cpu = int(config.get("TADs", "number_of_cpu"))
 
 except:
     print "\nError reading the configuration file.\n"
@@ -72,17 +70,20 @@ if calculate_the_matrix:
       
     viewpoints = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
     start_time = time.time()
-    root = "/home/bioinfo/workspace/genome/{}_final_output_0.9_-0.1_3000/".format(prefix)
+    root = "/home/bioinfo/workspace/4c2vhic/{}_final_output_0.7_-0.3_8000/".format(prefix)
 #     root = "/home/bioinfo/workspace/genome/{}_output_0.2_-0.2_7000_without_2_and_3_4_6_7_8/".format(prefix)
     models = []
         # matrix = np.zeros((number_of_spheres,number_of_spheres,number_of_spheres))
         ## we get a file that (cmd) that we are gonna use it in chimera. It will write all distances in the model
-    with open("{}matrix1.txt".format(root), "r") as mtx:
+    with open("{}matrix397.txt".format(root), "r") as mtx:
         for line in mtx:
-            models.append(re.split("\t", line)[1])
-    # models = re.split("\t", first_line)
+            models = re.split("\t", line)
+            print models
+            break
+
     
-    models = models[1:]
+    models = models[1:-1]
+    print models
     
     
 #     models = models[50:51] #testing
@@ -92,6 +93,7 @@ if calculate_the_matrix:
     matrix = np.zeros((NFRAGMENTS,NFRAGMENTS,len(models)))
     
     p = Pool(number_of_cpu)
+    print number_of_cpu
 
 
     for model in models:
