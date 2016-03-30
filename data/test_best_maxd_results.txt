@@ -1,1 +1,0 @@
-With max distance 6000.0: 114044.8882A Equivalent to a genome of 1.34804832388 Mbp
