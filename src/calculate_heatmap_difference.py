@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from math import fabs
 import ConfigParser
-#from variables import WINDOW, prefix, NFRAGMENTS, files, genes, hox_genes, zebrafish, amphioxus, mouse, bmp7
 from normal_distribution import  calculateNWindowedDistances
+
 
 def calculate_heatdifference(path, n_files_inside,names,files,prefix):        
 
@@ -91,6 +91,7 @@ def calculate_heatdifference(path, n_files_inside,names,files,prefix):
         plt.axis([0,z.shape[1],0,z.shape[0]])
         ax.set_yticklabels(names)
     #     plt.xlabel("Genomic Position")
+        plt.savefig('{}_heatmap.png'.format(path))
         plt.show()
 
 
@@ -116,27 +117,15 @@ def calculate_heatdifference(path, n_files_inside,names,files,prefix):
 ##### MAIN ######
 number_of_arguments = len(sys.argv)
 
-if number_of_arguments != 4 and number_of_arguments != 1: #Or all parameters, or no parameters 
-    print "Not enought parameters. start_zscore, end_zscore, maxd, bins, plot, ini file are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 3: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config file and plotting 'True/False' are required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
-    start_zscore = float(sys.argv[1])
-    end_zscore = float(sys.argv[2])
-    max_d = float(sys.argv[3])
-    bins = float(sys.argv[4])
-    ini_file = sys.argv[5]
-    if sys.argv[6] == "True":
+    ini_file = sys.argv[1]
+    if sys.argv[2] == "True":
         plot = True
     else:
         plot = False
-    
-else: #if no arguments, set the default values
-    start_zscore = 0.1 #upper bound Z-score
-    end_zscore = 0.1 #lower bound Z-score 
-    max_d = 6000.0  # Max distance BETWEEN bead
-    bins = 0.1
-    plot = True
-    ini_file = "config.ini"
     
 #read the config file
 config = ConfigParser.ConfigParser()
@@ -155,9 +144,14 @@ try:
     names = re.sub('[\n\s\t]','',names)
     names = names.split(",")   
     
-    number_of_models = int(config.get("ModelingValues", "number_of_models"))
     
     working_dir = config.get("ModelingValues", "working_dir")
+
+    number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
+    min_z = float(config.get("Pre-ModelingValues", "min_z"))
+    max_z = float(config.get("Pre-ModelingValues", "max_z"))
+    z_bins = float(config.get("Pre-ModelingValues", "z_bins"))
+    maxD = float(config.get("Pre-ModelingValues", "maxD"))
 except:
     print "\nError reading the configuration file.\n"
     e = sys.exc_info()[1]
@@ -171,10 +165,10 @@ with open (results_path,"w") as output_results:
     best_uZ = 0
     best_lZ = 0
     last_score = 10000
-    for uZ in np.arange(start_zscore,end_zscore+0.01,bins):
-        for lZ in np.arange(-start_zscore, -end_zscore-0.01, -bins):
-            score = calculate_heatdifference(working_dir+"data/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_d),number_of_models,names,files,prefix)
-            output_results.write(str(uZ)+","+str(lZ)+","+str(max_d)+"\t"+str(score)+"\n")
+    for uZ in np.arange(min_z,max_z+0.01,z_bins):
+        for lZ in np.arange(-min_z, -max_z-0.01, -z_bins):
+            score = calculate_heatdifference(working_dir+"data/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(maxD),number_of_models,names,files,prefix)
+            output_results.write(str(uZ)+","+str(lZ)+","+str(maxD)+"\t"+str(score)+"\n")
             all_scores.append(score)
             if score < last_score :
                 best_uZ = uZ
