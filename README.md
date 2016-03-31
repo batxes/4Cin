@@ -16,4 +16,8 @@ matplotlib
 
 4 - Run "calculate_heatmap_difference.py" to get the optimum zscores.
 
-5 - With the max distance and the upper and lower z-scores, modeling can start. Run "run_genome.sh" with those parameters
+5 - With the max distance and the upper and lower z-scores, modeling can start. Run "run_genome_sampling.sh" with those parameters
+
+6 - run "GenomeAnalysis.py"
+
+7- run "GenomeClustering.py"

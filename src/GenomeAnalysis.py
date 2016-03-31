@@ -1,9 +1,5 @@
-#   # \example core/simple.py
-# Illustration of simple usage of the IMP library from Python.
+#!/usr/bin/python
 
-#   ##################################### ###################################### 
-###################################### ###################################### 
-############ Libraries
 import sys
 import os
 import re
@@ -13,23 +9,17 @@ import shutil
 import ConfigParser
 from os import listdir
 from os.path import isfile, join
-
 from normal_distribution import  calculateNWindowedDistances
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 6 and number_of_arguments != 1: #Or all parameters, or no parameters 
-    print "Not enought parameters. uZ lZ and y2 are required. Cut_off_percentage (min % of fullfilled restraints) You passed: ",sys.argv[1:]
+if number_of_arguments != 5: #Or all parameters, or no parameters 
+    print "Not enought parameters. uZ, lZ, maxD and config_file are required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     uZ = float(sys.argv[1])
     lZ = float(sys.argv[2])
     y2 = float(sys.argv[3])
     ini_file = sys.argv[4]
-else: #if no arguments, set the default values
-    uZ = 0.2 #upper bound Z-score
-    lZ = -0.2 #lower bound Z-score 
-    y2 = 7000.0  # Max distance BETWEEN bead
-    ini_file = "config.ini"
 
 #read the config file
 config = ConfigParser.ConfigParser()
@@ -54,10 +44,12 @@ try:
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
     
     number_of_models = int(config.get("ModelingValues", "number_of_models"))
+    working_dir = config.get("ModelingValues", "working_dir")
+
 
     subset = int(config.get("AnalysisValues", "subset"))
     std_dev = int(config.get("AnalysisValues", "std_dev"))
-    jump = int(config.get("AnalysisValues", "jump"))
+    jump = number_of_models
     cut_off_percentage = int(config.get("AnalysisValues", "cut_off_percentage"))
     
 except:
@@ -67,7 +59,7 @@ except:
     sys.exit()
 
 verbose = 1  #3 = show all #1 show nothing
-root = "../data/{}_output_{}_{}_{}/".format(prefix,uZ,lZ,y2)
+root = "{}data/{}_output_{}_{}_{}/".format(working_dir,prefix,uZ,lZ,y2)
 score_file = "{}/score.txt".format(root)
 
 
@@ -169,7 +161,7 @@ print "Number of models below cutoff: {}".format(len(sorted_models))
 
 # store them in a folder
 print "copying best 200 models\n"
-storage_folder = "../data/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2)+"/" #the dir where the data will be saved
+storage_folder = working_dir+"data/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2)+"/" #the dir where the data will be saved
 print storage_folder
 if not os.path.exists(storage_folder): os.makedirs(storage_folder)   
 
@@ -185,7 +177,7 @@ for k in range(subset):
 # create the file to open in chimera
 # superposition of the best 200 models
 print "Creating superposition of 200 models\n"
-with open(prefix+"_superposition.py","w") as f:
+with open(working_dir+"data/"+prefix+"_superposition.py","w") as f:
     f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
     f.write("rc(\"open {}{}.py\")\n".format(prefix,models_subset[0][0]))
     for k in range(1,subset):
@@ -195,4 +187,4 @@ with open(prefix+"_superposition.py","w") as f:
         f.write("rc(\"open {}{}.py\")\n".format(prefix,i))
         f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*NFRAGMENTS,k*NFRAGMENTS+NFRAGMENTS-1,NFRAGMENTS-1))
 
-print "created in src/{}_superposition".format(prefix)
+print "created in {}data/{}_superposition".format(working_dir,prefix)

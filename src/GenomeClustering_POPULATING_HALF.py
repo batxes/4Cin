@@ -1,9 +1,5 @@
-#   # \example core/simple.py
-# Illustration of simple usage of the IMP library from Python.
+#!/usr/bin/python
 
-#   ##################################### ###################################### 
-###################################### ###################################### 
-############ Libraries
 import sys
 import operator
 import re
@@ -22,11 +18,16 @@ from numpy import vstack,array
 from numpy.random import rand
 from scipy.cluster.vq import kmeans,vq
 
+number_of_arguments = len(sys.argv)
+if number_of_arguments != 4: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config file, directory with data and k value (k means) are missing. You passed: ",sys.argv[1:]
+    sys.exit()
+if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
+    ini_file = sys.argv[1]
+    root = sys.argv[2]
+    k_mean = int(sys.argv[3])
 
-test = False
 
-ini_file = "config.ini"
-k_mean = 2
 
 #read the config file
 config = ConfigParser.ConfigParser()
@@ -46,16 +47,6 @@ except:
     print e
     sys.exit()
 
-
-###################################### ###################################### 
-###################################### ###################################### 
-###################################### CHANGE DEPENDING ON MODELING VARIABLES
-#root = "/home/bioinfo/workspace/genome/"+prefix+"_output_0.2_-0.2_7000_without_2_and_3_4_6_7_8/"
-root = "/home/bioinfo/workspace/genome/data/"+prefix+"_final_output_0.2_-0.2_7000/"
-root = "/home/bioinfo/workspace/4c2vhic/IrxB_final_output_0.7_-0.3_8000/"
-# root = "/home/bioinfo/workspace/genome/data/"+prefix+"_output_0.2_-0.2_7000.0/"
-
-subset = 200
 matrix = np.zeros((subset,subset))
 
 only_python_files = []
@@ -73,98 +64,88 @@ NFRAGMENTS = NFRAGMENTS -1
 
 # combi = combinations(range(len(only_python_files)),2)
 combi = combinations(range(subset),2)
-if not test:
-    for pair in combi:
+for pair in combi:
+
+    counter_line = pair[0]
+    counter_column = pair[1]
+
+    print "line: {}, column {}".format(counter_line,counter_column)
+    rmsd_file = open ("{}_calculate_rmsd{}.py".format(prefix,counter_column), "w")
+    rmsd_file.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
+    rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_line]))
+    rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_column]))
+    rmsd_file.write("rc(\"match #{}-{} #{}-{}\")\n".format((NFRAGMENTS+1),(NFRAGMENTS+1)+NFRAGMENTS ,0,NFRAGMENTS))
     
-        counter_line = pair[0]
-        counter_column = pair[1]
-    #     matrix.write(line)
-    #     matrix.write("\t")
-    
+    rmsd_file.close()
+    #         output = os.system("chimera --nogui ../{}_calculate_rmsd.py".format(prefix))
+    rmsd_output = subprocess.check_output(["chimera", "--nogui", "{}_calculate_rmsd{}.py".format(prefix,counter_column)])
+    remove("{}_calculate_rmsd{}.py".format(prefix,counter_column)) 
+    remove("{}_calculate_rmsd{}.pyc".format(prefix,counter_column)) 
+    string = ""
+    lista = []
+    for line2 in rmsd_output:
+        string = string + line2
+        if line2 == "\n":
+            lista.append(string)
+            string = ""
+         
+    #RMSD between 103 atom pairs is 4404.816 angstroms
+    #print lista
+    for line2 in lista:
+
+        exp = re.search(r"(\d+\.\d+) angstroms",line2)
+        if (exp):
             
-        print "line: {}, column {}".format(counter_line,counter_column)
-        rmsd_file = open ("../{}_calculate_rmsd{}.py".format(prefix,counter_column), "w")
-        rmsd_file.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
-        rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_line]))
-        rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_column]))
-        rmsd_file.write("rc(\"match #{}-{} #{}-{}\")\n".format((NFRAGMENTS+1),(NFRAGMENTS+1)+NFRAGMENTS ,0,NFRAGMENTS))
-        
-        rmsd_file.close()
-        #         output = os.system("chimera --nogui ../{}_calculate_rmsd.py".format(prefix))
-        rmsd_output = subprocess.check_output(["chimera", "--nogui", "../{}_calculate_rmsd{}.py".format(prefix,counter_column)])
-        remove("../{}_calculate_rmsd{}.py".format(prefix,counter_column)) 
-        remove("../{}_calculate_rmsd{}.pyc".format(prefix,counter_column)) 
-        string = ""
-        lista = []
-        for line2 in rmsd_output:
-            string = string + line2
-            if line2 == "\n":
-                lista.append(string)
-                string = ""
-             
-        #RMSD between 103 atom pairs is 4404.816 angstroms
-        print lista
-        for line2 in lista:
-    
-            exp = re.search(r"(\d+\.\d+) angstroms",line2)
-            if (exp):
-                print exp,
-                
-                value = exp.group(1)
-                print value
-    
+            value = exp.group(1)
+
 #                if matrix[counter_line][counter_column] == 0:
-                matrix[counter_line][counter_column] = value
+            matrix[counter_line][counter_column] = value
 #                if matrix[counter_column][counter_line] == 0:
-                matrix[counter_column][counter_line] = value    
-        #                 matrix.write(str(value)+"\t")
-                value = 0
-          
-          
-          
-    #write matrix       
-    matrixtxt = open("{}matrix.txt".format(root), "w")      
+            matrix[counter_column][counter_line] = value    
+    #                 matrix.write(str(value)+"\t")
+            value = 0
+      
+      
+      
+#write matrix       
+matrixtxt = open("{}matrix.txt".format(root), "w")      
+matrixtxt.write("\t")
+for p_file in only_python_files:
+    matrixtxt.write(p_file)
     matrixtxt.write("\t")
-    for p_file in only_python_files:
-        matrixtxt.write(p_file)
-        matrixtxt.write("\t")
-    matrixtxt.write("\n")
-    counter_line = 0
-    for line in only_python_files:
-        counter_column = 0
-        matrixtxt.write(line)
-        matrixtxt.write("\t")
-        for column in only_python_files:
-            matrixtxt.write(str(matrix[counter_line][counter_column])+"\t")  
-            counter_column += 1
-        counter_line += 1
-        matrixtxt.write("\n") 
-    matrixtxt.close()
-    print "matrix.txt written! in {}".format(root)
-matrix2 = np.zeros((subset,subset))
+matrixtxt.write("\n")
+counter_line = 0
+for line in only_python_files:
+    counter_column = 0
+    matrixtxt.write(line)
+    matrixtxt.write("\t")
+    for column in only_python_files:
+        matrixtxt.write(str(matrix[counter_line][counter_column])+"\t")  
+        counter_column += 1
+    counter_line += 1
+    matrixtxt.write("\n") 
+matrixtxt.close()
+print "matrix.txt written! in {}".format(root)
+#matrix2 = np.zeros((subset,subset))
 
-models = []
-line_ = 0
-with open ("{}matrix.txt".format(root), "r") as f:
-    for line in f:
-        if line_ == 0:
-            models = line.split("\t")
-            models = models[1:-1]
-            line_ += 1
-        else:
-            column_ = 0
-            values = line.split("\t")
-            values = values[1:-1]
-            for value in values:
-                matrix2[line_-1][column_] = value
-                column_ += 1
-            line_ += 1
+#models = []
+#line_ = 0
+#with open ("{}matrix.txt".format(root), "r") as f:
+#    for line in f:
+#        if line_ == 0:
+#            models = line.split("\t")
+#            models = models[1:-1]
+#            line_ += 1
+#        else:
+#            column_ = 0
+#            values = line.split("\t")
+#            values = values[1:-1]
+#            for value in values:
+#                matrix2[line_-1][column_] = value
+#                column_ += 1
+#            line_ += 1
 
 
-print matrix
-print type(matrix)
-print matrix2
-print type(matrix2)
 D = matrix
 
 # Compute and plot first dendrogram.
@@ -172,7 +153,7 @@ fig = pylab.figure(figsize=(8,8))
 
 ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
 Y = sch.linkage(D, method='average')
-Z1 = sch.dendrogram(Y, orientation='left')
+Z1 = sch.dendrogram(Y, orientation='right')
 ax1.set_xticks([])
 ax1.set_yticks([])
 
@@ -198,7 +179,7 @@ axmatrix.set_yticks([])
 axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
 pylab.colorbar(im, cax=axcolor)
 fig.show()
-fig.savefig('{}_dendrogram.png'.format(prefix))
+fig.savefig('{}{}_heatmap.png'.format(root,prefix))
 
 # Code to retrieve the clusters
 n = subset
