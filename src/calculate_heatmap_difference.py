@@ -92,8 +92,7 @@ def calculate_heatdifference(path, n_files_inside,names,files,prefix):
         ax.set_yticklabels(names)
     #     plt.xlabel("Genomic Position")
         plt.savefig('{}_heatmap.png'.format(path))
-        plt.show()
-
+        plt.close('all')
 
 
     #CALCULATE THE DIFFERENCE
