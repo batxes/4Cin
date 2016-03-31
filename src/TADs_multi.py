@@ -2,6 +2,7 @@
 
 ## CREATE THE CMD TO USE IN CHIMERA
 import re
+import os
 import sys
 import subprocess
 from multiprocessing import Pool
@@ -20,13 +21,13 @@ calculate_the_matrix = True #to get only the HIC from the text use TADS_generate
 verbose = 2
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 1 and number_of_arguments != 1: #Or all parameters, or no parameters 
-    print "Not enought parameters. uZ lZ and y2 are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 4: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config file, directory with data and matrix file are required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
-    ini_file = sys.argv[5]
-else: #if no arguments, set the default values
-    ini_file = "config.ini"
+    ini_file = sys.argv[1]
+    root = sys.argv[2]
+    matrix_path = root + sys.argv[3]
     
 #read the config file
 config = ConfigParser.ConfigParser()
@@ -70,12 +71,12 @@ if calculate_the_matrix:
       
     viewpoints = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
     start_time = time.time()
-    root = "/home/bioinfo/workspace/4c2vhic/{}_final_output_0.7_-0.3_8000/".format(prefix)
+    #root = "/home/bioinfo/workspace/4c2vhic/{}_final_output_0.7_-0.3_8000/".format(prefix)
 #     root = "/home/bioinfo/workspace/genome/{}_output_0.2_-0.2_7000_without_2_and_3_4_6_7_8/".format(prefix)
     models = []
         # matrix = np.zeros((number_of_spheres,number_of_spheres,number_of_spheres))
         ## we get a file that (cmd) that we are gonna use it in chimera. It will write all distances in the model
-    with open("{}matrix397.txt".format(root), "r") as mtx:
+    with open("{}".format(matrix_path), "r") as mtx:
         for line in mtx:
             models = re.split("\t", line)
             print models
@@ -175,7 +176,7 @@ z = np.array(matrix_mean)
 
 
 
-c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=2000, vmin=0)
+c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=5000, vmin=0)
 ax.set_frame_on(False)
 plt.colorbar()
 
@@ -197,11 +198,13 @@ plt.axis([0,z.shape[1],0,z.shape[0]])
 fig.set_facecolor('white')
 plt.show()
 
-pp = PdfPages('{}_HiC.pdf'.format(prefix))
+pp = PdfPages('{}{}_HiC.pdf'.format(root,prefix))
 pp.savefig(fig)
 pp.close()
 print '{}_HiC.pdf writen'.format(prefix)
 print "{} segundos".format(time.time() - start_time)
 #Distance between #1 marker 1  and #10 marker 1 : 2203.213
             
-
+for chi_file in chimera_files:
+    os.remove(chi_file)
+    os.remove(chi_file+"c")

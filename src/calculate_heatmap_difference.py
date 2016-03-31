@@ -164,15 +164,16 @@ with open (results_path,"w") as output_results:
     all_scores = []
     best_uZ = 0
     best_lZ = 0
-    last_score = 10000
+    best_score = 10000
     for uZ in np.arange(min_z,max_z+0.01,z_bins):
         for lZ in np.arange(-min_z, -max_z-0.01, -z_bins):
             score = calculate_heatdifference(working_dir+"data/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(maxD),number_of_models,names,files,prefix)
             output_results.write(str(uZ)+","+str(lZ)+","+str(maxD)+"\t"+str(score)+"\n")
             all_scores.append(score)
-            if score < last_score :
+            if score < best_score :
                 best_uZ = uZ
                 best_lZ = lZ
+                best_score = score
     output_results.write("MIN: {}".format(min(all_scores)))   
     #print min(all_scores)
     print "Best uZ: {}, Best lZ: {}".format(best_uZ,best_lZ)

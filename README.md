@@ -21,3 +21,5 @@ matplotlib
 6 - run "GenomeAnalysis.py"
 
 7- run "GenomeClustering.py"
+
+8- run "Tads.py"
