@@ -5,6 +5,12 @@
 
 if [ $# -ne 4 ]; then
     echo "Usage: 'run_genome_zscores.sh config_file run_mode maxDistance max_zscore'"
+    echo "- config_file: Configuration file"
+    echo "- run_mode: /bin/bash, qsub"
+    echo "- maxDistance: The maximum distance in Angstroms that the modeling will use"
+    echo "- max_zscore: The maximum limit for the z-score"
+    echo ""
+    echo "Take into account the z-score bins are of 0.1"
     exit 1
 fi
 

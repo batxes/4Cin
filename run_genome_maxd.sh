@@ -4,6 +4,12 @@
 
 if [ $# -ne 4 ]; then
     echo "Usage: 'run_genome_maxd.sh config_file run_mode dist_start dist_end'"
+    echo "- config_file: Configuration file"
+    echo "- run_mode: /bin/bash, qsub"
+    echo "- dist_start: Minimum distance for the distance range to use in the modelling in Angstroms"
+    echo "- dist_end: Maximum distance for the distance range to use in the modelling in Angstroms"
+    echo ""
+    echo "Take into account the distance changes every 1000 A"
     exit 1
 fi
 config_file=$1
