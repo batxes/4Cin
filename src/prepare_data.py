@@ -20,6 +20,7 @@ def fileCheck(f):
 
 #####
 #MAIN
+#yolo
 ####
 
 frag_dict = {}
