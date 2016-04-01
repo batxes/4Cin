@@ -32,7 +32,14 @@ init_number=0
 for i in $(seq 0 $until)   # 25*2000 = 50.000 Models.  
     do
         init=$(echo "$init_number + ($models_in_each_job * $i)" | bc)
-        $run_mode run_genome.sh $3 $4 $maxD $init $config_file True 
-        echo "$run_mode run_genome.sh $3 $4 $maxD $init $config_file True"
+        if [[ $run_mode == "/bin/bash" ]]; then
+            $run_mode run_genome.sh $3 $4 $maxD $init $config_file True &
+            echo "$run_mode run_genome.sh $3 $4 $maxD $init $config_file True &"
+        else
+            $run_mode run_genome.sh $3 $4 $maxD $init $config_file True 
+            echo "$run_mode run_genome.sh $3 $4 $maxD $init $config_file True"
+        fi
     done
-
+if [[ $run_mode == "/bin/bash" ]]; then
+    wait
+fi

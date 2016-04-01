@@ -23,13 +23,20 @@ config_file=$1
 run_mode=$2 #/bin/bash or qsub
 y2=$3
 for i in $(seq 1 $max_zscore)
-do
-    uZ=$(echo "$uZ_init * $i" | bc)
-    for j in $(seq 1 $max_zscore)
     do
-       lZ=$(echo "$lZ_init * $j" | bc)
-        $run_mode run_genome.sh $uZ $lZ $y2 0 $config_file False
-        echo "$run_mode run_genome.sh $uZ $lZ $y2 0 $config_file False"
+        uZ=$(echo "$uZ_init * $i" | bc)
+        for j in $(seq 1 $max_zscore)
+        do
+           lZ=$(echo "$lZ_init * $j" | bc)
+           if [[ $run_mode == "/bin/bash" ]]; then
+               $run_mode run_genome.sh $uZ $lZ $y2 0 $config_file False &
+               echo "$run_mode run_genome.sh $uZ $lZ $y2 0 $config_file False &"
+           else
+               $run_mode run_genome.sh $uZ $lZ $y2 0 $config_file False
+               echo "$run_mode run_genome.sh $uZ $lZ $y2 0 $config_file False"
+           fi
+        done
     done
-done
-
+if [[ $run_mode == "/bin/bash" ]]; then
+    wait
+fi

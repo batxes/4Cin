@@ -116,48 +116,44 @@ def calculate_heatdifference(path, n_files_inside,names,files,prefix):
 ##### MAIN ######
 number_of_arguments = len(sys.argv)
 
-if number_of_arguments != 3: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file and plotting 'True/False' are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 4: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config file, max Distance and plotting 'True/False' are required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
-    if sys.argv[2] == "True":
+    maxD = float(sys.argv[2])
+    if sys.argv[3] == "True":
         plot = True
-    else:
+    elif sys.argv[3] == "False":
         plot = False
+    else:
+        print "\nError, set True/False for the plotting.\n"
+        sys.exit()
     
 #read the config file
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    
     prefix = config.get("ModelingValues", "prefix")
-    
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
-    
     files = config.get("ModelingValues", "files")
     files = re.sub('[\n\s\t]','',files)
     files = files.split(",")    
-    
     names = config.get("ModelingValues", "names")
     names = re.sub('[\n\s\t]','',names)
     names = names.split(",")   
-    
-    
     working_dir = config.get("ModelingValues", "working_dir")
-
     number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
     min_z = float(config.get("Pre-ModelingValues", "min_z"))
     max_z = float(config.get("Pre-ModelingValues", "max_z"))
     z_bins = float(config.get("Pre-ModelingValues", "z_bins"))
-    maxD = float(config.get("Pre-ModelingValues", "maxD"))
 except:
     print "\nError reading the configuration file.\n"
     e = sys.exc_info()[1]
     print e
     sys.exit()
     
-results_path = "../data/{}_heatmap_difference_results.txt".format(prefix)
+results_path = "{}data/{}/{}_heatmap_difference_results.txt".format(working_dir,prefix,prefix)
        
 with open (results_path,"w") as output_results:
     all_scores = []
@@ -166,7 +162,7 @@ with open (results_path,"w") as output_results:
     best_score = 10000
     for uZ in np.arange(min_z,max_z+0.01,z_bins):
         for lZ in np.arange(-min_z, -max_z-0.01, -z_bins):
-            score = calculate_heatdifference(working_dir+"data/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(maxD),number_of_models,names,files,prefix)
+            score = calculate_heatdifference(working_dir+"data/"+prefix+"/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(maxD),number_of_models,names,files,prefix)
             output_results.write(str(uZ)+","+str(lZ)+","+str(maxD)+"\t"+str(score)+"\n")
             all_scores.append(score)
             if score < best_score :

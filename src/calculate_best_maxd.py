@@ -11,25 +11,20 @@ import ConfigParser
 #for each model (50 normally) we will get the length of the chromatin 
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 2: #Or all parameters, or no parameters 
+if number_of_arguments != 2: 
     print "Not enought parameters. Config file is required. You passed: ",sys.argv[1:]
     sys.exit()
-if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
-    ini_file = sys.argv[1]
+ini_file = sys.argv[1]
+
 #read the config file
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    
     prefix = config.get("ModelingValues", "prefix")
-    
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
-    
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
-    
     working_dir = config.get("ModelingValues", "working_dir")
-
     min_dist = float(config.get("Pre-ModelingValues", "min_dist"))
     max_dist = float(config.get("Pre-ModelingValues", "max_dist"))
     dist_bins = int(config.get("Pre-ModelingValues", "dist_bins"))
@@ -40,15 +35,24 @@ except:
     e = sys.exc_info()[1]
     print e
     sys.exit()
+
+if not os.path.exists("{}data/{}".format(working_dir, prefix)):
+    try:
+        os.makedirs("{}data/{}".format(working_dir, prefix))
+    except:
+        print "\nError creating the data and {} directories.".format(prefix)
+        e = sys.exc_info()[1]
+        print e
+        sys.exit()
     
-results_path = "../data/{}_best_maxd_results.txt".format(prefix)
+results_path = "{}data/{}/{}_best_maxd_results.txt".format(working_dir,prefix,prefix)
 aux_file = "get_genome_length.py"
 number_of_spheres = NFRAGMENTS - 1
 
 print "!! NOTE !! remember that we need models with 0.1 and -0.1 of uZ and lZ for the best calculation."
 with open (results_path,"w") as output_results:
     for maxd in np.arange(min_dist,max_dist+1,dist_bins):
-        root = "{}data/{}_output_0.1_-0.1_{}/".format(working_dir,prefix,maxd)
+        root = "{}data/{}/{}_output_0.1_-0.1_{}/".format(working_dir,prefix,prefix,maxd)
         all_distances = []
         for i in range(number_of_models):
             ###### we get the lengths of all models
@@ -77,7 +81,7 @@ with open (results_path,"w") as output_results:
             all_distances.append(distance_sum)
         #print all_distances
         size = np.mean(all_distances)
-        print "{}: {}".format(root,size)
+        #print "{}: {}".format(root,size)
         output_results.write("With max distance {}: {}A Equivalent to a genome of {} Mbp\n".format(maxd,size,size/0.0846/1000000)) #in Mbp
         print "With max distance {}: {}A Equivalent to a genome of {} Mbp".format(maxd,size,size/0.0846/1000000)
 if os.path.isfile(aux_file):

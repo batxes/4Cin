@@ -26,9 +26,16 @@ dist_end=${dist_end/.*}
 for k in $(seq $dist_start $dist_end)
     do
         y2=$(echo "$y2_init + 1000 * $k" | bc)
-        $run_mode run_genome.sh 0.1 -0.1 $y2 0 $config_file False
-        #qsub run_genome.sh $uZ $lZ $y2
-        #qsub -pe ompi 24 run_genome.sh $uZ $lZ $y2 if we parallelize our jobs
-        echo "$run_mode run_genome.sh 0.1 -0.1 $y2 0 $config_file False"
+        if [[ $run_mode == "/bin/bash" ]]; then
+            $run_mode run_genome.sh 0.1 -0.1 $y2 0 $config_file False &
+            echo "$run_mode run_genome.sh 0.1 -0.1 $y2 0 $config_file False &"
+        else
+            $run_mode run_genome.sh 0.1 -0.1 $y2 0 $config_file False 
+            #qsub run_genome.sh $uZ $lZ $y2
+            #qsub -pe ompi 24 run_genome.sh $uZ $lZ $y2 if we parallelize our jobs
+            echo "$run_mode run_genome.sh 0.1 -0.1 $y2 0 $config_file False"
+        fi    
     done
-
+if [[ $run_mode == "/bin/bash" ]]; then
+    wait
+fi

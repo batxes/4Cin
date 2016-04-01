@@ -22,8 +22,8 @@ from normal_distribution import fileCheck, sizeReader,  calculateNWindowedDistan
 drome = False
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 7 and number_of_arguments != 1: #Or all parameters, or no parameters 
-    print "Not enought parameters. uZ, lZ, maxDis, starting_point and config_file  are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 7:  
+    print "Not enought parameters. uZ, lZ, maxDis, starting_point, config_file and is_big_sampling are required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     uZ = float(sys.argv[1])
@@ -32,43 +32,37 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     starting_point = int(sys.argv[4])
     ini_file = sys.argv[5]
     big_sampling = sys.argv[6]
-#else: #if no arguments, set the default values
-#    uZ = 0.1 #upper bound Z-score
-#    lZ = -0.1 #lower bound Z-score 
-#    y2 = 6000.0  # Max distance BETWEEN bead
-#    starting_point = 0
-#    ini_file = "config.ini"
+
 #read the config file
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    
     prefix = config.get("ModelingValues", "prefix")
-    
+    working_dir = config.get("ModelingValues", "working_dir")
+    verbose = int(config.get("ModelingValues", "verbose"))
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
-    
     files = config.get("ModelingValues", "files")
     files = re.sub('[\n\s\t]','',files)
     files = files.split(",")    
-    
     viewpoints = config.get("ModelingValues", "viewpoints")
     viewpoints = re.sub('[\n\s\t]','',viewpoints)
     viewpoints = viewpoints.split(",")
     viewpoints = [ int(i) for i in viewpoints]
     viewpoints = [int(round(i/WINDOW)) for i in viewpoints]
-    
     genes = config.get("ModelingValues", "genes")
     genes = re.sub('[\n\s\t]','',genes)
     genes = genes.split(",")
     genes = [ int(i) for i in genes]
     genes = [int(round(i/WINDOW)) for i in genes]
-    
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
     if big_sampling == "True":
         number_of_models = int(config.get("ModelingValues", "number_of_models"))
-    else:
+    elif big_sampling == "False":
         number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
+    else:
+        print "is_big_sampling variable has to be True or False. Exiting..."
+        sys.exit()
 except:
     print "\nError reading the configuration file.\n"
     e = sys.exc_info()[1]
@@ -88,7 +82,6 @@ evaluation = False #If we wanna evaluate the restraints
 RESTRAINTS = [True,False,True,False] #4c counts, EV, HUB(connectivity), HLB(connectivity)
 RESTRAINTS_QUANTITY = [0,0,0,0]
 radius = 0
-verbose = 1  #3 = show all #1 show nothing #4 iterations 
 
 k = 1
 if evaluation:
@@ -111,7 +104,7 @@ alpha = 1.0 * NFRAGMENTS #the weight of the fragments
 
 
 
-storage_folder = "../data/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2) #the dir where the data will be saved
+storage_folder = working_dir+"data/"+prefix+"/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2) #the dir where the data will be saved
 sampling = True
 score_file = storage_folder+"/score"+str(starting_point)+".txt"
 if os.path.exists(score_file): os.remove(score_file) 
@@ -518,65 +511,19 @@ for sample in range(starting_point, starting_point+number_of_models):
         g = IMP.core.XYZRGeometry(sphere)
         w.add_geometry(g)
 
-    #print "\tScore: ",scores[-1]
     print "\nModel number {}".format(sample)
     print "Human Score: ",scores[-1]/1000000
-    #print "Distances: ", suma1/1000000
     exv_value = suma2/1000000
     exv_values.append(exv_value)
-    print "EXV: ", exv_value
+    if (verbose == 3):
+        print "EXV: ", exv_value
     
     hub_value = suma3/1000000
     hub_values.append(hub_value)
-    print "HUB: ", hub_value
-    #print "HLB: ", suma4/1000000
     if (verbose == 3):
+        print "HUB: ", hub_value
         needed_time = time.time() - start_time         
         print str(needed_time)+" seconds!"       
 
-    # print "Test for new optimization"
-    # cs= get_conformations(m)
-    # print "found", cs.get_number_of_configurations(), "solutions"
-    # ListScores = []
-    # for i in range(0, cs.get_number_of_configurations()):
-    #         cs.load_configuration(i)
-    #         # print the configuration
-    #         print "solution number: ",i,"scored :", m.evaluate(False)
-    #         ListScores.append(m.evaluate(False))
-    #         
-    # f1 = open("out_scores.csv", "w")
-    # f1.write("\n".join(map(lambda x: str(x), ListScores)))
-    # f1.close()
-    # for sphere in genome:
-    #     g = IMP.core.XYZRGeometry(sphere)
-    #     w2.add_geometry(g)
-    # 
-    # 
-    # print "end of new optimization!! ~~~~~~~~~~~~~~\n"
-
-
-
-#CODE IN LINE 149.
-#IF THE FRAGMENTS OF THE FILES ARE NOT EQUAL
-
-        #read all fragments starts
-    #     all_fragments = allFragmentsStartReader()
-        
-        #get fragments start from our files
-    #     f.seek(0) #restart file to read
-    #     fragments_start = fragmentsStartReader(f)
-        
-        #get the values of the reads
-        #f.seek(0) #restart file to read
-    
-        
-#little code to write in a file the distances
-#         try:
-#             f = open ("reads_"+str(j), 'w')
-#         except IOError:
-#             print "\nError: File "+ f +" does not appear to exist.\n"
-#             sys.exit()
-#         for line in range(len(reads_value)):
-#             f.write(str(reads_value[line])+"\n")
 print "Mean exv for distance "+str(y2)+" is: "+str(np.mean(exv_values))  
 print "Mean hub for distance "+str(y2)+" is: "+str(np.mean(hub_values))  
