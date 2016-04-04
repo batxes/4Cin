@@ -18,16 +18,22 @@ def chimera_worker(chimera_file):
     return distance_output
 
 calculate_the_matrix = True #to get only the HIC from the text use TADS_generate_matrix
-verbose = 2
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 4: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file, directory with data and matrix file are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 5: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config file, directory with data, matrix file and calculate_the_matrix True/False are required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
     root = sys.argv[2]
     matrix_path = root + sys.argv[3]
+    if sys.argv[4] == "True":
+        calculate_the_matrix = True
+    elif sys.argv[4] == "False":
+        calculate_the_matrix = False
+    else:
+        print "Set True or False in calculate_the_matrix."
+        sys.exot()
     
 #read the config file
 config = ConfigParser.ConfigParser()
@@ -35,7 +41,7 @@ try:
     config.read(ini_file)
     
     prefix = config.get("ModelingValues", "prefix")
-    
+    verbose = int(config.get("ModelingValues", "verbose"))
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
     
     viewpoints = config.get("ModelingValues", "viewpoints")
@@ -60,6 +66,7 @@ try:
     gene_names = gene_names.split(",")
     
     number_of_cpu = int(config.get("TADs", "number_of_cpu"))
+    maximum_hic_value= int(config.get("TADs", "maximum_hic_value"))
 
 except:
     print "\nError reading the configuration file.\n"
@@ -67,10 +74,11 @@ except:
     print e
     sys.exit()
 distance_file = "get_genome_distance_{}".format(prefix)
+path = "{}distances_of_current_model_{}".format(root,prefix)
+start_time = time.time()
 if calculate_the_matrix:
       
     viewpoints = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
-    start_time = time.time()
     #root = "/home/bioinfo/workspace/4c2vhic/{}_final_output_0.7_-0.3_8000/".format(prefix)
 #     root = "/home/bioinfo/workspace/genome/{}_output_0.2_-0.2_7000_without_2_and_3_4_6_7_8/".format(prefix)
     models = []
@@ -125,7 +133,7 @@ if calculate_the_matrix:
                 chimera_files.append(dis_file)
 
             
-        if verbose==2:  print "Calculating in chimera..."       
+        if verbose==3:  print "Calculating in chimera..."       
         distance_output = p.map(chimera_worker,chimera_files)
 
         
@@ -146,7 +154,6 @@ if calculate_the_matrix:
         for line2 in lista:
             distance = re.search(r'#(\d*).*#(\d*).*:\s?(\d*\.\d*)',line2)  
             if (distance):
-#                 print "[{}][{}][{}]".format(distance.group(1),distance.group(2),counter)
                 matrix[int(distance.group(1))][int(distance.group(2))][counter] = float(distance.group(3))
                 matrix[int(distance.group(2))][int(distance.group(1))][counter] = float(distance.group(3))
          
@@ -154,29 +161,37 @@ if calculate_the_matrix:
         print "{} segundos".format(time.time() - start_time)
 
 
-if verbose==2:  print "Generating matrix to plot..."     
-path = "{}distances_of_current_model_{}".format(root,prefix)
 
-f= open(path, 'w') #store the data in file
-matrix_mean = np.zeros((NFRAGMENTS,NFRAGMENTS))
-for line in range(NFRAGMENTS):
-    for column in range(NFRAGMENTS):
-        mean_value = np.mean(matrix[line][column])
+    f= open(path, 'w') #store the data in file
+    matrix_mean = np.zeros((NFRAGMENTS,NFRAGMENTS))
+    for line in range(NFRAGMENTS):
+        for column in range(NFRAGMENTS):
+            mean_value = np.mean(matrix[line][column])
 #         print "[{}][{}] = {}".format(line,column,mean_value)
-        matrix_mean[line][column] = mean_value
+            matrix_mean[line][column] = mean_value
 #         matrix_mean[column][line] = mean_value
-        f.write(str(line)+","+str(column)+","+str(mean_value))   
-        f.write("\n")
-f.close()
+            f.write(str(line)+","+str(column)+","+str(mean_value))   
+            f.write("\n")
+    f.close()
+    for chi_file in chimera_files:
+        os.remove(chi_file)
+        os.remove(chi_file+"c")
+else:
+    with open(path, 'r') as std_in:
+        matrix_mean = np.zeros((NFRAGMENTS,NFRAGMENTS))
+        for line in std_in:
+            values = line.split(",")
+            matrix_mean[int(values[0])][int(values[1])] = float(values[2])
 
 
+if verbose==3:  print "Generating matrix to plot..."     
 fig = plt.figure()
 ax = plt.subplot(1,1,1)
 z = np.array(matrix_mean)
 
 
 
-c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=5000, vmin=0)
+c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=maximum_hic_value, vmin=0)
 ax.set_frame_on(False)
 plt.colorbar()
 
@@ -196,7 +211,7 @@ plt.xticks(rotation=90)
 plt.axis([0,z.shape[1],0,z.shape[0]])
 
 fig.set_facecolor('white')
-plt.show()
+#plt.show()
 
 pp = PdfPages('{}{}_HiC.pdf'.format(root,prefix))
 pp.savefig(fig)
@@ -205,6 +220,3 @@ print '{}_HiC.pdf writen'.format(prefix)
 print "{} segundos".format(time.time() - start_time)
 #Distance between #1 marker 1  and #10 marker 1 : 2203.213
             
-for chi_file in chimera_files:
-    os.remove(chi_file)
-    os.remove(chi_file+"c")

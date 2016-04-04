@@ -56,6 +56,10 @@ try:
     genes = [int(round(i/WINDOW)) for i in genes]
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
+    ignore_beads = config.get("ModelingValues", "ignore_beads")
+    ignore_beads = re.sub('[\n\s\t]','',ignore_beads)
+    ignore_beads = ignore_beads.split(",")
+    ignore_beads = [ int(i) for i in ignore_beads]
     if big_sampling == "True":
         number_of_models = int(config.get("ModelingValues", "number_of_models"))
     elif big_sampling == "False":
@@ -243,32 +247,33 @@ for sample in range(starting_point, starting_point+number_of_models):
                 counter += 1
                 if i != viewpoints[j]:
                     if reads_value[i] != 0: #aplying the Z Score lower bound and upper bound (see calculate10WindowedDistances)
+                        if i not in ignore_beads:
 
-                        p2 = genome[i]
-                        
-                        #We add the diameters of the beads to the distance
-                        # the real distance is not from the core, we need to add the diameter, all the dna sequence
+                            p2 = genome[i]
+                            
+                            #We add the diameters of the beads to the distance
+                            # the real distance is not from the core, we need to add the diameter, all the dna sequence
 #                         distance = bead_radii[j] + bead_radii[i] + float(reads_value[i])
-                        
-                        
-                        distance = float(reads_value[i])
-                        if distance != float(y2):
+                            
+                            
+                            distance = float(reads_value[i])
+                            if distance != float(y2):
 #                             if True:
-                            #if distance < y2: #if maximum distance is reached, don't set a restraint, because it can be further in genomic distance
-                            kk2 = fabs(reads_weight[i])
-                            #if it is not in the window of the 4C interactome
-                            if (start_windows[j] > counter or end_windows[j] < counter):
-                                f = IMP.core.HarmonicLowerBound(distance, k*kk2)#don't give very good score?
-                                #f = IMP.core.Harmonic(distance, k*kk2)
-                                #harmonicLoweBound of max distance, so that they can not enter in a diameter of MAXDIS
-                            else:     
-                                f = IMP.core.Harmonic(distance, k*kk2) #)  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now                  
-        #                     f = IMP.core.Harmonic(float(reads_value[i]), k*fabs(reads_weight[i])) #)  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now
-                            s = IMP.core.DistancePairScore(f)
-                            r = IMP.core.PairRestraint(s, (p1, p2))  #this is the restraint
-                            restraints.append(r)
-                            m.add_restraint(r)
-                            r_count += 1
+                                #if distance < y2: #if maximum distance is reached, don't set a restraint, because it can be further in genomic distance
+                                kk2 = fabs(reads_weight[i])
+                                #if it is not in the window of the 4C interactome
+                                if (start_windows[j] > counter or end_windows[j] < counter):
+                                    f = IMP.core.HarmonicLowerBound(distance, k*kk2)#don't give very good score?
+                                    #f = IMP.core.Harmonic(distance, k*kk2)
+                                    #harmonicLoweBound of max distance, so that they can not enter in a diameter of MAXDIS
+                                else:     
+                                    f = IMP.core.Harmonic(distance, k*kk2) #)  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now                  
+            #                     f = IMP.core.Harmonic(float(reads_value[i]), k*fabs(reads_weight[i])) #)  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now
+                                s = IMP.core.DistancePairScore(f)
+                                r = IMP.core.PairRestraint(s, (p1, p2))  #this is the restraint
+                                restraints.append(r)
+                                m.add_restraint(r)
+                                r_count += 1
               
     n_restraints.append(r_count)  
     RESTRAINTS_QUANTITY[0] = r_count 

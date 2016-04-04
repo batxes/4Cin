@@ -33,6 +33,7 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
+    working_dir = config.get("ModelingValues", "working_dir")
     
     prefix = config.get("ModelingValues", "prefix")
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
@@ -232,8 +233,16 @@ for i in cluster_number:
     print "matrix{}.txt written! in {}".format(i,root)
         
         
-            
+    # create the file to open in chimera
+    # superposition of the best models
+    print "\nCreating superposition of clusters\n"
+    with open(root+prefix+"_superposition_"+str(i)+".py","w") as f:
+        f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
+        f.write("rc(\"open {}{}.py\")\n".format(prefix,cluster_models[0]))
+        for k in range(1,len(cluster_models)):
+            imodel = cluster_models[k]
+            f.write("rc(\"open {}{}.py\")\n".format(prefix,imodel))
+            f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*NFRAGMENTS,k*NFRAGMENTS+NFRAGMENTS-1,NFRAGMENTS-1))
 
- 
+    print "created in {}{}_superposition".format(root,prefix)
 
-  

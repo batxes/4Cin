@@ -25,7 +25,7 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    
+    verbose = int(config.get("ModelingValues", "verbose"))
     prefix = config.get("ModelingValues", "prefix")
     
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
@@ -58,8 +58,7 @@ except:
     print e
     sys.exit()
 
-verbose = 1  #3 = show all #1 show nothing
-root = "{}data/{}_output_{}_{}_{}/".format(working_dir,prefix,uZ,lZ,y2)
+root = "{}data/{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,y2)
 score_file = "{}/score.txt".format(root)
 
 
@@ -108,7 +107,7 @@ with open (score_file, "r") as f:
 reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(WINDOW),uZ,lZ, y2,files)
 
 
-print "getting best 200 models\n"
+print "getting best {} models\n".format(subset)
 analized_models = 0
 ok_models = 0
 for i in range(number_of_models):
@@ -160,8 +159,8 @@ sorted_models = sorted(models.items(), key=operator.itemgetter(1))
 print "Number of models below cutoff: {}".format(len(sorted_models))
 
 # store them in a folder
-print "copying best 200 models\n"
-storage_folder = working_dir+"data/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2)+"/" #the dir where the data will be saved
+print "copying best {} models\n".format(subset)
+storage_folder = working_dir+"data/"+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2)+"/" #the dir where the data will be saved
 print storage_folder
 if not os.path.exists(storage_folder): os.makedirs(storage_folder)   
 
@@ -175,9 +174,9 @@ for k in range(subset):
 
 
 # create the file to open in chimera
-# superposition of the best 200 models
-print "Creating superposition of 200 models\n"
-with open(working_dir+"data/"+prefix+"_superposition.py","w") as f:
+# superposition of the best models
+print "Creating superposition of {} models\n".format(subset)
+with open(storage_folder+prefix+"_superposition.py","w") as f:
     f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
     f.write("rc(\"open {}{}.py\")\n".format(prefix,models_subset[0][0]))
     for k in range(1,subset):
