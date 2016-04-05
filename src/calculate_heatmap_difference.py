@@ -1,12 +1,16 @@
 #!/usr/bin/python
 
 import sys, re
-import matplotlib.pyplot as plt
 import numpy as np
 from math import fabs
 import ConfigParser
 from normal_distribution import  calculateNWindowedDistances
-
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    pass
+except:
+    pass
 
 def calculate_heatdifference(path, n_files_inside,names,files,prefix):        
 

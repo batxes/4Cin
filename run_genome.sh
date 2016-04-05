@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -N 4c2vhic
+#$ -N _4c2vhic
 #$ -cwd
 
 /usr/bin/python src/GenomeModeling.py $1 $2 $3 $4 $5 $6 

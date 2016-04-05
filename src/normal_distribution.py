@@ -6,6 +6,8 @@ try:
     import matplotlib.pyplot as plt
 except ImportError:
     pass
+except:
+    pass
 #from variables import WINDOW, prefix, NFRAGMENTS, files, genes, zebrafish, amphioxus, mouse,IrxA, IrxB, bmp7, tbx, wnt, IrxAa, IrxAb, IrxBa,myf5_wt, myf5_mut, drome
 
 

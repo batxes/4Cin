@@ -176,7 +176,7 @@ for k in range(subset):
 # create the file to open in chimera
 # superposition of the best models
 print "Creating superposition of {} models\n".format(subset)
-with open(storage_folder+prefix+"_superposition.py","w") as f:
+with open(working_dir+"data/"+prefix+"_superposition.py","w") as f:
     f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
     f.write("rc(\"open {}{}.py\")\n".format(prefix,models_subset[0][0]))
     for k in range(1,subset):

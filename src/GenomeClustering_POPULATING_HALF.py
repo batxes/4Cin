@@ -9,11 +9,13 @@ from os.path import isfile, join
 import numpy as np
 from itertools import combinations
 import ConfigParser
-import pylab
 import scipy.cluster.hierarchy as sch
 
-
-from pylab import plot,show
+try:
+    import pylab
+    from pylab import plot,show
+except:
+    pass
 from numpy import vstack,array
 from numpy.random import rand
 from scipy.cluster.vq import kmeans,vq
@@ -236,7 +238,7 @@ for i in cluster_number:
     # create the file to open in chimera
     # superposition of the best models
     print "\nCreating superposition of clusters\n"
-    with open(root+prefix+"_superposition_"+str(i)+".py","w") as f:
+    with open(working_dir+"data/"+prefix+"_superposition_"+str(i)+".py","w") as f:
         f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
         f.write("rc(\"open {}{}.py\")\n".format(prefix,cluster_models[0]))
         for k in range(1,len(cluster_models)):
@@ -244,5 +246,5 @@ for i in cluster_number:
             f.write("rc(\"open {}{}.py\")\n".format(prefix,imodel))
             f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*NFRAGMENTS,k*NFRAGMENTS+NFRAGMENTS-1,NFRAGMENTS-1))
 
-    print "created in {}{}_superposition".format(root,prefix)
+    print "created in {}data/{}_superposition".format(working_dir,prefix)
 
