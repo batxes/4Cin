@@ -10,12 +10,10 @@ import numpy as np
 from itertools import combinations
 import ConfigParser
 import scipy.cluster.hierarchy as sch
-
-try:
-    import pylab
-    from pylab import plot,show
-except:
-    pass
+import matplotlib
+matplotlib.use('agg')
+import pylab
+from pylab import plot,show
 from numpy import vstack,array
 from numpy.random import rand
 from scipy.cluster.vq import kmeans,vq
