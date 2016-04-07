@@ -7,7 +7,6 @@ IMP
 
 matplotlib
 
-pylab
 
 
 
