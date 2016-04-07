@@ -10,6 +10,8 @@ from itertools import combinations, chain
 import time
 import ConfigParser
 import numpy as np
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 

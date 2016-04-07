@@ -10,12 +10,10 @@ import numpy as np
 from itertools import combinations
 import ConfigParser
 import scipy.cluster.hierarchy as sch
-
-try:
-    import pylab
-    from pylab import plot,show
-except:
-    pass
+import matplotlib
+matplotlib.use('agg')
+import pylab
+from pylab import plot,show
 from numpy import vstack,array
 from numpy.random import rand
 from scipy.cluster.vq import kmeans,vq
@@ -181,8 +179,11 @@ axmatrix.set_yticks([])
 # Plot colorbar.
 axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
 pylab.colorbar(im, cax=axcolor)
-fig.show()
-fig.savefig('{}{}_heatmap.png'.format(root,prefix))
+#fig.show()
+try:
+    fig.savefig('{}{}_heatmap.png'.format(root,prefix))
+except:
+    pass
 
 # Code to retrieve the clusters
 n = subset
@@ -238,7 +239,7 @@ for i in cluster_number:
     # create the file to open in chimera
     # superposition of the best models
     print "\nCreating superposition of clusters\n"
-    with open(working_dir+"data/"+prefix+"_superposition_"+str(i)+".py","w") as f:
+    with open(working_dir+"data/"+prefix+"/"+prefix+"_superposition_"+str(i)+".py","w") as f:
         f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
         f.write("rc(\"open {}{}.py\")\n".format(prefix,cluster_models[0]))
         for k in range(1,len(cluster_models)):
@@ -246,5 +247,5 @@ for i in cluster_number:
             f.write("rc(\"open {}{}.py\")\n".format(prefix,imodel))
             f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*NFRAGMENTS,k*NFRAGMENTS+NFRAGMENTS-1,NFRAGMENTS-1))
 
-    print "created in {}data/{}_superposition".format(working_dir,prefix)
+    print "created in {}data/{}/{}_superposition".format(working_dir,prefix,prefix)
 
