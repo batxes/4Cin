@@ -532,3 +532,4 @@ for sample in range(starting_point, starting_point+number_of_models):
 
 print "Mean exv for distance "+str(y2)+" is: "+str(np.mean(exv_values))  
 print "Mean hub for distance "+str(y2)+" is: "+str(np.mean(hub_values))  
+
