@@ -39,4 +39,3 @@ matplotlib
     * run_mode /bin/bash is set to work in the background with &
 
 test line
-another line
