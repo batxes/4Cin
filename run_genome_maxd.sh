@@ -38,4 +38,4 @@ for k in $(seq $dist_start $dist_end)
     done
 if [[ $run_mode == "/bin/bash" ]]; then
     wait
-fi
+
