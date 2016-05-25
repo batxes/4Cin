@@ -38,3 +38,6 @@ matplotlib
 - the bash scripts are scripts that I used for my projects. If you want to use them with another queue system or change the bins between each iteration, feel free to modify or create your own.
     * run_mode /bin/bash is set to work in the background with &
 
+
+#TODO
+    write down that chimera needs to be a "ln -s" and give permissions to whole python2.7 inside chimera/bin also
