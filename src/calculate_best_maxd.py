@@ -8,10 +8,10 @@ import sys
 import subprocess
 import numpy as np
 import ConfigParser
-#for each model (50 normally) we will get the length of the chromatin 
+#for each model (50 normally) we will get the length of the chromatin
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 2: 
+if number_of_arguments != 2:
     print "Not enought parameters. Config file is required. You passed: ",sys.argv[1:]
     sys.exit()
 ini_file = sys.argv[1]
@@ -44,7 +44,7 @@ if not os.path.exists("{}data/{}".format(working_dir, prefix)):
         e = sys.exc_info()[1]
         print e
         sys.exit()
-    
+
 results_path = "{}data/{}/{}_best_maxd_results.txt".format(working_dir,prefix,prefix)
 aux_file = "get_genome_length.py"
 number_of_spheres = NFRAGMENTS - 1
@@ -85,7 +85,7 @@ with open (results_path,"w") as output_results:
         output_results.write("With max distance {}: {}A Equivalent to a genome of {} Mbp\n".format(maxd,size,size/0.0846/1000000)) #in Mbp
         print "With max distance {}: {}A Equivalent to a genome of {} Mbp".format(maxd,size,size/0.0846/1000000)
 if os.path.isfile(aux_file):
-    os.remove(aux_file) 
-    os.remove(aux_file+"c")   
+    os.remove(aux_file)
+    os.remove(aux_file+"c")
 
 print "Results writen in: {}".format(results_path)

@@ -3,7 +3,7 @@
 ### Dependencies
 chimera
 
-IMP
+IMP 2.4 (newer versions crash)
 
 matplotlib
 
