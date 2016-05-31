@@ -41,3 +41,7 @@ matplotlib
 
 #TODO
     write down that chimera needs to be a "ln -s" and give permissions to whole python2.7 inside chimera/bin also
+    IMP 2.5 <
+    if "AttributeError: 'Model' object has no attribute 'this'"
+    install Swig 3.0.7. For this perhaps u need to install sudo apt-get install libpcre3 libpcre3-dev
+

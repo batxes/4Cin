@@ -160,7 +160,7 @@ for sample in range(starting_point, starting_point+number_of_models):
         print "Generating ", chimera_file, "..."
     values_file = prefix+str(sample)+".txt"
     w = IMP.display.ChimeraWriter(storage_folder+"/"+chimera_file)
-    m = IMP.kernel.Model()
+    m = IMP.Model()
     
     if rmf_video:
         hierarqy= IMP.atom.Hierarchy.setup_particle(IMP.Particle(m))

@@ -140,14 +140,17 @@ for i in range(number_of_models):
                             print "Restraint " +str(j)+"-"+str(viewpoints[k])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-float(real_d))
 #     print str(i)+"-> Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(total),"%",str(not_fulfilled*100/(total))     
     fulfil_percentage = not_fulfilled*100/total
-    print "not_fulfilled -> {}/{} : {}".format(not_fulfilled,total,fulfil_percentage)
+    print "not_fulfilled -> {} out of {} restraints: {}% of all restraints are not fulfilled in this model.".format(not_fulfilled,total,fulfil_percentage)
     if fulfil_percentage < cut_off_percentage:
         models[i].append(not_fulfilled)
         ok_models += 1
     else:
-        del models[i]
+        try:
+            del models[i]
+        except:
+            print "Not enough models for the analysis. Try changing the parameters in the config file for 'std_dev' or 'cut_off_percentage'."
     analized_models += 1
-    print "Percentage of models that fulfill the threshold: {}".format(100*ok_models/analized_models)
+    print "Percentage of models that fulfill the threshold: {}%".format(100*ok_models/analized_models)
     print "{}/{}".format(ok_models,analized_models)
     #print "{} -> number of models in subset {}".format(i,len(models))  
 # after poplating all and takign out the models out of the cout off, take the subset of models
