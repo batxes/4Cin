@@ -186,7 +186,7 @@ for sample in range(starting_point, starting_point+number_of_models):
                 print "Fragment number: "+str(i)+" size: "+str(radius_sum)+" radius: "+str(radius)
             #decorator with sphere  
             #Creating very far away particles (10000) could alter the final result of the beads that are not restrained
-            d = IMP.core.XYZR.setup_particle(p, IMP.algebra.Sphere3D(IMP.algebra.Vector3D(randint(0,1000), randint(0,1000), randint(0,1000)), radius)) 
+            d = IMP.core.XYZR.setup_particle(p, IMP.algebra.Sphere3D(IMP.algebra.Vector3D(randint(0,int(y2)), randint(0,int(y2)), randint(0,int(y2))), radius)) 
             bead_radii.append(radius)
             if i in(viewpoints):
                 if i in(genes):
@@ -197,11 +197,11 @@ for sample in range(starting_point, starting_point+number_of_models):
             else:
                 
 #               #one theme of color #blue, purple, red
-                color = IMP.display.Color(1/float(NFRAGMENTS)*i,0.0,1-1/float(NFRAGMENTS)*i) 
+                #color = IMP.display.Color(1/float(NFRAGMENTS)*i,0.0,1-1/float(NFRAGMENTS)*i) 
                 
                 
                 #another them (only grey)
-#                     color = IMP.display.Color(0.7,0.7,0.7) #blue, purple, red
+                 color = IMP.display.Color(0.7,0.7,0.7) 
                 
     
                 
