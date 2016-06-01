@@ -201,7 +201,7 @@ for sample in range(starting_point, starting_point+number_of_models):
                 
                 
                 #another them (only grey)
-                 color = IMP.display.Color(0.7,0.7,0.7) 
+                color = IMP.display.Color(0.7,0.7,0.7) 
                 
     
                 

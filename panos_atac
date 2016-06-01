@@ -2,3 +2,10 @@
 home/ska/panos/canonical_data/zebra/peaks/combined_nf/combined_nf_24h.narrowPeak
 
 test
+
+* make a bed file
+bamhandle = pysam.AligbnmentFile( '/path/to/bam ')
+for chrom,start,end in bedfile:
+yourcount = bamhandle.count( chrom, start, end)
+    https://gist.github.com/PanosFirmpas/45edbeb136f235321d1c8f69744c1aee
+    /home/ska/panos/o_{species}/data/bam
