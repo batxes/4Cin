@@ -57,3 +57,4 @@ matplotlib
 
     make tube shape after clustering? in the same file?
     give colors to last superposition?
+    pip install pysam
