@@ -28,10 +28,18 @@ matplotlib
 5 - With the max distance and the upper and lower z-scores, modeling can start. Run "run_genome_sampling.sh" with those parameters
 
 6 - run "GenomeAnalysis.py"
+    Gets the best models and also makes a superposition of all those models. They are very likely to be mirror image of each other
 
 7 - run "GenomeClustering.py"
+    Gets population of models depending on K value of Kmeans. Also get a superposition of each of the populations.
 
 8 - run "Tads.py"
+
+9 - run "Final_genome_models.py"
+    Takes as argument the matrix of one of the solutions from GenomeClustering.py. It will tell us which model is the one closest to the average.
+
+10 - run "GenomePainting.py"
+    It will paint the genome model closest to the average depending on the bam files
 
 ### Notes
 - All the date will be stored under a directory with the same name as the prefix set in the config file
@@ -47,3 +55,5 @@ matplotlib
     install Swig 3.0.7. For this perhaps u need to install sudo apt-get install libpcre3 libpcre3-dev
     remember that the bash scripts are also done by me, they can change it if they want. Right now I don't know how to take from the config file the data and use it in the bash script
 
+    make tube shape after clustering? in the same file?
+    give colors to last superposition?

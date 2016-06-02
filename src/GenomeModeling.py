@@ -57,9 +57,10 @@ try:
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
     ignore_beads = config.get("ModelingValues", "ignore_beads")
-    ignore_beads = re.sub('[\n\s\t]','',ignore_beads)
-    ignore_beads = ignore_beads.split(",")
-    ignore_beads = [ int(i) for i in ignore_beads]
+    if ignore_beads != "NO":
+        ignore_beads = re.sub('[\n\s\t]','',ignore_beads)
+        ignore_beads = ignore_beads.split(",")
+        ignore_beads = [ int(i) for i in ignore_beads]
     if big_sampling == "True":
         number_of_models = int(config.get("ModelingValues", "number_of_models"))
     elif big_sampling == "False":

@@ -20,7 +20,7 @@ from scipy.cluster.vq import kmeans,vq
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 4: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file, directory with data and k value (k means) are missing. You passed: ",sys.argv[1:]
+    print "Not enought parameters. Config file, directory with data(whole path better) and k value (k means) are missing. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
@@ -212,6 +212,7 @@ if not(len(cluster_number) == k_mean):
     print "There is a different number of cluster than set in K. Exiting..."
     sys.exit()
         
+NFRAGMENTS = NFRAGMENTS +1 
 # Write the matrix data in different files, k_mean times
 for i in cluster_number:
     matrixtxt = open("{}matrix{}.txt".format(root,i), "w")      
@@ -244,7 +245,7 @@ for i in cluster_number:
         f.write("rc(\"open {}{}.py\")\n".format(prefix,cluster_models[0]))
         for k in range(1,len(cluster_models)):
             imodel = cluster_models[k]
-            f.write("rc(\"open {}{}.py\")\n".format(prefix,imodel))
+            f.write("rc(\"open {}\")\n".format(imodel))
             f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*NFRAGMENTS,k*NFRAGMENTS+NFRAGMENTS-1,NFRAGMENTS-1))
 
     print "created in {}data/{}/{}_superposition".format(working_dir,prefix,prefix)
