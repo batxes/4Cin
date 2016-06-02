@@ -1,25 +1,17 @@
 #!/usr/bin/python
 
 import sys
-import os
 import re
-from collections import defaultdict
-import operator
-import shutil
 import ConfigParser
-from os import listdir
-from os.path import isfile, join
 import pysam
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 5: #Or all parameters, or no parameters 
-    print "Not enought parameters. uZ, lZ, maxD and config_file are required. You passed: ",sys.argv[1:]
+    print "Not enought parameters. Model to be painted and config file are needed. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
-    uZ = float(sys.argv[1])
-    lZ = float(sys.argv[2])
-    y2 = float(sys.argv[3])
-    ini_file = sys.argv[4]
+    model = sys.argv[1]
+    ini_file = sys.argv[2]
 
 #read the config file
 config = ConfigParser.ConfigParser()
@@ -53,6 +45,9 @@ try:
     cut_off_percentage = int(config.get("AnalysisValues", "cut_off_percentage"))
 
     atac_path = config.get("Painting","Atac_path")
+    color_low = config.get("Painting","Atac_color_low")
+    color_high = config.get("Painting","Atac_color_high")
+    
     
     
 except:
@@ -70,6 +65,23 @@ with open ("bed_file","w") as stdout:
             values = line.split("\t")
             read_count = bamhandle.count(values[0],values[1],values[2]) #chrm, start, end
             stdout.write("{}\t{}\t{}\t{}\n".format(values[0],values[1],values[2],read_count))
+
+#chr    from    to  value
+bead_values = []
+with open ("bed_file","r") as stdin:
+    counter = 0
+    added_reads = 0
+    for line in stdin:
+        values = line.split("\t")
+        added_reads =+ float(values[3])
+        counter =+ 1
+        if counter == WINDOW:
+            counter = 0
+            bead_values.append(added_reads)
+            added_reads = 0
+
+# set color to beads
+
 
 
 
