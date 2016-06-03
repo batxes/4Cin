@@ -4,9 +4,11 @@ import sys
 import re
 import ConfigParser
 import pysam
+from colour import Color
+import heapq
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 5: #Or all parameters, or no parameters 
+if number_of_arguments != 3: #Or all parameters, or no parameters 
     print "Not enought parameters. Model to be painted and config file are needed. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
@@ -63,7 +65,7 @@ with open ("bed_file","w") as stdout:
     with open (files[0],"r") as stdin:
         for line in stdin:
             values = line.split("\t")
-            read_count = bamhandle.count(values[0],values[1],values[2]) #chrm, start, end
+            read_count = bamhandle.count(values[0],int(values[1]),int(values[2])) #chrm, start, end
             stdout.write("{}\t{}\t{}\t{}\n".format(values[0],values[1],values[2],read_count))
 
 #chr    from    to  value
@@ -71,17 +73,37 @@ bead_values = []
 with open ("bed_file","r") as stdin:
     counter = 0
     added_reads = 0
+    added_region = 0
     for line in stdin:
         values = line.split("\t")
-        added_reads =+ float(values[3])
-        counter =+ 1
+        added_region += float(values[2])-float(values[1])
+        added_reads += float(values[3])
+        counter += 1
         if counter == WINDOW:
             counter = 0
-            bead_values.append(added_reads)
+            print added_reads, added_region
+            normalized_read = added_reads/added_region
+            print normalized_read
+            print "---"
+            bead_values.append(normalized_read)
+            added_region = 0
             added_reads = 0
+    if counter != WINDOW: #we add the min value to the last bead if it did not reach to Nfragments 
+        normalized_read = added_reads/added_region
+        bead_values.append(normalized_read)
 
 # set color to beads
+colorfrom = Color("#ffffff")
+colorto = Color("#00ff00")
+colors = list(colorfrom.range_to(colorto, NFRAGMENTS))
 
+with open("coloring.cmd","w") as colored_model:
+    colored_model.write("open {}\n".format(model))
+    for number in range(NFRAGMENTS):
+        smallest_value = heapq.nsmallest(number+1,bead_values)
+        smallest_value = smallest_value[-1]
+        position = bead_values.index(smallest_value)
+        colored_model.write("color {} #{}\n".format(colors[number],position))
 
 
 

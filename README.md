@@ -57,4 +57,9 @@ matplotlib
 
     make tube shape after clustering? in the same file?
     give colors to last superposition?
-    pip install pysam
+    pip install pysam. If does not work, git clone 
+    and then 
+
+    python setup.py build
+    python setup.py install (libcurl4-gnutls-dev )
+    !if u get an error saying regcompA was not found, rename regex.h from the boost library (in my case /usr/local/include/regex.h) to something else before building. The change it back!
