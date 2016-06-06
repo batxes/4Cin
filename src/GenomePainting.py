@@ -134,6 +134,7 @@ with open("coloring.cmd","w") as colored_model:
         smallest_value = smallest_value[-1]
         position = bead_values.index(smallest_value)
         colored_model.write("color {} #{}\n".format(colors[number],position))
+    colored_model.write("shape tube #{}-{} radius 200 bandlength 10000".format(0,NFRAGMENTS))
 
 print "Now, open coloring.cmd wich Chimera."
 

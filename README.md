@@ -36,10 +36,13 @@ matplotlib
 8 - run "Tads.py"
 
 9 - run "Final_genome_models.py"
-    Takes as argument the matrix of one of the solutions from GenomeClustering.py. It will tell us which model is the one closest to the average.
+    Takes as argument the matrix of one of the solutions from GenomeClustering.py. It will tell us which model is the one closest to the average. If you want to concatenate the beads with a tube, after openning the model in UCSF-Chimera, write this in its command line: "shape tube #X-Y radius Z bandlength 10000" (X and Y being the first and last beads, Z being the thickness of tube in Angstroms.)
 
 10 - run "GenomePainting.py"
     It will paint the genome model closest to the average depending on the bam files
+
+11 - run "Evo_comp.py" Evolutive comparison
+    Given the solutions of 2 different locus or organisms and the position of Genes/enhancers (beads), it crea 
 
 ### Notes
 - All the date will be stored under a directory with the same name as the prefix set in the config file
@@ -48,7 +51,6 @@ matplotlib
 
 
 #TODO
-    Give user the best model with the tube shape
     write down that chimera needs to be a "ln -s" and give permissions to whole python2.7 inside chimera/bin also
     IMP 2.5 <
     if "AttributeError: 'Model' object has no attribute 'this'"
