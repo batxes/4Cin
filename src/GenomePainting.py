@@ -6,6 +6,7 @@ import ConfigParser
 import pysam
 from colour import Color
 import heapq
+import matplotlib.cm  as cm
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 3: #Or all parameters, or no parameters 
@@ -46,9 +47,9 @@ try:
     jump = number_of_models
     cut_off_percentage = int(config.get("AnalysisValues", "cut_off_percentage"))
 
-    atac_path = config.get("Painting","file_path")
-    color_from = config.get("Painting","Atac_color_low")
-    color_to = config.get("Painting","Atac_color_high")
+    painting_path = config.get("Painting","file_path")
+    color_from = config.get("Painting","color_from")
+    color_to = config.get("Painting","color_to")
     bam_or_bed = config.get("Painting","bam_or_bed")
     
     
@@ -60,9 +61,9 @@ except:
     sys.exit()
 
 #read the files and create a bed_file
+starts = []
+ends = []
 if bam_or_bed == "bam":
-    starts = []
-    ends = []
     print "Reading Atac bam file..."
     bamhandle = pysam.AlignmentFile(atac_path,"rb")
     with open ("bed_file","w") as stdout:
@@ -76,11 +77,16 @@ if bam_or_bed == "bam":
 
 
 elif bam_or_bed == "bed":
+    with open (files[0],"r") as stdin:
+        for line in stdin:
+            values = line.split("\t")
+            starts.append(int(values[1]))
+            ends.append(int(values[2]))
     # create bed file for DNAmet
     print "Reading DNA met file..."
     counter = 0
     total_reads = 0
-    with open (dnamet_path,"r") as stdin:
+    with open (painting_path,"r") as stdin:
         print "Writing bed file with DNA met data..."
         with open ("bed_file","w") as stdout:
             for line in stdin:
@@ -90,7 +96,7 @@ elif bam_or_bed == "bed":
                     values = line.split("\t")
                     if int(values[0]) == 13:
                         if starts[counter] <= int(values[1]) <= ends[counter]:
-                            total_reads += float(values[5])
+                            total_reads += float(values[4])/float(values[5])
                         else:
                             if total_reads == 0 and counter > 0 and starts[counter] <= int(values[1]): #gap in data
                                 stdout.write("{}\t{}\t{}\t{}\n".format("chr13",starts[counter],ends[counter],0))
@@ -115,30 +121,33 @@ with open ("bed_file","r") as stdin:
         added_reads += float(values[3])
         counter += 1
         if counter == WINDOW:
-            counter = 0
+            
             normalized_read = added_reads/added_region
             bead_values.append(normalized_read)
+            counter = 0
             added_region = 0
             added_reads = 0
     if counter != WINDOW: #we add the min value to the last bead if it did not reach to Nfragments 
         normalized_read = added_reads/added_region
         bead_values.append(normalized_read)
 
-# set color to beads
-colors = list(colorfrom.range_to(colorto, NFRAGMENTS))
+from pylab import *
+import matplotlib as mpl
+import matplotlib.cm as cm
+cmap = cm.seismic
+
+norm = mpl.colors.Normalize(vmin=min(bead_values), vmax=max(bead_values))
+m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 with open("coloring.cmd","w") as colored_model:
     colored_model.write("open {}\n".format(model))
     for number in range(NFRAGMENTS):
-        smallest_value = heapq.nsmallest(number+1,bead_values)
-        smallest_value = smallest_value[-1]
-        position = bead_values.index(smallest_value)
-        colored_model.write("color {} #{}\n".format(colors[number],position))
+        colored_model.write("color {} #{}\n".format(matplotlib.colors.rgb2hex(m.to_rgba(bead_values[number])),number))
+        #print "bead: {} color:{} value:{}".format(number,matplotlib.colors.rgb2hex(m.to_rgba(bead_values[number])),bead_values[number])
     colored_model.write("shape tube #{}-{} radius 200 bandlength 10000".format(0,NFRAGMENTS))
 
+
 print "Now, open coloring.cmd wich Chimera."
-
-
 
 
 

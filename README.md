@@ -42,7 +42,8 @@ matplotlib
     It will paint the genome model closest to the average depending on the bam files
 
 11 - run "Evo_comp.py" Evolutive comparison
-    Given the solutions of 2 different locus or organisms and the position of Genes/enhancers (beads), it crea 
+    Given the solutions of 2 different locus or organisms and the position of Genes/enhancers (beads), it cretes a hi-c like matrix with the relative positions of both locus.
+    example: python src/Evo_comp.py config.ini /home/bioinfo/workspace/4c2vhic/data/Six/Six_final_output_0.4_-0.4_7000.0/ matrix397.txt True
 
 ### Notes
 - All the date will be stored under a directory with the same name as the prefix set in the config file
