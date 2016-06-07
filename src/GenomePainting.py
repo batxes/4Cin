@@ -34,6 +34,7 @@ try:
     viewpoints = viewpoints.split(",")
     viewpoints = [ int(i) for i in viewpoints]
     viewpoints = [int(round(i/WINDOW)) for i in viewpoints]
+    print viewpoints
     
     NFRAGMENTS_ALL = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS_ALL/WINDOW)
@@ -65,7 +66,7 @@ starts = []
 ends = []
 if bam_or_bed == "bam":
     print "Reading Atac bam file..."
-    bamhandle = pysam.AlignmentFile(atac_path,"rb")
+    bamhandle = pysam.AlignmentFile(painting_path,"rb")
     with open ("bed_file","w") as stdout:
         with open (files[0],"r") as stdin:
             for line in stdin:
@@ -101,6 +102,7 @@ elif bam_or_bed == "bed":
                             if total_reads == 0 and counter > 0 and starts[counter] <= int(values[1]): #gap in data
                                 stdout.write("{}\t{}\t{}\t{}\n".format("chr13",starts[counter],ends[counter],0))
                                 counter += 1
+                                
                             if total_reads != 0:
                                 stdout.write("{}\t{}\t{}\t{}\n".format("chr13",starts[counter],ends[counter],total_reads))
                                 counter += 1
@@ -121,9 +123,9 @@ with open ("bed_file","r") as stdin:
         added_reads += float(values[3])
         counter += 1
         if counter == WINDOW:
-            
             normalized_read = added_reads/added_region
             bead_values.append(normalized_read)
+            print normalized_read
             counter = 0
             added_region = 0
             added_reads = 0
@@ -134,9 +136,11 @@ with open ("bed_file","r") as stdin:
 from pylab import *
 import matplotlib as mpl
 import matplotlib.cm as cm
-cmap = cm.seismic
+cmap = cm.Blues
 
 norm = mpl.colors.Normalize(vmin=min(bead_values), vmax=max(bead_values))
+#norm = mpl.colors.Normalize(vmin=0.01, vmax=0.04) #methylome
+#norm = mpl.colors.Normalize(vmin=0.1, vmax=0.6) #atac-seq
 m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 with open("coloring.cmd","w") as colored_model:
