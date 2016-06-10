@@ -293,7 +293,7 @@ if __name__ == "__main__":
     #read the config file
     config = ConfigParser.ConfigParser()
     try:
-        config.read("config.ini")
+        config.read("config_six_mouse.ini")
         
         prefix = config.get("ModelingValues", "prefix")
         
@@ -302,6 +302,7 @@ if __name__ == "__main__":
         files = config.get("ModelingValues", "files")
         files = re.sub('[\n\s\t]','',files)
         files = files.split(",")    
+        print files
         
         viewpoints = config.get("ModelingValues", "viewpoints")
         viewpoints = re.sub('[\n\s\t]','',viewpoints)

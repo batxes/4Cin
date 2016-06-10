@@ -61,6 +61,8 @@ try:
         ignore_beads = re.sub('[\n\s\t]','',ignore_beads)
         ignore_beads = ignore_beads.split(",")
         ignore_beads = [ int(i) for i in ignore_beads]
+    else:
+        ignore_beads = [] #empty
     if big_sampling == "True":
         number_of_models = int(config.get("ModelingValues", "number_of_models"))
     elif big_sampling == "False":
