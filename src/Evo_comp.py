@@ -53,12 +53,12 @@ try:
     viewpoints = re.sub('[\n\s\t]','',viewpoints)
     viewpoints = viewpoints.split(",")
     viewpoints = [ int(i) for i in viewpoints]
-    viewpoints = [int(round(i/WINDOW)) for i in viewpoints]
+    viewpoints = [int(i/WINDOW) for i in viewpoints]
     viewpoints2 = config.get("EvoComp", "viewpoints2")
     viewpoints2 = re.sub('[\n\s\t]','',viewpoints2)
     viewpoints2 = viewpoints2.split(",")
     viewpoints2 = [ int(i) for i in viewpoints2]
-    viewpoints2 = [int(round(i/WINDOW2)) for i in viewpoints2]
+    viewpoints2 = [int(i/WINDOW2) for i in viewpoints2]
     n_viewpoints = len(viewpoints2)
     
     

@@ -48,12 +48,12 @@ try:
     viewpoints = re.sub('[\n\s\t]','',viewpoints)
     viewpoints = viewpoints.split(",")
     viewpoints = [ int(i) for i in viewpoints]
-    viewpoints = [int(round(i/WINDOW)) for i in viewpoints]
+    viewpoints = [int(i/WINDOW) for i in viewpoints]
     genes = config.get("ModelingValues", "genes")
     genes = re.sub('[\n\s\t]','',genes)
     genes = genes.split(",")
     genes = [ int(i) for i in genes]
-    genes = [int(round(i/WINDOW)) for i in genes]
+    genes = [int(i/WINDOW) for i in genes]
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
     ignore_beads = config.get("ModelingValues", "ignore_beads")

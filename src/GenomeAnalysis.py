@@ -38,7 +38,7 @@ try:
     viewpoints = re.sub('[\n\s\t]','',viewpoints)
     viewpoints = viewpoints.split(",")
     viewpoints = [ int(i) for i in viewpoints]
-    viewpoints = [int(round(i/WINDOW)) for i in viewpoints]
+    viewpoints = [int(i/WINDOW) for i in viewpoints]
     
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
