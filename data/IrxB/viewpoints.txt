@@ -1,0 +1,11 @@
+mUCB1_14    chr8:94328368
+mUCB2_14    chr8:95070765
+Chd9    chr8:93352521
+Aktip    chr8:93658734
+Irx6    chr8:95199228
+Lpcat2    chr8:95378642
+mFTO    chr8:93837702
+Rbl2    chr8:93593851
+Irx3    chr8:94327133
+Irx5    chr8:94880821
+Mmp2    chr8:95352671
