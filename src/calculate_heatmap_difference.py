@@ -7,7 +7,7 @@ import ConfigParser
 from normal_distribution import  calculateNWindowedDistances
 import matplotlib
 matplotlib.use('agg')
-import matplotlib.pyplot as plt
+##import matplotlib.pyplot as plt
 
 
 def calculate_heatdifference(path, n_files_inside,names,files,prefix):        
