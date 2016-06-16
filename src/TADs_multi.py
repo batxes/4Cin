@@ -66,6 +66,10 @@ try:
     gene_names = config.get("TADs", "gene_names")
     gene_names = re.sub('[\n\s\t]','',gene_names)
     gene_names = gene_names.split(",")
+    color = config.get("TADs", "color")
+    color = re.sub('[\n\s\t]','',color)
+    color = color.split(",")
+    color = [ int(i) for i in color]
     
     number_of_cpu = int(config.get("TADs", "number_of_cpu"))
     maximum_hic_value= int(config.get("TADs", "maximum_hic_value"))
@@ -199,8 +203,9 @@ plt.colorbar()
 
 
 #to set the viewpoints
-# color = [10,5,5,10,10,10,10,10] -> depending on quantity of genes
-# plt.scatter(genes, genes, s=10, c=color,cmap=plt.cm.autumn)
+#color = [10,5,5,10,10,10,10,10] -> depending on quantity of genes
+plt.scatter(viewpoints, viewpoints, s=10, c=color,cmap=plt.cm.autumn)
+
 
 
 ax.set_yticks(viewpoints)
