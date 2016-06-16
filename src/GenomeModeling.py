@@ -31,7 +31,7 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     y2 = float(sys.argv[3])
     starting_point = int(sys.argv[4])
     ini_file = sys.argv[5]
-    big_sampling = sys.argv[6]
+    big_sampling = sys.argv[6] #finalmodels or premodeling
 
 #read the config file
 config = ConfigParser.ConfigParser()

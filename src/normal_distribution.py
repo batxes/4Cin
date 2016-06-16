@@ -205,6 +205,7 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
     
     for i in range(number_of_genes):
         if plot:
+            fig = plt.figure(figsize=(100, 100)) 
             plt.subplot(3,1,1)
             
             #ploteo de readcounts reales
@@ -234,7 +235,6 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
             plt.subplots_adjust(bottom=0.01, right=0.99, top=0.99, left=0.05)
             #figManager.window.showMaximized()
             #figManager.Maximize(True)
-            
             plt.show()
             
 
@@ -293,7 +293,7 @@ if __name__ == "__main__":
     #read the config file
     config = ConfigParser.ConfigParser()
     try:
-        config.read("config_six_mouse.ini")
+        config.read("config_IrxA.ini")
         
         prefix = config.get("ModelingValues", "prefix")
         
@@ -387,9 +387,9 @@ if __name__ == "__main__":
     
     #upper bound Z-score
 
-    uZ = 0.1
+    uZ = 0.5
     #lower bound Z-score
-    lZ = -0.2
+    lZ = -0.5
     # Max distance BETWEEN bead
     y2 = 8000 
     calculateNWindowedDistances(WINDOW, uZ, lZ, y2, files, True, False)

@@ -5,9 +5,6 @@ import numpy as np
 from math import fabs
 import ConfigParser
 from normal_distribution import  calculateNWindowedDistances
-import matplotlib
-matplotlib.use('agg')
-##import matplotlib.pyplot as plt
 
 
 def calculate_heatdifference(path, n_files_inside,names,files,prefix):        
@@ -118,15 +115,17 @@ def calculate_heatdifference(path, n_files_inside,names,files,prefix):
 ##### MAIN ######
 number_of_arguments = len(sys.argv)
 
-if number_of_arguments != 4: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file, max Distance and plotting 'True/False' are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 3: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config file  and plotting 'True/False' are required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
-    maxD = float(sys.argv[2])
-    if sys.argv[3] == "True":
+    if sys.argv[2] == "True":
         plot = True
-    elif sys.argv[3] == "False":
+        import matplotlib
+        matplotlib.use('Agg')
+        import matplotlib.pylab as plt
+    elif sys.argv[2] == "False":
         plot = False
     else:
         print "\nError, set True/False for the plotting.\n"
@@ -137,6 +136,7 @@ config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
     prefix = config.get("ModelingValues", "prefix")
+    maxD = int(config.get("ModelingValues", "max_dist"))
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
     files = config.get("ModelingValues", "files")
     files = re.sub('[\n\s\t]','',files)
