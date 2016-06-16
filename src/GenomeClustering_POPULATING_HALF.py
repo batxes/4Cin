@@ -19,13 +19,11 @@ from numpy.random import rand
 from scipy.cluster.vq import kmeans,vq
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 4: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file, directory with data(whole path better) and k value (k means) are missing. You passed: ",sys.argv[1:]
+if number_of_arguments != 2: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config file is missing. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
-    root = sys.argv[2]
-    k_mean = int(sys.argv[3])
 
 
 
@@ -37,6 +35,11 @@ try:
     
     prefix = config.get("ModelingValues", "prefix")
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
+    min_z = float(config.get("ModelingValues", "min_z"))
+    max_z = float(config.get("ModelingValues", "max_z"))
+    max_dist = int(config.get("ModelingValues", "max_dist"))
+    root = "{}/data/{}/{}_final_output_{}_{}_{}".format(working_dir,prefix,prefix,max_z,min_z,max_dist)
+    k_mean = int(config.get("Clustering", "kmeans"))
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
 

@@ -28,7 +28,7 @@ if number_of_arguments != 7:
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     uZ = float(sys.argv[1])
     lZ = float(sys.argv[2])
-    y2 = float(sys.argv[3])
+    y2 = int(sys.argv[3])
     starting_point = int(sys.argv[4])
     ini_file = sys.argv[5]
     big_sampling = sys.argv[6] #finalmodels or premodeling

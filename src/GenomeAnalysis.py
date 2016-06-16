@@ -12,14 +12,11 @@ from os.path import isfile, join
 from normal_distribution import  calculateNWindowedDistances
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 5: #Or all parameters, or no parameters 
-    print "Not enought parameters. uZ, lZ, maxD and config_file are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 2: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config_file is required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
-    uZ = float(sys.argv[1])
-    lZ = float(sys.argv[2])
-    y2 = float(sys.argv[3])
-    ini_file = sys.argv[4]
+    ini_file = sys.argv[1]
 
 #read the config file
 config = ConfigParser.ConfigParser()
@@ -29,6 +26,9 @@ try:
     prefix = config.get("ModelingValues", "prefix")
     
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
+    uZ = float(config.get("ModelingValues", "max_z"))
+    lZ = float(config.get("ModelingValues", "min_z"))
+    y2 = int(config.get("ModelingValues", "max_dist"))
     
     files = config.get("ModelingValues", "files")
     files = re.sub('[\n\s\t]','',files)
