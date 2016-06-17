@@ -43,8 +43,8 @@ try:
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
     
-    number_of_models = int(config.get("ModelingValues", "number_of_models"))
     working_dir = config.get("ModelingValues", "working_dir")
+    number_of_models = int(config.get("ModelingValues", "number_of_models"))
 
 
     subset = int(config.get("AnalysisValues", "subset"))

@@ -30,6 +30,7 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     root = sys.argv[2]
     matrix_path = sys.argv[2]
     root = matrix_path.split("/")[0:-1]
+    root = '/'.join(root)
     if sys.argv[3] == "True":
         calculate_the_matrix = True
     elif sys.argv[3] == "False":
@@ -205,7 +206,7 @@ plt.colorbar()
 
 #to set the viewpoints
 #color = [10,5,5,10,10,10,10,10] -> depending on quantity of genes
-plt.scatter(viewpoints, viewpoints, s=10, c=color,cmap=plt.cm.autumn)
+plt.scatter(viewpoints, viewpoints, s=20, c=color,cmap=plt.cm.autumn)
 
 
 
