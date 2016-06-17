@@ -4,6 +4,7 @@ import sys, re
 import numpy as np
 try:
     import matplotlib.pyplot as plt
+    plt.style.use('ggplot')
 except ImportError:
     pass
 except:
@@ -283,7 +284,12 @@ def calculate_heatmap (path_to_file):
 #test ###############################################################################################################################
 
 if __name__ == "__main__":
-    print "TESTING READS \n\n"
+    print "TESTING READS "
+    if len(sys.argv) > 1:
+        config_file = sys.argv[1]
+    else:
+        print "Config file needed..."
+        sys.exit()
     import ConfigParser
     
     show_z_scores = True    
@@ -293,7 +299,7 @@ if __name__ == "__main__":
     #read the config file
     config = ConfigParser.ConfigParser()
     try:
-        config.read("config_IrxA.ini")
+        config.read(config_file)
         
         prefix = config.get("ModelingValues", "prefix")
         
@@ -387,9 +393,9 @@ if __name__ == "__main__":
     
     #upper bound Z-score
 
-    uZ = 0.5
+    uZ = 0.1
     #lower bound Z-score
-    lZ = -0.5
+    lZ = -0.1
     # Max distance BETWEEN bead
     y2 = 8000 
     calculateNWindowedDistances(WINDOW, uZ, lZ, y2, files, True, False)
