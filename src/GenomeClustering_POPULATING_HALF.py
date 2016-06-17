@@ -38,7 +38,7 @@ try:
     min_z = float(config.get("ModelingValues", "min_z"))
     max_z = float(config.get("ModelingValues", "max_z"))
     max_dist = int(config.get("ModelingValues", "max_dist"))
-    root = "{}/data/{}/{}_final_output_{}_{}_{}".format(working_dir,prefix,prefix,max_z,min_z,max_dist)
+    root = "{}data/{}/{}_final_output_{}_{}_{}".format(working_dir,prefix,prefix,max_z,min_z,max_dist)
     k_mean = int(config.get("Clustering", "kmeans"))
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)

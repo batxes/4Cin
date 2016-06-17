@@ -22,16 +22,17 @@ def chimera_worker(chimera_file):
 calculate_the_matrix = True #to get only the HIC from the text use TADS_generate_matrix
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 5: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file, directory with data, matrix file and calculate_the_matrix True/False are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 4: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config file, matrix file (absolute path) and calculate_the_matrix True/False are required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
     root = sys.argv[2]
-    matrix_path = root + sys.argv[3]
-    if sys.argv[4] == "True":
+    matrix_path = sys.argv[2]
+    root = matrix_path.split("/")[0:-1]
+    if sys.argv[3] == "True":
         calculate_the_matrix = True
-    elif sys.argv[4] == "False":
+    elif sys.argv[3] == "False":
         calculate_the_matrix = False
     else:
         print "Set True or False in calculate_the_matrix."

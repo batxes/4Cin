@@ -35,9 +35,11 @@ except:
 
 for cpu in range(number_of_cpu):
     if mode == "/bin/bash":
-        print("{} run_genome.sh {} {} {} {} {} True &".format(mode,min_z,max_z,max_dist,cpu*number_of_models,ini_file))
+        print("{} run_genome.sh {} {} {} {} {} True &".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
+        os.system("{} run_genome.sh {} {} {} {} {} True &".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
     if mode == "qsub":
-        print("{} run_genome.sh {} {} {} {} {} True".format(mode,min_z,max_z,max_dist,cpu*number_of_models,ini_file))
+        print("{} run_genome.sh {} {} {} {} {} True".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
+        os.system("{} run_genome.sh {} {} {} {} {} True".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
 
 if mode == "/bin/bash":
     system(wait)

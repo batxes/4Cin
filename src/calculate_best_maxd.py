@@ -25,8 +25,8 @@ try:
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
     working_dir = config.get("ModelingValues", "working_dir")
-    min_dist = float(config.get("Pre-ModelingValues", "min_dist"))
-    max_dist = float(config.get("Pre-ModelingValues", "max_dist"))
+    min_dist = int(config.get("Pre-ModelingValues", "min_dist"))
+    max_dist = int(config.get("Pre-ModelingValues", "max_dist"))
     dist_bins = int(config.get("Pre-ModelingValues", "dist_bins"))
     number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
 
