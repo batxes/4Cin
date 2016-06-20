@@ -129,11 +129,21 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
         # we normalize the data depending on the number of reads.
         # We calculated beforehand the numbers of multiplication for the normalization
         reads = [read*factors[i] for read in reads ]           
+
+        # get the minimum values 0.0, and swap with the not 0 minimum. We don't take into account no reads in a fragment
+        min_read = max(reads)
+        for i in reads:
+            if i != 1.0 and i < min_read:
+                min_read = i
+        reads = [min_read if x==1.0 else x for x in reads]
+
         ### HEAT MAP DATAAAAAAAAAAA
         # this is the one we want to compare to
         HEATMAP_DATA.append(reads)
         # apply Log10 to data to normalize it
         reads_normalized = [np.log10(read) for read in reads]
+
+    
     
         HEATMAP_DATA_LOG.append(reads_normalized)
 
@@ -191,7 +201,6 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
     if show_z_scores:    
         mean_tena = []    
         for i in final_zscores:      
-            print max(i)
             mean_tena.append(max(i))
         if show_z_scores:
             print "mean of top z scores: "
@@ -200,7 +209,6 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
     #return data if we are using for the heat difference
     if heatmap:
         return HEATMAP_DATA, HEATMAP_DATA_LOG
-    
     
 #    FOR PLOTTING!!!!!
     
@@ -393,11 +401,11 @@ if __name__ == "__main__":
     
     #upper bound Z-score
 
-    uZ = 0.1
+    uZ = 1.2
     #lower bound Z-score
-    lZ = -0.1
+    lZ = -0.5
     # Max distance BETWEEN bead
-    y2 = 8000 
+    y2 = 5000 
     calculateNWindowedDistances(WINDOW, uZ, lZ, y2, files, True, False)
 
 
