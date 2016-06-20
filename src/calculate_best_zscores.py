@@ -7,6 +7,7 @@ import ConfigParser
 from normal_distribution import  calculateNWindowedDistances
 
 
+
 def calculate_heatdifference(path, n_files_inside,names,files,prefix):        
 
     #FIRST CALCULATE OUR MODELS HEATMAP
