@@ -31,6 +31,7 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     matrix_path = sys.argv[2]
     root = matrix_path.split("/")[0:-1]
     root = '/'.join(root)
+    print root
     if sys.argv[3] == "True":
         calculate_the_matrix = True
     elif sys.argv[3] == "False":
