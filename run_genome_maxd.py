@@ -24,7 +24,6 @@ try:
     min_dist = int(config.get("Pre-ModelingValues", "min_dist"))
     max_dist = int(config.get("Pre-ModelingValues", "max_dist"))
     dist_bins = int(config.get("Pre-ModelingValues", "dist_bins"))
-    prefix = config.get("ModelingValues", "prefix")
 except:
     print "\nError reading the configuration file.\n"
     e = sys.exc_info()[1]
