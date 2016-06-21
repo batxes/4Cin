@@ -49,7 +49,7 @@ try:
     verbose = int(config.get("ModelingValues", "verbose"))
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
     
-    viewpoints = config.get("ModelingValues", "viewpoints")
+    viewpoints = config.get("TADs", "viewpoints")
     viewpoints = re.sub('[\n\s\t]','',viewpoints)
     viewpoints = viewpoints.split(",")
     viewpoints = [ int(i) for i in viewpoints]
