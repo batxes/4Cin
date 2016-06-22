@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
+plt.style.use('ggplot')
 from matplotlib.backends.backend_pdf import PdfPages
 from scipy.stats.stats import pearsonr
 from scipy.stats.stats import spearmanr
@@ -58,7 +59,7 @@ try:
     gene_names = gene_names.split(",")
     
     number_of_cpu = int(config.get("TADs", "number_of_cpu"))
-    maximum_hic_value= int(config.get("EvoComp", "maximum_hic_value"))
+    maximum_hic_value= float(config.get("EvoComp", "maximum_hic_value"))
 
 except:
     print "\nError reading the configuration file.\n"
