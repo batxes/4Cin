@@ -241,6 +241,8 @@ for sample in range(starting_point, starting_point+number_of_models):
         f = fileCheck(files[j])
         reads_size = sizeReader(f)
         n_fragments = len(reads_size)/int(WINDOW)  
+        print n_fragments
+        print "HOLAAAAAAAA"
         
 # # # # # # # # # # # # # # # # # # # # # # # # #harmonic restraints got from file
         counter = 0
