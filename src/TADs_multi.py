@@ -195,6 +195,8 @@ else:
 
 
 if verbose==3:  print "Generating matrix to plot..."     
+matrix_mean = matrix_mean[15:-15,15:-15]
+viewpoints = [x-15 for x in viewpoints]
 fig = plt.figure()
 ax = plt.subplot(1,1,1)
 z = np.array(matrix_mean)
