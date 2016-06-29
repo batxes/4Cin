@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
-plt.style.use('ggplot')
+#plt.style.use('ggplot')
 from matplotlib.backends.backend_pdf import PdfPages
 from scipy.stats.stats import pearsonr
 from scipy.stats.stats import spearmanr
@@ -104,11 +104,15 @@ for bead1 in viewpoints2:
                     matrix2[count2][count1] = float(values[2])/10000
                     break
 
-
+matrix_diff = np.zeros((n_viewpoints,n_viewpoints))
 for i in range(n_viewpoints):
     for j in range(n_viewpoints):
         matrix_final[i][j] = matrix[i][j]
         matrix_final[j][i] = matrix2[i][j]
+        matrix_diff[i][j] = matrix_diff[j][i] = matrix[i][j] - matrix2[i][j]
+
+
+
 
 array1 = []
 array2 = []
@@ -157,4 +161,32 @@ pp.savefig(fig)
 pp.close()
 print '{}_evocomp.pdf writen'.format(prefix)
 #Distance between #1 marker 1  and #10 marker 1 : 2203.213
+
+from matplotlib.colors import LinearSegmentedColormap
+vmax = 1.0
+cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'white'),(0.35 / vmax, 'white'),(0.5 / vmax, 'green'),(0.65 / vmax, 'white'),(1 / vmax, 'white')])
+fig = plt.figure()
+ax = plt.subplot(1,1,1)
+z = np.array(matrix_diff)
+
+#c = plt.pcolor(z,cmap=plt.cm.PRGn,vmax=1,vmin=-1)
+c = plt.pcolor(z,cmap=cmap,vmax=1,vmin=-1)
+plt.colorbar()
+tick_location = [i+0.5 for i in range(len(viewpoints))]
+ax.set_yticks(tick_location)
+ax.set_xticks(tick_location)
+ax.set_xticklabels(gene_names, minor=False)
+ax.set_yticklabels(gene_names, minor=False)
+plt.tick_params(axis='both', which='major', labelsize=8)
+plt.xticks(rotation=90)
+
+plt.axis([0,z.shape[1],0,z.shape[0]])
+
+fig.set_facecolor('white')
+plt.show()
+
+pp = PdfPages('{}{}_evocomp_diff.pdf'.format(storage_dir,prefix))
+pp.savefig(fig)
+pp.close()
+print '{}_evocomp_diff.pdf writen'.format(prefix)
             
