@@ -57,6 +57,9 @@ try:
     gene_names = config.get("EvoComp", "gene_names")
     gene_names = re.sub('[\n\s\t]','',gene_names)
     gene_names = gene_names.split(",")
+    gene_names2 = config.get("EvoComp", "gene_names2")
+    gene_names2 = re.sub('[\n\s\t]','',gene_names2)
+    gene_names2 = gene_names2.split(",")
     
     number_of_cpu = int(config.get("TADs", "number_of_cpu"))
     maximum_hic_value= float(config.get("EvoComp", "maximum_hic_value"))
@@ -136,6 +139,9 @@ ax = plt.subplot(1,1,1)
 z = np.array(matrix_final)
 
 c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=maximum_hic_value, vmin=0)
+for y in range(z.shape[0]):
+    for x in range(z.shape[1]):
+        plt.text(x+0.5,y+0.5,'%.2f' % z[y,x],horizontalalignment='center',verticalalignment='center',)
 #ax.set_frame_on(False)
 plt.colorbar()
 
@@ -146,7 +152,7 @@ plt.colorbar()
 tick_location = [i+0.5 for i in range(len(viewpoints))]
 ax.set_yticks(tick_location)
 ax.set_xticks(tick_location)
-ax.set_xticklabels(gene_names, minor=False)
+ax.set_xticklabels(gene_names2, minor=False)
 ax.set_yticklabels(gene_names, minor=False)
 plt.tick_params(axis='both', which='major', labelsize=8)
 plt.xticks(rotation=90)
@@ -171,11 +177,14 @@ z = np.array(matrix_diff)
 
 #c = plt.pcolor(z,cmap=plt.cm.PRGn,vmax=1,vmin=-1)
 c = plt.pcolor(z,cmap=cmap,vmax=1,vmin=-1)
+for y in range(z.shape[0]):
+    for x in range(z.shape[1]):
+        plt.text(x+0.5,y+0.5,'%.2f' % z[y,x],horizontalalignment='center',verticalalignment='center',)
 plt.colorbar()
 tick_location = [i+0.5 for i in range(len(viewpoints))]
 ax.set_yticks(tick_location)
 ax.set_xticks(tick_location)
-ax.set_xticklabels(gene_names, minor=False)
+ax.set_xticklabels(gene_names2, minor=False)
 ax.set_yticklabels(gene_names, minor=False)
 plt.tick_params(axis='both', which='major', labelsize=8)
 plt.xticks(rotation=90)
