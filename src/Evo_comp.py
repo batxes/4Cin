@@ -52,6 +52,8 @@ try:
     viewpoints2 = [ int(i) for i in viewpoints2]
     viewpoints2 = [int(i/WINDOW2) for i in viewpoints2]
     n_viewpoints = len(viewpoints2)
+    max_distance = int(config.get("EvoComp", "max_dist"))
+    max_distance2 = int(config.get("EvoComp", "max_dist2"))
     
     
     gene_names = config.get("EvoComp", "gene_names")
@@ -89,7 +91,7 @@ for bead1 in viewpoints:
             for line in mtx:
                 values = re.split(",", line)
                 if int(values[0]) ==  bead1 and int(values[1]) == bead2:
-                    matrix[count1][count2] = float(values[2])/6000
+                    matrix[count1][count2] = float(values[2])/max_distance
                     break
         
 
@@ -104,7 +106,7 @@ for bead1 in viewpoints2:
             for line in mtx2:
                 values = re.split(",", line)
                 if int(values[0]) ==  bead1 and int(values[1]) == bead2:
-                    matrix2[count2][count1] = float(values[2])/10000
+                    matrix2[count2][count1] = float(values[2])/max_distance2
                     break
 
 matrix_diff = np.zeros((n_viewpoints,n_viewpoints))
