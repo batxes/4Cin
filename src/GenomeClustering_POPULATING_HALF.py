@@ -246,7 +246,7 @@ for i in cluster_number:
     print "\nCreating superposition of clusters\n"
     with open(working_dir+"data/"+prefix+"/"+prefix+"_superposition_"+str(i)+".py","w") as f:
         f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
-        f.write("rc(\"open {}{}.py\")\n".format(prefix,cluster_models[0]))
+        f.write("rc(\"open {}\")\n".format(cluster_models[0]))
         for k in range(1,len(cluster_models)):
             imodel = cluster_models[k]
             f.write("rc(\"open {}\")\n".format(imodel))
