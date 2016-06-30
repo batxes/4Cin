@@ -182,7 +182,7 @@ for i in pdbFiles:
 
 
 # save all models of this matrix in another dir
-storage_folder =  "{}/mtx1_models/".format(root)
+storage_folder =  "{}mtx1_models/".format(root)
 
 # store them in a folder
 # storage_folder = "../"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2)+"/" #the dir where the data will be saved
