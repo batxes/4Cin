@@ -124,9 +124,11 @@ array2 = []
 for i in range(n_viewpoints):
     for j in range(n_viewpoints):
         array1.append(matrix[i][j])
+        print "[{}][{}] = {}".format(j,i,matrix[i][j])
 for i in range(n_viewpoints):
     for j in range(n_viewpoints):
         array2.append(matrix2[i][j])
+        print "[{}][{}] = {}".format(i,j,matrix2[i][j])
 
 print "pearson: "+str(pearsonr(array1,array2))
 print "spearman: "+str(spearmanr(array1,array2))
