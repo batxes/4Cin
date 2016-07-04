@@ -126,25 +126,21 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
     for i in range(number_of_genes):
         f = fileCheck(files[i])
         reads = valueReaderNWindow(f,window)  
+        reads2 = []
         # we normalize the data depending on the number of reads.
         # We calculated beforehand the numbers of multiplication for the normalization
         reads = [read*factors[i] for read in reads ]           
 
         # get the minimum values 0.0, and swap with the not 0 minimum. We don't take into account no reads in a fragment
         min_read = max(reads)
-        for i in reads:
-            if i != 1.0 and i < min_read:
-                min_read = i
+        for j in reads:
+            if j != 1.0 and j < min_read:
+                min_read = j
         reads = [min_read if x==1.0 else x for x in reads]
-
-        ### HEAT MAP DATAAAAAAAAAAA
         # this is the one we want to compare to
         HEATMAP_DATA.append(reads)
         # apply Log10 to data to normalize it
         reads_normalized = [np.log10(read) for read in reads]
-
-    
-    
         HEATMAP_DATA_LOG.append(reads_normalized)
 
         mean = np.mean(reads_normalized)
@@ -164,7 +160,6 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
         slope = (y2-y1) / (x2-x1)
 
 #       reads = [slope*(read-x1)+y1 for read in reads2]
-        reads = []
 
         
         inside_window = False #when we are inside the 4C good values window, set True
@@ -188,16 +183,15 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
         if show_z_scores:
             print "gene "+ str(i) +"---> window start: " + str(window_start) + "   end: "+str(window_end)
         for  read in reads_normalized:
-
-
             if read < uZ and read > lZ:  #take out the reads where the z score is between the lz and the uZ
-                reads.append (0) 
+                reads2.append (0) 
             else:
-                reads.append(slope*(read-x1)+y1)
+                reads2.append(slope*(read-x1)+y1)
 
         #print "window_start: "+str(window_start)+" - window end:"+str(window_end)
-        final_reads.append(reads)       
+        final_reads.append(reads2)       
         final_zscores.append(reads_normalized)
+    print final_reads[7]
     if show_z_scores:    
         mean_tena = []    
         for i in final_zscores:      
@@ -205,7 +199,6 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
         if show_z_scores:
             print "mean of top z scores: "
             print np.mean(mean_tena)
-
     #return data if we are using for the heat difference
     if heatmap:
         return HEATMAP_DATA, HEATMAP_DATA_LOG
@@ -401,11 +394,11 @@ if __name__ == "__main__":
     
     #upper bound Z-score
 
-    uZ = 0.1
+    uZ = 0.5
     #lower bound Z-score
-    lZ = -0.1
+    lZ = -0.4
     # Max distance BETWEEN bead
-    y2 = 5000 
+    y2 = 9000 
     calculateNWindowedDistances(WINDOW, uZ, lZ, y2, files, True, False)
 
 
