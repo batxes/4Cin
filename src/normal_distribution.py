@@ -191,7 +191,6 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
         #print "window_start: "+str(window_start)+" - window end:"+str(window_end)
         final_reads.append(reads2)       
         final_zscores.append(reads_normalized)
-    print final_reads[7]
     if show_z_scores:    
         mean_tena = []    
         for i in final_zscores:      
@@ -254,10 +253,8 @@ def calculate_heatmap (path_to_file):
     for line in f:
         array = re.split('\t',line)
         reads = np.genfromtxt(array)
-        print reads
         # we want low distances red color in heatmap
         reads = [-1*read for read in reads]
-        print reads
         all_arrays.append(reads)
     
     
@@ -309,7 +306,6 @@ if __name__ == "__main__":
         files = config.get("ModelingValues", "files")
         files = re.sub('[\n\s\t]','',files)
         files = files.split(",")    
-        print files
         
         viewpoints = config.get("ModelingValues", "viewpoints")
         viewpoints = re.sub('[\n\s\t]','',viewpoints)
