@@ -5,5 +5,5 @@
 
 
 
-/usr/bin/python -W ignore /home/bioinfo/workspace/4c2vhic/src/GenomeModeling.py $1 $2 $3 $4 $5 $6 
+/usr/bin/python -W ignore src/GenomeModeling.py $1 $2 $3 $4 $5 $6 
 echo "Genome with $1 $2 $3 and starting point $4 finished"

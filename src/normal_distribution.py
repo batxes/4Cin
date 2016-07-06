@@ -390,9 +390,9 @@ if __name__ == "__main__":
     
     #upper bound Z-score
 
-    uZ = 0.5
+    uZ = 1.2
     #lower bound Z-score
-    lZ = -0.4
+    lZ = -0.2
     # Max distance BETWEEN bead
     y2 = 9000 
     calculateNWindowedDistances(WINDOW, uZ, lZ, y2, files, True, False)
