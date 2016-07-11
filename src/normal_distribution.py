@@ -2,6 +2,7 @@
 
 import sys, re
 import numpy as np
+from scipy.stats import skew,kurtosis
 try:
     import matplotlib.pyplot as plt
     plt.style.use('ggplot')
@@ -123,6 +124,8 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
 
 #     i = file_number
     number_of_genes = len(files)
+    print """Negative skewness shows large proportion of experimental noise. Positive  = population of large structural variability. 
+Kurtosis shows if the distribution is single peaked or not. High kt = many peaks, we need low KT to show a single peak """
     for i in range(number_of_genes):
         f = fileCheck(files[i])
         reads = valueReaderNWindow(f,window)  
@@ -148,7 +151,12 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
 
         #Z-score calculation
         reads_normalized = [(read - mean)/std_dev for read in reads_normalized]
-
+        # Skewness shows if data is skewed toward the right or left tail of the normal distributed z scores. 
+        # Negative skewness shows large proportion of experimental noise. Positive  = population of large structural variability.
+        # Kurtosis shows if the distribution is single peaked or not. High kt = many peaks, we need low KT to show a single peak
+        print "Skewness of {}: {}. -1 < x < 2.5.".format(i,skew(reads_normalized))
+        print "Kurtosis of {}: {}. -1 < x < 8.".format(i,kurtosis(reads_normalized))
+        print ""
 
         x2 = min(reads_normalized)
 #       y2 = 3000 #6400 
