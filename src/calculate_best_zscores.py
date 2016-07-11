@@ -5,6 +5,7 @@ import numpy as np
 from math import fabs
 import ConfigParser
 from normal_distribution import  calculateNWindowedDistances
+from scipy.stats.stats import spearmanr
 
 
 
@@ -96,21 +97,30 @@ def calculate_heatdifference(path, n_files_inside,names,files,prefix):
 
 
     #CALCULATE THE DIFFERENCE
-    value = 0
-    for i in range(len(heatmap_data_modified)):
-        for j in range(len(heatmap_data_modified[i])):
-            # the difference will be relative
-            # models with bigger MAX DIST are more likely to have bigger difference
-            if mean_all_data[i][j] != 0.0:
-                difference = fabs(mean_all_data[i][j]/y2-heatmap_data_modified[i][j]/y2)
+    array2 = []
+    for i in (mean_all_data):
+        for j in i:
+            array2.append(j)
+    array1 = []
+    for i in (heatmap_data_modified):
+        for j in i:
+            array1.append(j)
 
-                value = value + difference            
-                #if i == 1:
-                #    print mean_all_data[i][j]
-                #    print heatmap_data_modified[i][j]
-                #    print "       {}      ####################################".format(value)
-    print "Value for "+path+" is: "+str(value)
-    return value
+    #value = 0
+    #for i in range(len(heatmap_data_modified)):
+    #    for j in range(len(heatmap_data_modified[i])):
+    #        # the difference will be relative
+    #        # models with bigger MAX DIST are more likely to have bigger difference
+    #        if mean_all_data[i][j] != 0.0:
+    #            difference = fabs(mean_all_data[i][j]/y2-heatmap_data_modified[i][j]/y2)
+    #            value = value + difference            
+    #print "Value for "+path+" is: "+str(value)
+    spearman_value = spearmanr(array1,array2)[0]
+    print "Spearman correlation for {}: {}".format(path,str(spearman_value))
+
+    #print "Spearman: "+str(spearmanr(heatmap_data_modified,mean_all_data))
+
+    return spearman_value
                 
                 
 ##### MAIN ######
@@ -162,16 +172,17 @@ with open (results_path,"w") as output_results:
     all_scores = []
     best_uZ = 0
     best_lZ = 0
-    best_score = 10000
+    best_score = 0.0
     for uZ in np.arange(min_z,max_z+0.01,z_bins):
         for lZ in np.arange(-min_z, -max_z-0.01, -z_bins):
             score = calculate_heatdifference(working_dir+"data/"+prefix+"/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(maxD),number_of_models,names,files,prefix)
             output_results.write(str(uZ)+","+str(lZ)+","+str(maxD)+"\t"+str(score)+"\n")
             all_scores.append(score)
-            if score < best_score :
+            if score > best_score :
                 best_uZ = uZ
                 best_lZ = lZ
                 best_score = score
-    output_results.write("MIN: {}".format(min(all_scores)))   
+    #output_results.write("MIN: {}".format(min(all_scores)))   
+    output_results.write("Max: {}".format(max(all_scores)))   
     #print min(all_scores)
     print "Best uZ: {}, Best lZ: {}".format(best_uZ,best_lZ)
