@@ -10,31 +10,66 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-sys.path.insert(1,'/home/bioinfo/workspace/genome/utils')
-from variables import WINDOW, prefix, NFRAGMENTS, files, genes
+import ConfigParser
+
+number_of_arguments = len(sys.argv)
+if number_of_arguments != 4: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config file, matrix_distance1 and matrix_distance2 are required. You passed: ",sys.argv[1:]
+    sys.exit()
+if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
+    ini_file = sys.argv[1]
+    root = sys.argv[2]
+    root2 = sys.argv[3]
 
 
-# if myf5_wt:
-#     color = [10,5,5,10,10,10,10,10]
-#     gene_names = ['ctcf12','myf5','myf4', 'ecr17','ecr29','ecr56.5','ecr111', 'ctcf219']
-#     distance_file = "get_genome_distances_myf5_wt.py"  
-# if myf5_mut:
-#     color = [10,5,10,10,10,10,10]
-#     gene_names = ['ctcf12','myf4', 'ecr17','ecr29','ecr56.5','ecr111', 'ctcf219']
-#     distance_file = "get_genome_distances_myf5_mut.py"  
-     
-    
-# genes = [c+0.5 for c in genes] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
+#read the config file
+config = ConfigParser.ConfigParser()
+try:
+    config.read(ini_file)
 
-number_of_spheres = 149 #the smallest one (myf5 mut)
-gene_names = ['ctcf12','myf5','myf4', 'ecr17','ecr29','ecr56.5','ecr111', 'ctcf219']
-root = "/home/bioinfo/workspace/genome/myf5_wt_final_output_1.1_-0.1_3000/distances_of_current_model_myf5_wt.txt"
-root2 = "/home/bioinfo/workspace/genome/myf5_mut_final_output_0.9_-0.1_3000/distances_of_current_model_myf5_mut.txt"
-root3 = "/home/bioinfo/workspace/genome/distances_of_current_model_compare_myf5.txt"
+    prefix = config.get("ModelingValues", "prefix")
+    storage_dir = config.get("MutComp", "storage_dir")
+    verbose = int(config.get("ModelingValues", "verbose"))
+    WINDOW = float(config.get("MutComp", "WINDOW"))
+    NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
+    number_of_spheres = int(NFRAGMENTS/WINDOW)
+    number_of_spheres = number_of_spheres - 1
 
-# root = "/home/bioinfo/workspace/genome/utils/distances_of_current_model_test.txt"
-# root2 = "/home/bioinfo/workspace/genome/utils/distances_of_current_model_test2.txt"
-# root3 = "/home/bioinfo/workspace/genome/distances_of_current_model_compare_test.txt"
+    viewpoints = config.get("MutComp", "viewpoints")
+    viewpoints = re.sub('[\n\s\t]','',viewpoints)
+    viewpoints = viewpoints.split(",")
+    viewpoints = [ int(i) for i in viewpoints]
+    viewpoints = [int(i/WINDOW) for i in viewpoints]
+    n_viewpoints = len(viewpoints)
+    max_distance = int(config.get("MutComp", "max_dist"))
+    max_distance2 = int(config.get("MutComp", "max_dist2"))
+
+
+    gene_names = config.get("MutComp", "names")
+    gene_names = re.sub('[\n\s\t]','',gene_names)
+    gene_names = gene_names.split(",")
+
+    color = config.get("TADs", "color")
+    color = re.sub('[\n\s\t]','',color)
+    color = color.split(",")
+    color = [ int(i) for i in color]
+
+
+
+
+    number_of_cpu = int(config.get("TADs", "number_of_cpu"))
+    #maximum_hic_value= float(config.get("EvoComp", "maximum_hic_value"))
+
+except:
+    print "\nError reading the configuration file.\n"
+    e = sys.exc_info()[1]
+    print e
+    sys.exit()
+
+root3 = "{}{}Mutant_comparison".format(storage_dir,prefix)
+
+
+
 
 matrix1 = np.zeros((number_of_spheres,number_of_spheres))
 with open(root, 'r') as f1:
@@ -65,7 +100,8 @@ diff_list = []
 for line in range(number_of_spheres):
     for column in range(number_of_spheres):   
         
-        difference = (matrix1[line][column]-matrix2[line][column])
+        difference = ((matrix1[line][column])/max_distance - (matrix2[line][column])/max_distance2)
+        print "{}/{}\t-\t{}/{}\t=\t{}".format (matrix1[line][column],max_distance,matrix2[line][column],max_distance2,difference)
         diff_list.append(difference)
         matrix3[line][column] = difference
         f.write(str(line)+","+str(column)+","+str(difference))   
@@ -79,22 +115,29 @@ ax = plt.subplot(1,1,1)
 z = np.array(matrix3)
 
 
-max_value = np.max(diff_list)
-min_value = np.min(diff_list)
+#vmax = np.max(diff_list)
+#vmin = np.min(diff_list)
 
-print max_value
-print min_value
-c = plt.pcolor(z,cmap=plt.cm.jet,vmax=max_value, vmin=min_value)
+
+from matplotlib.colors import LinearSegmentedColormap
+vmax = 1.0
+vmin = -1.0
+
+cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.34 / vmax, 'blue'),(0.35 / vmax, 'white',(0.5 / vmax, 'white')),(0.65 / vmax, 'white'),(0.66 / vmax, 'red'),(1 / vmax, 'red')])
+#This for mut vs mut or wt vs wt
+#cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.5 / vmax, 'white'),(1 / vmax, 'red')])
+
+
+c = plt.pcolor(z,cmap=cmap,vmax=vmax, vmin=vmin)
 ax.set_frame_on(False)
 plt.colorbar()
 
 
 #to set the viewpoints
-# plt.scatter(genes, genes, s=10, c=color,cmap=plt.cm.autumn)
+plt.scatter(viewpoints,viewpoints, s=20, c=color,cmap=plt.cm.autumn)
 
-
-ax.set_yticks(genes)
-ax.set_xticks(genes)
+ax.set_yticks(viewpoints)
+ax.set_xticks(viewpoints)
 ax.set_xticklabels(gene_names, minor=False)
 ax.set_yticklabels(gene_names, minor=False)
 plt.tick_params(axis='both', which='major', labelsize=8)
@@ -103,9 +146,9 @@ plt.xticks(rotation=90)
 plt.axis([0,z.shape[1],0,z.shape[0]])
 
 fig.set_facecolor('white')
-plt.show()
+#plt.show()
 
-pp = PdfPages('{}_HiC.pdf'.format(prefix))
+pp = PdfPages('{}_HiC.pdf'.format(root3))
 pp.savefig(fig)
 pp.close()
 print '{}_HiC.pdf writen'.format(prefix)
