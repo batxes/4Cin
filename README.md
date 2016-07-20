@@ -7,11 +7,11 @@ IMP 2.5, 2.4 (newer versions crash)
 
 matplotlib
 
-
-
-
 ### Usage
-0 - Set the configuration file. Example is given in config.ini.
+0 - Set the configuration file. Example is given in config.ini. [PREPARE THE CONFIG fILE]
+
+0.5 - Input data can be checked calling data_manager.py. Shows 3 plots for each 4C file, showing read counts, Z scores and the conversion into distance restraints that would be used in the modeling.
+      Example: python src/data_manager.py config.ini [0.2 -0.4 8000]  
 
 1 - Run "run_genome_maxd.py" to get models with different max distances.
     Example: python run_genome_maxd.py config.ini /bin/bash 

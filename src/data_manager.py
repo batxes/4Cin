@@ -195,7 +195,7 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
             plt.ylabel("Distance restraints in Angstroms")
 #             plt.switch_backend('QT4Agg')
             figManager = plt.get_current_fig_manager()
-            plt.subplots_adjust(bottom=0.01, right=0.99, top=0.99, left=0.05)
+            plt.subplots_adjust(bottom=0.05, right=0.99, top=0.99, left=0.05)
             #figManager.window.showMaximized()
             #figManager.Maximize(True)
             plt.show()
