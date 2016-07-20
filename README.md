@@ -7,7 +7,21 @@ IMP 2.5, 2.4 (newer versions crash)
 
 matplotlib
 
-### Usage
+
+### Simple Usage (run this commands)
+0 - # Modify config.ini paths
+1 - python run_genome_maxd.py config.ini /bin/bash
+2 - python src/calculate_best_maxd.py config.ini
+2.5 - # Set the max distance in config.ini [ModelingValues]
+3 - python run_genome_zscores.py config.ini /bin/bash
+4 - python src/calculate_best_zscores.py config.ini
+4.5 - # Set the max_z and min_z undert [ModelingValues] in config.ini
+5 - python run_genome_sampling.py /bin/bash
+5.5 - # 3D models are ready
+6 - python src/GenomeAnalysis.py config.ini
+7 - 
+
+### Explained Usage
 0 - Set the configuration file. Example is given in config.ini. [PREPARE THE CONFIG fILE]
 
 0.5 - Input data can be checked calling data_manager.py. Shows 3 plots for each 4C file, showing read counts, Z scores and the conversion into distance restraints that would be used in the modeling.
@@ -16,14 +30,14 @@ matplotlib
 1 - Run "run_genome_maxd.py" to get models with different max distances.
     Example: python run_genome_maxd.py config.ini /bin/bash 
 
-2 - Run "Calculate_best_maxd.py" to get the optimum max distance.
+2 - Run "Calculate_best_maxd.py" to get the optimum max distance. Get the max distance that has the most similar genome length to your data. We assume that the nucleotide length is of 0.1 nm ( reference here )
     Example: python src/calculate_best_maxd.py config.ini
 
 3 - Set the optimum max distance in the config file (under [ModelingValues]) and run "run_genome_zscores.py"
     Example: python run_genome_zscores.py config.ini /bin/bash
 
-4 - Run "calculate_heatmap_difference.py" to get the optimum zscores. set last variable to True to see the validation plots
-    Example: python src/calculate_heatmap_difference.py config.ini True
+4 - Run "calculate_best_zscores.py" to get the optimum zscores. set last argument to True to see the validation plots
+    Example: python src/calculate_best_zscores.py config.ini True
 
 5 - With the max distance and the upper and lower z-scores, modeling can start. Run "run_genome_sampling.py" setting the previous variables in the config file (under [ModelingValues]).
     Example: python run_genome_sampling.py
@@ -34,6 +48,7 @@ matplotlib
 
 7 - run "GenomeClustering.py" to get populations of best models depending on the similarity of the RMSD.
     K value needs to be set in the config file under [Clustering] to get that amount of populations. Also generates a superposition of each of the populations. If we get 2 populations that are mirror image of each other, we can be sure that the modeling went correctly.
+    Example: python src/GenomeClustering.py config.ini
 
 8 - run "TADs_multi.py" to generate the virtual Hi-C of one of the populations of the final models. We will set different values in the config file under [TADs] like:
     -viewpoints: to plot circles of genes or other interesting fragments in the virtual Hi-C
