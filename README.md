@@ -1,10 +1,9 @@
 # 4c2vhic
 
 ### Dependencies
-chimera
-
-IMP 2.5, 2.4 (newer versions crash)
-
+python 2.7
+chimera (Download from https://www.cgl.ucsf.edu/chimera/download.html)
+IMP 2.5, 2.4 (newer versions crash) (Download from http://integrativemodeling.org/old-versions.html)
 matplotlib
 
 
@@ -43,7 +42,7 @@ matplotlib
     Example: python run_genome_sampling.py
 
 6 - run "src/GenomeAnalysis.py" to get a subset of all the models. The best models ordered by the IMP scoring function are gathered and also makes a superposition of all those models. The models are very likely to be mirror image of other models, getting two populations of models.
-    Take into account that we need to tweak the std_dev and the cut_of_percentage under [AnalysisValues]. 
+    Take into account that we need to tweak the std_dev and the cut_of_percentage under [AnalysisValues]. In my essays, I have seen that getting a 10-15% of the population and setting a 15% restraints fulfillment works well. 
     Example: python src/GenomeAnalysis.py config.ini 
 
 7 - run "GenomeClustering.py" to get populations of best models depending on the similarity of the RMSD.
