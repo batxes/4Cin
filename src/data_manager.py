@@ -10,8 +10,6 @@ except ImportError:
     pass
 except:
     pass
-#from variables import WINDOW, prefix, NFRAGMENTS, files, genes, zebrafish, amphioxus, mouse,IrxA, IrxB, bmp7, tbx, wnt, IrxAa, IrxAb, IrxBa,myf5_wt, myf5_mut, drome
-
 
 #############################################################################################################
 # code that calculates the average and standard deviation of the given 4c data file
@@ -32,7 +30,9 @@ def fileCheck(f):
         print "\nError: File "+ f +" does not appear to exist.\n"
         sys.exit()
 
-
+# function: Value Reader by windows
+#
+# reads the file and extracts the values every N lines
 
 def valueReaderNWindow(f,window):
     counter = 0
@@ -69,47 +69,29 @@ def sizeReader(f):
     return arrayList
 
 
+# function: calculate values by windows
 #
-#
-# Reads the fragments starts from the files
-def fragmentsStartReader(f):
-    arrayList = []
-    for line in f:
-        values = re.split('\t',line)
-        values[1] = values[1].strip() #remove \n from the list
-        arrayList.append(int(values[1]))
-    return arrayList
-
+# sums up all the read counts of the inputa data 
 
 def calculateNWindowedValues(WINDOW, files):
- 
-#     print "CALCULATIN N WINDOWED VALUES FOR THE NORMALIZATION (BIGGER DIVIDED BY THE REST)"
     read_sums = []
     factors = []
     for i in range(len(files)):
-     
         reads = []
-     
         f = fileCheck(files[i])
         reads = valueReaderNWindow(f,WINDOW)
-#         print "###  "+ files[i] +"  ### "+str(sum(reads))
         read_sums.append(sum(reads))
-
     for i in read_sums:
         value = max(read_sums)/i
         factors.append(value)
-#         print "division -> {}".format(value)
-        
     return factors
 
+# Function: calculate distances from input data
+#
+# Takes the read counts and converts them in distance restraints for the modelling
 
-
-# EVERY LANE OF 4C DATA WILL BE INDEPENDENT
-# SINCE WE WILL SURELY HAVE AT LEAST 5 POINTS WHERE THE DISTANCES ARE VERY LOW.
-#IF WE TAKE ALL DATA TOGETHER, ONLY PDX1 WILL HAVE A POINT WHERE DISTANCE IS LOWEST
+# Note: EVERY LANE OF 4C DATA WILL BE INDEPENDENT
 def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=False):
-    
-    #print "CALCULATIN N WINDOWED DISTANCES"
     show_z_scores = False  
     plot = wanna_plot
     HEATMAP_DATA = []
@@ -119,10 +101,7 @@ def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=F
     final_reads = []
     start_windows = []
     end_windows = []
-    
     factors = calculateNWindowedValues(1.0,files)
-
-#     i = file_number
     number_of_genes = len(files)
     if wanna_plot:
         print """Negative skewness shows large proportion of experimental noise. Positive  = population of large structural variability. 
@@ -131,11 +110,10 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         f = fileCheck(files[i])
         reads = valueReaderNWindow(f,window)  
         reads2 = []
-        # we normalize the data depending on the number of reads.
+        # We normalize the data depending on the number of reads.
         # We calculated beforehand the numbers of multiplication for the normalization
         reads = [read*factors[i] for read in reads ]           
-
-        # get the minimum values 0.0, and swap with the not 0 minimum. We don't take into account no reads in a fragment
+        # get the minimum read counts and swap them with the minimum of all values. We don't take into account no reads in a fragment
         min_read = max(reads)
         for j in reads:
             if j != 1.0 and j < min_read:
@@ -146,10 +124,8 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         # apply Log10 to data to normalize it
         reads_normalized = [np.log10(read) for read in reads]
         HEATMAP_DATA_LOG.append(reads_normalized)
-
         mean = np.mean(reads_normalized)
         std_dev = np.std(reads_normalized)
-
         #Z-score calculation
         reads_normalized = [(read - mean)/std_dev for read in reads_normalized]
         # Skewness shows if data is skewed toward the right or left tail of the normal distributed z scores. 
@@ -159,32 +135,20 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
             print "Skewness of {}: {}. -1 < x < 2.5.".format(i,skew(reads_normalized))
             print "Kurtosis of {}: {}. -1 < x < 8.".format(i,kurtosis(reads_normalized))
             print ""
-
         x2 = min(reads_normalized)
-#       y2 = 3000 #6400 
-    
         x1 = max(reads_normalized)
-        y1 = 300  #minimun distances 
-    
-    
+        y1 = 300  #Angstroms width of chromatin 
         slope = (y2-y1) / (x2-x1)
-
-#       reads = [slope*(read-x1)+y1 for read in reads2]
-
-        
         inside_window = False #when we are inside the 4C good values window, set True
         window_start = 0
         window_end = 0
         counter = 0
         for read in reads_normalized:
-
             counter += 1
-
             #when the z score is above the uZ, the window starts.
             if read >= uZ and not inside_window:
                 inside_window = True
                 window_start = counter
-            
             #end of window
             if read >= uZ and inside_window:
                 window_end = counter
@@ -197,8 +161,6 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
                 reads2.append (0) 
             else:
                 reads2.append(slope*(read-x1)+y1)
-
-        #print "window_start: "+str(window_start)+" - window end:"+str(window_end)
         final_reads.append(reads2)       
         final_zscores.append(reads_normalized)
     if show_z_scores:    
@@ -208,127 +170,78 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         if show_z_scores:
             print "mean of top z scores: "
             print np.mean(mean_tena)
-    #return data if we are using for the heat difference
+    #return data if we are using for the z-score empirical calculations
     if heatmap:
         return HEATMAP_DATA, HEATMAP_DATA_LOG
-    
-#    FOR PLOTTING!!!!!
-    
+    # If we want to plot
     for i in range(number_of_genes):
         if plot:
             fig = plt.figure(figsize=(100, 100)) 
             plt.subplot(3,1,1)
-            
-            #ploteo de readcounts reales
             plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
-            plt.xlim(0,len(HEATMAP_DATA[i]))  #this varies depending on NFRAGMENTS right?
+            plt.xlim(0,len(HEATMAP_DATA[i]))  
             plt.ylabel("Reads")
-            
-            #ploteo de Zscores
             plt.subplot(3,1,2)
             plt.plot(final_zscores[i])
-            plt.xlim(0,len(final_zscores[i]))  #this varies depending on NFRAGMENTS right?
+            plt.xlim(0,len(final_zscores[i]))  
             plt.axhline(y=uZ)
             plt.axhline(y=lZ)
             plt.ylabel("Z score")
-            
-            
             plt.xlabel(files[i])
-            
             plt.subplot(3,1,3)
             plt.bar(range(len(final_reads[i])),final_reads[i],width=1)
             plt.xlim(0,len(final_reads[i]))
             plt.ylabel("Restraint distance")
             plt.xlabel(files[i])
 #             plt.switch_backend('QT4Agg')
-
             figManager = plt.get_current_fig_manager()
             plt.subplots_adjust(bottom=0.01, right=0.99, top=0.99, left=0.05)
             #figManager.window.showMaximized()
             #figManager.Maximize(True)
             plt.show()
-            
-
-    
-
     return final_reads, final_zscores, start_windows, end_windows
 
-
-
-def calculate_heatmap (path_to_file):
-    print "CALCULATIN HEATMAP"
-    
-    f = open(path_to_file, "r")
-    all_arrays = []
-    for line in f:
-        array = re.split('\t',line)
-        reads = np.genfromtxt(array)
-        # we want low distances red color in heatmap
-        reads = [-1*read for read in reads]
-        all_arrays.append(reads)
-    
-    
-    
-    #output_0.2_-0.2_3000.0/paraHoxGenome324.txt
-
-#     labels2 = ['GSX1','PDX1','CDX2','INS_CDX2','INS_GSX1']    
-#     labels2 = ['hoxd3a','hoxd4a','hoxd10a','hoxd11a','hoxd13a']  
-#     labels2 = ['AMHOX2','AMHOX5','AMHOX6','AMHOX9','AMHOX11','AMHOX13','AMHOX15'] #old anphioxus
-    labels2 = ['GPATCH','LNPA','EVX2','Hox15','Hox13','Hox11','Hox9','Hox7',
-               'Hox6','Hox5','Hox2','MTX','CBX','NFE','MEOX',]
-    
-    ax = plt.subplot(2,1,1)
-    z = np.array(all_arrays)
-    plt.pcolor(z)
-    # plt.set_cmap('gray')
-    plt.colorbar()
-    # c = plt.pcolor(z, edgecolors='w', linewidths=1)
-    plt.axis([0,z.shape[1],0,z.shape[0]])
-    ax.set_yticklabels(['']+labels2)
-#     plt.xlabel("Genomic Position")
-    plt.show()
         
 
 #test ###############################################################################################################################
 
 if __name__ == "__main__":
-    print "TESTING READS "
-    if len(sys.argv) > 1:
-        config_file = sys.argv[1]
-    else:
-        print "Config file needed..."
-        sys.exit()
     import ConfigParser
-    
-    show_z_scores = True    
-    calculate_heat_map = False
-    do_the_plots = False
-    
+    number_of_arguments = len(sys.argv)
+    print "TESTING READS "
+    if number_of_arguments == 5:
+        config_file = sys.argv[1]
+        uZ = sys.argv[2]
+        lZ = sys.argv[3]
+        y2 = sys.argv[4]
+    elif number_of_arguments == 2:
+        config_file = sys.argv[1]
+        uZ = 0.1
+        lZ = -0.1
+        y2 = 7000
+    else:
+        print "Not enough parameters. Config file is needed. uZ, lZ and max distance can also be passed. Default: uZ = 0.1, lZ = -0.1, max distance = 7000"
+        sys.exit()
+
     #read the config file
     config = ConfigParser.ConfigParser()
     try:
         config.read(config_file)
-        
         prefix = config.get("ModelingValues", "prefix")
-        
         WINDOW = float(config.get("ModelingValues", "WINDOW"))
-        
         files = config.get("ModelingValues", "files")
         files = re.sub('[\n\s\t]','',files)
         files = files.split(",")    
-        
         viewpoints = config.get("ModelingValues", "viewpoints")
         viewpoints = re.sub('[\n\s\t]','',viewpoints)
         viewpoints = viewpoints.split(",")
         viewpoints = [ int(i) for i in viewpoints]
         viewpoints = [int(i/WINDOW) for i in viewpoints]
-        
         genes = config.get("ModelingValues", "genes")
         genes = re.sub('[\n\s\t]','',genes)
         genes = genes.split(",")
         genes = [ int(i) for i in genes]
         genes = [int(i/WINDOW) for i in genes]
-        
         NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
         NFRAGMENTS = int(NFRAGMENTS/WINDOW)
     except:
@@ -336,75 +249,6 @@ if __name__ == "__main__":
         e = sys.exc_info()[1]
         print e
         sys.exit()
-    if (do_the_plots):
-        #calculate10WindowedValues()
-        #upper bound Z-score
-        uZ = 0.1
-        #lower bound Z-score
-        lZ = -0.1
-        # Max distance BETWEEN bead
-        y2 = 6000 
-        HEATMAP_DATA,HEATMAP_DATA_LOG = calculateNWindowedDistances(WINDOW, uZ, lZ, y2, True)
-
-        if (calculate_heat_map):
-            labels = ['INS_GSX1','INS_CDX2','CDX2','PDX1','GSX1']
-            labels = ['hoxd3a','hoxd4a','hoxd10a','hoxd11a','hoxd13a']
-    #         labels = ['AMHOX2','AMHOX5','AMHOX6','AMHOX9','AMHOX11','AMHOX13','AMHOX15'] #old amphioxus
-            labels = ['GPATCH','LNPA','EVX2','Hox15','Hox13','Hox11','Hox9','Hox7',
-                   'Hox6','Hox5','Hox2','MTX','CBX','NFE','MEOX',]
-        
-            #the heatmap (with the no-sqared elements) prints the values reversed so we do this
-            HEATMAP_DATA_REVERSED = []
-            HEATMAP_DATA_LOG_REVERSED = []
-            for i in reversed(HEATMAP_DATA):
-                HEATMAP_DATA_REVERSED.append(i)
-            for i in reversed(HEATMAP_DATA_LOG):
-                HEATMAP_DATA_LOG_REVERSED.append(i) 
-            labels2 = ['GSX1','PDX1','CDX2','INS_CDX2','INS_GSX1']    
-            labels2 = ['hoxd13a','hoxd11a','hoxd10a','hoxd4a','hoxd3a']
-    #         labels2 = ['AMHOX15','AMHOX13','AMHOX11','AMHOX9','AMHOX6','AMHOX5','AMHOX2'] #old amphioxus
-            labels2 = ['MEOX','NFE','CBX','MTX','Hox2','Hox5','Hox6','Hox7',
-                   'Hox9','Hox11','Hox13','Hox15','EVX2','LNPA','GPATCH',]
-            
-
-            ax = plt.subplot(2,1,1)
-            z = np.array(HEATMAP_DATA_REVERSED)
-            c = plt.pcolor(z)
-            # plt.set_cmap('gray')
-            plt.colorbar()
-            # c = plt.pcolor(z, edgecolors='w', linewidths=1)
-            plt.axis([0,z.shape[1],0,z.shape[0]])
-            ax.set_yticklabels(['']+labels2)
-            
-            ax = plt.subplot(2,1,2)
-            z = np.array(HEATMAP_DATA_LOG_REVERSED)
-            c = plt.pcolor(z)
-            # plt.set_cmap('gray')
-            plt.colorbar()
-            # c = plt.pcolor(z, edgecolors='w', linewidths=1)
-            plt.axis([0,z.shape[1],0,z.shape[0]])
-            ax.set_yticklabels(['']+labels2)
-            plt.xlabel("Genomic Position")
-            plt.show()
-            
-
-    
-    
-        plt.show()
-        
-        
-    # calculate_heatmap("../src/output_1.0_-0.3_6000/HoxGenome0.txt")
-    #calculate_mean_heatmap("../output_1.0_-0.3_6000.0")
-    
-    
-    
-    #upper bound Z-score
-
-    uZ = 1.2
-    #lower bound Z-score
-    lZ = -0.2
-    # Max distance BETWEEN bead
-    y2 = 9000 
     calculateNWindowedDistances(WINDOW, uZ, lZ, y2, files, True, False)
 
 
