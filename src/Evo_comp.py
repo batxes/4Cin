@@ -143,7 +143,7 @@ z = np.array(matrix_final)
 c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=maximum_hic_value, vmin=0)
 for y in range(z.shape[0]):
     for x in range(z.shape[1]):
-        plt.text(x+0.5,y+0.5,'%.2f' % z[y,x],horizontalalignment='center',verticalalignment='center',)
+        plt.text(x+0.5,y+0.5,'%.2f' % z[y,x],horizontalalignment='center',verticalalignment='center',size=5)
 #ax.set_frame_on(False)
 plt.colorbar()
 
@@ -181,7 +181,7 @@ z = np.array(matrix_diff)
 c = plt.pcolor(z,cmap=cmap,vmax=1,vmin=-1)
 for y in range(z.shape[0]):
     for x in range(z.shape[1]):
-        plt.text(x+0.5,y+0.5,'%.2f' % z[y,x],horizontalalignment='center',verticalalignment='center',)
+        plt.text(x+0.5,y+0.5,'%.2f' % z[y,x],horizontalalignment='center',verticalalignment='center',size=5)
 plt.colorbar()
 tick_location = [i+0.5 for i in range(len(viewpoints))]
 ax.set_yticks(tick_location)

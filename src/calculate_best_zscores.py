@@ -9,7 +9,7 @@ from scipy.stats.stats import spearmanr
 
 
 
-def calculate_heatdifference(path, n_files_inside,names,files,prefix):        
+def calculate_heatdifference(path, n_files_inside,files,prefix):        
 
     #FIRST CALCULATE OUR MODELS HEATMAP
     y2 = re.split('_',path)[-1] #I get 3000.0, now I take out .0 and convert to int
@@ -64,7 +64,7 @@ def calculate_heatdifference(path, n_files_inside,names,files,prefix):
         plt.colorbar()
         ax.set_yticks(np.arange(z.shape[1])+0.5, minor=False)
         plt.axis([0,z.shape[1],0,z.shape[0]])
-        ax.set_yticklabels(names)
+        ax.set_yticklabels(files)
     #     plt.xlabel("Genomic Position")
 
     #NOW CALCULATE THE 4C DATA'S HEATMAP (WITHOUT APLLYING LOG)
@@ -90,7 +90,7 @@ def calculate_heatdifference(path, n_files_inside,names,files,prefix):
         plt.colorbar()
         ax.set_yticks(np.arange(z.shape[1])+0.5, minor=False)
         plt.axis([0,z.shape[1],0,z.shape[0]])
-        ax.set_yticklabels(names)
+        ax.set_yticklabels(files)
     #     plt.xlabel("Genomic Position")
         plt.savefig('{}_heatmap.png'.format(path))
         plt.close('all')
@@ -152,9 +152,6 @@ try:
     files = config.get("ModelingValues", "files")
     files = re.sub('[\n\s\t]','',files)
     files = files.split(",")    
-    names = config.get("ModelingValues", "names")
-    names = re.sub('[\n\s\t]','',names)
-    names = names.split(",")   
     working_dir = config.get("ModelingValues", "working_dir")
     number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
     min_z = float(config.get("Pre-ModelingValues", "min_z"))
@@ -175,7 +172,7 @@ with open (results_path,"w") as output_results:
     best_score = 0.0
     for uZ in np.arange(min_z,max_z+0.01,z_bins):
         for lZ in np.arange(-min_z, -max_z-0.01, -z_bins):
-            score = calculate_heatdifference(working_dir+"data/"+prefix+"/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(maxD),number_of_models,names,files,prefix)
+            score = calculate_heatdifference(working_dir+"data/"+prefix+"/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(maxD),number_of_models,files,prefix)
             output_results.write(str(uZ)+","+str(lZ)+","+str(maxD)+"\t"+str(score)+"\n")
             all_scores.append(score)
             if score > best_score :
