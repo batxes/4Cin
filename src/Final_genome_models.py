@@ -9,6 +9,8 @@ import subprocess
 from itertools import combinations
 import time
 import numpy as np
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from optparse import Values
