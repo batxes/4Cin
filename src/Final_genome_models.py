@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-
 import re
 import os
 from os import listdir
@@ -20,15 +19,18 @@ import ConfigParser
 
 number_of_arguments = len(sys.argv)
 
-
-if number_of_arguments != 4:             
-    print "Not enought parameters. Models directory, matrix_file and config_file are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 3:             
+    print "Not enought parameters. Config file and matrix file (data/my_models/my_models_final/matrix397.txt) are required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
-    root = sys.argv[1]
-    matrix_file = sys.argv[2]
-    ini_file = sys.argv[3]
+    root = sys.argv[2]
+    ini_file = sys.argv[1]
 
+    matrix_file = root 
+    arguments = root.split("/")
+    root = arguments[:-1]
+    root = "/".join(root)
+    root = root + "/"
 
 config = ConfigParser.ConfigParser()
 try:
@@ -71,8 +73,6 @@ with open(matrix_file, "r") as mtx:
 
 models = models[1:]
 
-#testing with less models
-models = models[:10]
 
 # in chimera:
 # open all files (half of matrix)
@@ -104,21 +104,15 @@ with open (write_pdb,'w') as output:
         
         #write format pdb #211 test.pdb
         
-print "writting pdb-s... it can take like 30 minutes."        
+print "writting pdb-s... it can take time..."        
 distance_output = subprocess.check_output(["chimera", "--nogui", write_pdb])
 print "Pdb's written. Calculating average model..."
 os.remove(write_pdb)
             
          
 ########## NOW WE GET THE AVERAGE MODEL
-
-
-
-
 color_grey = "#b333b333b333"
 color_gene = "#ffffb3330000"
-
-
 
 #get the pdb files 
 pdbFiles = [ f for f in listdir(pdb_output) if isfile(join(pdb_output,f)) ]
@@ -177,10 +171,6 @@ print pdbFiles[sum_of_distances.index(max(sum_of_distances))]
 sum_of_distances.remove(max(sum_of_distances))
 print "Second MAX:"
 print pdbFiles[sum_of_distances.index(max(sum_of_distances))]
-
-print "the list is:"
-for i in pdbFiles:
-    print i
 
 
 # save all models of this matrix in another dir
