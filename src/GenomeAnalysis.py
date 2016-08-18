@@ -9,7 +9,7 @@ import shutil
 import ConfigParser
 from os import listdir
 from os.path import isfile, join
-from normal_distribution import  calculateNWindowedDistances
+from data_manager import  calculateNWindowedDistances
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 2: #Or all parameters, or no parameters 
