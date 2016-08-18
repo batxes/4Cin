@@ -22,6 +22,9 @@ def fileCheck(f):
 #MAIN
 #yolo
 ####
+if len(sys.argv) < 2:
+    print "Usage: prepare_data.py 4c-seq_files."
+    sys.exit()
 
 frag_dict = {}
 for i in sys.argv[1:]:
