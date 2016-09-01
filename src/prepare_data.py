@@ -47,19 +47,23 @@ for i in sys.argv[1:]:
     fourc_file.seek(0)
     output = open(i+"_modified", "w")
     for k,v in ordered_dict.iteritems():
-        line = fourc_file.readline()
-        line_n += 1
-        values = line.split()
-        chrom = values[0]
-        start_frag = int(values[1])
-        end_frag = int(values[2])
-        score = float(values[3])
-        if start_frag == k:
-            output.write("{}\t{}\t{}\t{}\n".format(chrom,start_frag,end_frag,score))
-        else:
+        try:
+            line = fourc_file.readline()
+            line_n += 1
+            values = line.split()
+            chrom = values[0]
+            start_frag = int(values[1])
+            end_frag = int(values[2])
+            score = float(values[3])
+            if start_frag == k:
+                output.write("{}\t{}\t{}\t{}\n".format(chrom,start_frag,end_frag,score))
+            else:
+                output.write("{}\t{}\t{}\t0.0\n".format(chrom,k,v))
+                line_n -= 1
+                fourc_file.seek(line_offset[line_n])
+        except:
+            #if we run out of lines, we have to populate them until we have the same length as the biggest file
             output.write("{}\t{}\t{}\t0.0\n".format(chrom,k,v))
-            line_n -= 1
-            fourc_file.seek(line_offset[line_n])
 
 
 
