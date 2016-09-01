@@ -17,7 +17,7 @@ import IMP.container
 import RMF
 import numpy as np
 import ConfigParser
-from normal_distribution import fileCheck, sizeReader,  calculateNWindowedDistances
+from data_manager import fileCheck, sizeReader,  calculateNWindowedDistances
 
 drome = False
 

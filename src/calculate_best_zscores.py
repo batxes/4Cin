@@ -4,9 +4,8 @@ import sys, re
 import numpy as np
 from math import fabs
 import ConfigParser
-from normal_distribution import  calculateNWindowedDistances
 from scipy.stats.stats import spearmanr
-
+from data_manager import calculateNWindowedDistances
 
 
 def calculate_heatdifference(path, n_files_inside,files,prefix):        
