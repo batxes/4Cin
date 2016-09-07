@@ -136,7 +136,8 @@ with open ("bed_file","r") as stdin:
 from pylab import *
 import matplotlib as mpl
 import matplotlib.cm as cm
-cmap = cm.Greens
+cmap = cm.hot_r
+#cmap = cm.Greens
 
 norm = mpl.colors.Normalize(vmin=min(bead_values), vmax=max(bead_values))
 #norm = mpl.colors.Normalize(vmin=0.01, vmax=0.04) #methylome

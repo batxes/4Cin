@@ -101,3 +101,6 @@ matplotlib
     pip install colour
     : https://pypi.python.org/pypi/colour
 
+
+    genome Painting make it better, no color_to color from only these:
+    http://matplotlib.org/examples/color/colormaps_reference.html
