@@ -96,3 +96,8 @@ matplotlib
 
     in GebnomePainting, add "py bed tools" to read data
 
+    ~~
+
+    pip install colour
+    : https://pypi.python.org/pypi/colour
+
