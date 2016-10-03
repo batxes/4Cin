@@ -134,8 +134,7 @@ from pylab import *
 import matplotlib as mpl
 import matplotlib.cm as cm
 #cmap = cm.hot_r
-#cmap = cm.Reds
-cmap = cm.Blues
+cmap = cm.Reds
 
 #plot statistic figures
 fig = pylab.figure(figsize=(8,8))
@@ -152,6 +151,7 @@ except:
         pass
 
 #take out outliers (Q1-1.5xIQR - Q3+1.5*IQR take only)
+mid = np.percentile(bead_values,50)
 Q1 = np.percentile(bead_values,25)
 Q3 = np.percentile(bead_values,75)
 IQR =  Q3 - Q1
@@ -168,12 +168,15 @@ for min_value in bead_values:
         if min_value <= vmin:
             vmin = min_value
            
+#for atac and h3k4me3
+#print "min value = ",vmax
+#print "max value = ",inlier2
+#norm = mpl.colors.Normalize(vmin=vmax, vmax=inlier2)
 
-print "min value = ",vmax
-print "max value = ",inlier2
-
-norm = mpl.colors.Normalize(vmin=vmax, vmax=inlier2)
-#norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+#for dnamet
+print "min value = ",vmin
+print "max value = ",vmax
+norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
 m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 with open("coloring.cmd","w") as colored_model:
@@ -186,6 +189,10 @@ with open("coloring.cmd","w") as colored_model:
 
 print "Now, open coloring.cmd wich Chimera."
 
+#test.
+# check out size of beads in the scatterplot
+# check out the matrix_path
+#check out the vmin and vmax
 dendro_test = False
 if dendro_test:
     ####################
@@ -205,6 +212,7 @@ if dendro_test:
 
 
     matrix_path = "/home/ibai/4c2vhic/data/Six_zebra_models/Six_zebra_models_final_output_0.1_-0.1_13000/distances_of_current_model_Six_zebra_models"
+    #matrix_path = "/home/ibai/4c2vhic/distances_of_current_model_zebra_200.txt"
     article = True
     enriched_dendro = True
     cutoff = 0.25
@@ -284,12 +292,17 @@ if dendro_test:
     #scatter plot
     color = [bead_colors[i] for i in ordered_values]
     aux = []
-    cut = 0.20
+    cut_max = vmax
+    cut_min = vmin
+    cut_max = mid
+    cut_min = mid
     for t in color:
-        if t > cut:
-            aux.append(max(bead_values))
-        if t <= cut:
+        if t > cut_max:
+            aux.append(max(bead_values)) 
+        elif t <= cut_min:
             aux.append(min(bead_values))
+        else:
+            aux.append(t)
     color = aux
 
     axmatrix.scatter(range(len(value_list)), range(len(value_list)), s=80, c=color,vmin=min(bead_values),vmax=max(bead_values),cmap=cm.Reds)
