@@ -9,6 +9,7 @@ import numpy as np
 from colour import Color
 import heapq
 import matplotlib.cm  as cm
+import pylab
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 3: #Or all parameters, or no parameters 
@@ -133,7 +134,22 @@ from pylab import *
 import matplotlib as mpl
 import matplotlib.cm as cm
 #cmap = cm.hot_r
-cmap = cm.Reds
+#cmap = cm.Reds
+cmap = cm.Blues
+
+#plot statistic figures
+fig = pylab.figure(figsize=(8,8))
+pylab.hist(bead_values,bins=100)
+try:
+        fig.savefig('genome_painting_stats_hist.png')
+except:
+        pass
+fig = pylab.figure(figsize=(8,8))
+pylab.boxplot(bead_values)
+try:
+        fig.savefig('genome_painting_stats_box.png')
+except:
+        pass
 
 #take out outliers (Q1-1.5xIQR - Q3+1.5*IQR take only)
 Q1 = np.percentile(bead_values,25)
@@ -151,15 +167,13 @@ for min_value in bead_values:
     if min_value >= inlier1 and min_value <= inlier2:
         if min_value <= vmin:
             vmin = min_value
-print vmin
-print vmax
-print min(bead_values)
-print max(bead_values)
+           
 
-norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
-#norm = mpl.colors.Normalize(vmin=min(bead_values), vmax=max(bead_values))
-#norm = mpl.colors.Normalize(vmin=0.01, vmax=0.04) #methylome
-#norm = mpl.colors.Normalize(vmin=0.1, vmax=0.6) #atac-seq
+print "min value = ",vmax
+print "max value = ",inlier2
+
+norm = mpl.colors.Normalize(vmin=vmax, vmax=inlier2)
+#norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
 m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 with open("coloring.cmd","w") as colored_model:
