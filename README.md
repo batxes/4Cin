@@ -11,14 +11,23 @@ matplotlib
 0 - # Modify config.ini paths
 
 1 - python run_genome_maxd.py config.ini /bin/bash
+
 2 - python src/calculate_best_maxd.py config.ini
+
 2.5 - # Set the max distance in config.ini [ModelingValues]
+
 3 - python run_genome_zscores.py config.ini /bin/bash
+
 4 - python src/calculate_best_zscores.py config.ini
+
 4.5 - # Set the max_z and min_z undert [ModelingValues] in config.ini
+
 5 - python run_genome_sampling.py /bin/bash
+
 5.5 - # 3D models are ready
+
 6 - python src/GenomeAnalysis.py config.ini
+
 7 - 
 
 ### Explained Usage
