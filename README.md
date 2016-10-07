@@ -7,7 +7,7 @@ Used in Acemel RD, Tena JJ, Irastorza-Azcarate I, Marletaz F, Gomez-Marin C, de 
 ![alt tag](pipeline_simple.png)
 
 GenomePainting
-![alt tag](genomePainting.png)
+![alt tag](genomePainting)
 
 
 ### Dependencies
