@@ -6,12 +6,16 @@ Used in Acemel RD, Tena JJ, Irastorza-Azcarate I, Marletaz F, Gomez-Marin C, de 
 # Overview (still in progress)
 ![alt tag](pipeline_simple.png)
 
+GenomePainting
+![alt tag](genome_painting.png)
+
 
 ### Dependencies
 python 2.7
 chimera (Download from https://www.cgl.ucsf.edu/chimera/download.html)
 IMP 2.5, 2.4 (newer versions crash) (Download from http://integrativemodeling.org/old-versions.html)
 matplotlib
+scipy
 
 
 ### Simple Usage (run this commands)
