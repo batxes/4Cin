@@ -9,6 +9,7 @@ matplotlib
 
 ### Simple Usage (run this commands)
 0 - # Modify config.ini paths
+
 1 - python run_genome_maxd.py config.ini /bin/bash
 2 - python src/calculate_best_maxd.py config.ini
 2.5 - # Set the max distance in config.ini [ModelingValues]
