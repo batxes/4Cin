@@ -172,7 +172,7 @@ for min_value in bead_values:
 #print "min value = ",vmax
 #print "max value = ",inlier2
 #norm = mpl.colors.Normalize(vmin=vmax, vmax=inlier2)
-
+print bead_values
 #for dnamet
 print "min value = ",vmin
 print "max value = ",vmax
