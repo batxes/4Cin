@@ -1,4 +1,9 @@
 # 4c2vhic
+This is a suite of scripts that lets you generate 3D models of the chromatin of your favourite locus, using 4C-seq data as the only input. It is able to crete Hi-C like contact maps of these 3D models and analyze the region further.
+
+# Overview (still in progress)
+![alt tag](pipeline_simple.png)
+
 
 ### Dependencies
 python 2.7
