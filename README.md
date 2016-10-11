@@ -1,24 +1,44 @@
 # 4c2vhic
+This is a suite of scripts that lets you generate 3D models of the chromatin of your favourite locus, using 4C-seq data as the only input. It is able to crete Hi-C like contact maps of these 3D models and analyze the region further. 
+
+Used in Acemel RD, Tena JJ, Irastorza-Azcarate I, Marletaz F, Gomez-Marin C, de la Calle-Mustienes E, Bertrand S, Diaz SG, Aldea D, Aury JM et al.: A single three-dimensional chromatin compartment in amphioxus indicates a stepwise evolution of vertebrate Hox bimodal regulation. Nat Genet 2016, 48: 336-341. (http://www.nature.com/ng/journal/v48/n3/full/ng.3497.html)
+
+# Overview (still in progress)
+![alt tag](pipeline_simple.png)
+
+GenomePainting
+![alt tag](genomePainting)
+
 
 ### Dependencies
 python 2.7
 chimera (Download from https://www.cgl.ucsf.edu/chimera/download.html)
 IMP 2.5, 2.4 (newer versions crash) (Download from http://integrativemodeling.org/old-versions.html)
 matplotlib
+scipy
 
 
 ### Simple Usage (run this commands)
 0 - # Modify config.ini paths
 
 1 - python run_genome_maxd.py config.ini /bin/bash
+
 2 - python src/calculate_best_maxd.py config.ini
+
 2.5 - # Set the max distance in config.ini [ModelingValues]
+
 3 - python run_genome_zscores.py config.ini /bin/bash
+
 4 - python src/calculate_best_zscores.py config.ini
+
 4.5 - # Set the max_z and min_z undert [ModelingValues] in config.ini
+
 5 - python run_genome_sampling.py /bin/bash
+
 5.5 - # 3D models are ready
+
 6 - python src/GenomeAnalysis.py config.ini
+
 7 - 
 
 ### Explained Usage
