@@ -104,7 +104,7 @@ scipy
 - All the data will be stored under a directory with the same name as the prefix set in the config file
 - the python scripts that are not in the src/ directory are scripts that I used for my projects. If you want to use them with another queue system or change the bins between each iteration, feel free to modify or create your own.
     * run_mode /bin/bash is set to work in the background with &, its not a proper parallelization, use a queue system better.
-
+- bam files need to be sorted and indexed before using. Example: samtools sort mouse_h3k4me3_ES_bingren_rep1.bam mouse_h3k4me3_ES_bingren_rep1.bai 
 #TODO
     write down that chimera needs to be a "ln -s" and give permissions to whole python2.7 inside chimera/bin also
     IMP 2.5 <
