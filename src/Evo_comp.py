@@ -172,7 +172,17 @@ print '{}_evocomp.pdf writen'.format(prefix)
 
 from matplotlib.colors import LinearSegmentedColormap
 vmax = 1.0
-cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'white'),(0.35 / vmax, 'white'),(0.5 / vmax, 'green'),(0.65 / vmax, 'white'),(1 / vmax, 'white')])
+
+#green_plot
+#cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'white'),(0.35 / vmax, 'white'),(0.5 / vmax, 'green'),(0.65 / vmax, 'white'),(1 / vmax, 'white')])
+
+#mut_comp
+#cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.34 / vmax, 'blue'),(0.35 / vmax, 'white',(0.5 / vmax, 'white')),(0.65 / vmax, 'white'),(0.66 / vmax, 'red'),(1 / vmax, 'red')])
+
+#white_black
+cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'black'),(0.5 / vmax, 'white'),(1 / vmax, 'black')])
+
+
 fig = plt.figure()
 ax = plt.subplot(1,1,1)
 z = np.array(matrix_diff)

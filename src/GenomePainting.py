@@ -70,6 +70,10 @@ if bam_or_bed == "bam":
                 values = line.split("\t")
                 starts.append(int(values[1]))
                 ends.append(int(values[2]))
+                #change first char of CHR
+                chr_ = list(values[0])
+                chr_[0] = 'c'
+                values[0] = "".join(chr_)
                 read_count = bamhandle.count(values[0],int(values[1]),int(values[2])) #chrm, start, end
                 stdout.write("{}\t{}\t{}\t{}\n".format(values[0],values[1],values[2],read_count))
 
@@ -134,9 +138,19 @@ from pylab import *
 import matplotlib as mpl
 import matplotlib.cm as cm
 #cmap = cm.hot_r
-cmap = cm.Greens
+cmap = cm.Greys
 
 #plot statistic figures
+fig = pylab.figure(figsize=(8,8))
+#pylab.plot(bead_values)
+pylab.fill_between(range(len(bead_values)),0,bead_values,color="purple")
+axes = pylab.gca()
+axes.set_xlim([0,len(bead_values)-1])
+try:
+        fig.savefig('genome_painting_stats_plot.png')
+except:
+        pass
+
 fig = pylab.figure(figsize=(8,8))
 pylab.hist(bead_values,bins=100)
 try:
@@ -168,16 +182,17 @@ for min_value in bead_values:
         if min_value <= vmin:
             vmin = min_value
            
-#for atac and h3k4me3
-#print "min value = ",vmax
-#print "max value = ",inlier2
-#norm = mpl.colors.Normalize(vmin=vmax, vmax=inlier2)
-print bead_values
+#for ctcf h3k4me3
+print "min value = ",vmax
+print "max value = ",inlier2
+norm = mpl.colors.Normalize(vmin=vmax, vmax=inlier2)
 
-#for dnamet
-print "min value = ",vmin
-print "max value = ",vmax
-norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+#for dnamet, h3k27ac,atac
+#print "min value = ",vmin
+#print "max value = ",vmax
+#norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+
+print bead_values
 
 m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
