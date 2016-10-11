@@ -138,31 +138,8 @@ from pylab import *
 import matplotlib as mpl
 import matplotlib.cm as cm
 #cmap = cm.hot_r
-cmap = cm.Greys
+cmap = cm.Purples
 
-#plot statistic figures
-fig = pylab.figure(figsize=(8,8))
-#pylab.plot(bead_values)
-pylab.fill_between(range(len(bead_values)),0,bead_values,color="purple")
-axes = pylab.gca()
-axes.set_xlim([0,len(bead_values)-1])
-try:
-        fig.savefig('genome_painting_stats_plot.png')
-except:
-        pass
-
-fig = pylab.figure(figsize=(8,8))
-pylab.hist(bead_values,bins=100)
-try:
-        fig.savefig('genome_painting_stats_hist.png')
-except:
-        pass
-fig = pylab.figure(figsize=(8,8))
-pylab.boxplot(bead_values)
-try:
-        fig.savefig('genome_painting_stats_box.png')
-except:
-        pass
 
 #take out outliers (Q1-1.5xIQR - Q3+1.5*IQR take only)
 mid = np.percentile(bead_values,50)
@@ -183,14 +160,14 @@ for min_value in bead_values:
             vmin = min_value
            
 #for ctcf h3k4me3
-print "min value = ",vmax
-print "max value = ",inlier2
-norm = mpl.colors.Normalize(vmin=vmax, vmax=inlier2)
+#print "min value = ",vmax
+#print "max value = ",inlier2
+#norm = mpl.colors.Normalize(vmin=vmax, vmax=inlier2)
 
 #for dnamet, h3k27ac,atac
-#print "min value = ",vmin
-#print "max value = ",vmax
-#norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+print "min value = ",vmin
+print "max value = ",vmax
+norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
 
 print bead_values
 
@@ -199,13 +176,42 @@ m = cm.ScalarMappable(norm=norm, cmap=cmap)
 with open("coloring.cmd","w") as colored_model:
     colored_model.write("open {}\n".format(model))
     for number in range(NFRAGMENTS):
-        colored_model.write("color {} #{}\n".format(matplotlib.colors.rgb2hex(m.to_rgba(bead_values[number])),number))
+        current_color = matplotlib.colors.rgb2hex(m.to_rgba(bead_values[number]))
+        colored_model.write("color {} #{}\n".format(current_color,number))
         #print "bead: {} color:{} value:{}".format(number,matplotlib.colors.rgb2hex(m.to_rgba(bead_values[number])),bead_values[number])
     colored_model.write("shape tube #{}-{} radius 200 bandlength 10000".format(0,NFRAGMENTS))
 
 
 print "Now, open coloring.cmd wich Chimera."
 
+print "Generatin some plots..."
+#plot statistic figures
+fig = pylab.figure(figsize=(8,8))
+pylab.plot(bead_values)
+for i in range(len(bead_values)-1):
+    pylab.vlines(i,0,bead_values[i],color=cmap(norm(bead_values[i])),linewidth=4)
+    #pylab.fill_between(range(len(bead_values)),bead_values[i],color=cmap(norm(bead_values[i])))
+    #pylab.fill_between(range(77),0,bead_values[i],color="purple")
+#pylab.fill_between(range(len(bead_values)),0,bead_values,color="purple")
+axes = pylab.gca()
+axes.set_xlim([0,len(bead_values)-1])
+try:
+        fig.savefig('genome_painting_stats_plot.png')
+except:
+        pass
+
+fig = pylab.figure(figsize=(8,8))
+pylab.hist(bead_values,bins=100)
+try:
+        fig.savefig('genome_painting_stats_hist.png')
+except:
+        pass
+fig = pylab.figure(figsize=(8,8))
+pylab.boxplot(bead_values)
+try:
+        fig.savefig('genome_painting_stats_box.png')
+except:
+        pass
 #test.
 # check out size of beads in the scatterplot
 # check out the matrix_path
