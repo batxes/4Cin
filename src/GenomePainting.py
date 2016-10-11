@@ -62,7 +62,7 @@ except:
 starts = []
 ends = []
 if bam_or_bed == "bam":
-    print "Reading Atac bam file..."
+    print "Reading Atac or h3k4me3 bam file..."
     bamhandle = pysam.AlignmentFile(painting_path,"rb")
     with open ("bedbam_file","w") as stdout:
         with open (files[0],"r") as stdin:
@@ -134,7 +134,7 @@ from pylab import *
 import matplotlib as mpl
 import matplotlib.cm as cm
 #cmap = cm.hot_r
-cmap = cm.Reds
+cmap = cm.Greens
 
 #plot statistic figures
 fig = pylab.figure(figsize=(8,8))
@@ -173,10 +173,12 @@ for min_value in bead_values:
 #print "max value = ",inlier2
 #norm = mpl.colors.Normalize(vmin=vmax, vmax=inlier2)
 print bead_values
+
 #for dnamet
 print "min value = ",vmin
 print "max value = ",vmax
 norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+
 m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 with open("coloring.cmd","w") as colored_model:

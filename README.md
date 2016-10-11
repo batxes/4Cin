@@ -73,6 +73,10 @@ matplotlib
     Given two distance_matrices generated with TADs_multi.py of different loci or organisms and the position of Genes/enhancers (beads), it crates a hi-c like matrix with the relative positions of both locus. We will need to set the config file variables under [EvoComp]. Similar to the [TADs] parameters, we will need to set the viewpoints and the window variable for each of the loci.
     Example: python src/Evo_comp.py config.ini /home/user/4c2vhic/data/MyModels/MyModels_final_output/distances_of_my_models /home/user/4c2vhic/OtherModels/OtherModels_final_output/distance_of_other_models
 
+12 - di_calculation.py
+    Given the distance matrix and the the number of beads a TAD has in your virtual HI-C, it plots the directionality index bar plot.
+    python di_calculation.py distance_six_zebra 20
+
 ### Notes
 
 - If you want to concatenate the beads with a tube, after openning the model in UCSF-Chimera, write this in its command line: "shape tube #X-Y radius Z bandlength 10000" (X and Y being the first and last beads, Z being the thickness of tube in Angstroms.)
