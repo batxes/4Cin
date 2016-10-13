@@ -8,6 +8,7 @@ import pysam
 import numpy as np
 from colour import Color
 import heapq
+import matplotlib
 import matplotlib.cm  as cm
 import pylab
 
@@ -46,8 +47,7 @@ try:
 
 
     painting_path = config.get("Painting","file_path")
-    color_from = config.get("Painting","color_from")
-    color_to = config.get("Painting","color_to")
+    colormap = config.get("Painting","colormap")
     bam_or_bed = config.get("Painting","bam_or_bed")
     
     
@@ -134,11 +134,10 @@ with open ("bedbam_file","r") as stdin:
         normalized_read = added_reads/added_region
         bead_values.append(normalized_read)
 
-from pylab import *
 import matplotlib as mpl
-import matplotlib.cm as cm
-#cmap = cm.hot_r
-cmap = cm.Purples
+
+#cmap = cm.Blues
+cmap = cm.get_cmap(colormap)
 
 
 #take out outliers (Q1-1.5xIQR - Q3+1.5*IQR take only)
@@ -169,7 +168,6 @@ print "min value = ",vmin
 print "max value = ",vmax
 norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
 
-print bead_values
 
 m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
@@ -183,16 +181,16 @@ with open("coloring.cmd","w") as colored_model:
 
 
 print "Now, open coloring.cmd wich Chimera."
+print len(bead_values)
 
 print "Generatin some plots..."
 #plot statistic figures
 fig = pylab.figure(figsize=(8,8))
-pylab.plot(bead_values)
-for i in range(len(bead_values)-1):
-    pylab.vlines(i,0,bead_values[i],color=cmap(norm(bead_values[i])),linewidth=4)
-    #pylab.fill_between(range(len(bead_values)),bead_values[i],color=cmap(norm(bead_values[i])))
-    #pylab.fill_between(range(77),0,bead_values[i],color="purple")
-#pylab.fill_between(range(len(bead_values)),0,bead_values,color="purple")
+#pylab.plot(bead_values)
+pylab.bar(range(len(bead_values)),bead_values,color=cmap(norm(bead_values)),width=1,linewidth=0)
+#for i in range(len(bead_values)-1):
+    #pylab.vlines(i,0,bead_values[i],color=cmap(norm(bead_values[i])),linewidth=6)
+    #pylab.fill_between([range(len(bead_values))[i],range(len(bead_values))[i+1]],[bead_values[i],bead_values[i+1]],color=cmap(norm(bead_values[i])))
 axes = pylab.gca()
 axes.set_xlim([0,len(bead_values)-1])
 try:
