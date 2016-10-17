@@ -131,15 +131,18 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         translocation_bead = 59
         if (translocation_exp):
             chunk1 = reads_normalized[:translocation_bead]
-            print chunk1
             mean1 = np.mean(chunk1)
             std_dev1 = np.std(chunk1)
             chunk1 = [(read - mean1)/std_dev1 for read in chunk1]
+            chunk1 = chunk1[::-1]
+
             chunk2 = reads_normalized[translocation_bead:]
-            print chunk2
             mean2 = np.mean(chunk2)
             std_dev2 = np.std(chunk2)
             chunk2 = [(read - mean2)/std_dev2 for read in chunk2]
+            chunk2 = chunk2[::-1]
+
+
             reads_normalized = chunk1 + chunk2
         else:
             mean = np.mean(reads_normalized)
