@@ -13,12 +13,16 @@ import matplotlib.cm  as cm
 import pylab
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 3: #Or all parameters, or no parameters 
-    print "Not enought parameters. Model to be painted and config file are needed. You passed: ",sys.argv[1:]
+if number_of_arguments != 3 and number_of_arguments != 4: #Or all parameters, or no parameters 
+    print "Not enought parameters. Model to be painted and config file are needed. Distance matrix optional. You passed: ",sys.argv[1:]
     sys.exit()
-if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
+if len(sys.argv) == 3:  #if we pass the arguments (in the cluster)
     model = sys.argv[1]
     ini_file = sys.argv[2]
+if len(sys.argv) == 4:  #if we pass the arguments (in the cluster)
+    model = sys.argv[1]
+    ini_file = sys.argv[2]
+    distance_matrix = sys.argv[3]
 
 #read the config file
 config = ConfigParser.ConfigParser()
@@ -130,9 +134,10 @@ with open ("bedbam_file","r") as stdin:
             counter = 0
             added_region = 0
             added_reads = 0
-    if counter != WINDOW and counter != 0:  #we add the min value to the last bead if it did not reach to Nfragments 
-        normalized_read = added_reads/added_region
-        bead_values.append(normalized_read)
+    #We dont use the last bead (Modeling does int())
+    #if counter != WINDOW and counter != 0:  #we add the min value to the last bead if it did not reach to Nfragments 
+    #    normalized_read = added_reads/added_region
+    #    bead_values.append(normalized_read)
 
 import matplotlib as mpl
 
@@ -210,6 +215,39 @@ try:
         fig.savefig('genome_painting_stats_box.png')
 except:
         pass
+
+#distance_matrix needed for this plot
+if 'distance_matrix' in locals():
+    bead_count = len(bead_values)
+    fig = pylab.figure(figsize=(8,8))
+    distance_value = []
+    epigenetic_value = []
+    color_value = []
+    with open(distance_matrix, 'r') as mtx:
+        for line in mtx:
+            values = re.split(",",line)
+            if int(values[0]) != int(values[1]):
+            #if int(values[0]) == 0:
+                distance_value.append(float(values[2]))
+                epigenetic_value.append(bead_values[int(values[1])])
+                color_value.append(cmap(norm(bead_values))[int(values[0])])
+    print len(distance_value)
+    for i in range(0,(bead_count-1)*(bead_count-1),bead_count):
+        from_ = i
+        to_ = i+bead_count-1
+        #print distance_value[from_:to_]
+        pylab.plot(np.unique(distance_value[from_:to_]), np.poly1d(np.polyfit(distance_value[from_:to_], epigenetic_value[from_:to_], 1))(np.unique(distance_value[from_:to_])))
+    pylab.scatter(distance_value,epigenetic_value,color=color_value)
+    #fitting
+    #pylab.plot(np.unique(distance_value), np.poly1d(np.polyfit(distance_value, epigenetic_value, 1))(np.unique(distance_value)))
+    pylab.xlim(0)
+    try:
+            fig.savefig('genome_painting_proximity_plot.png')
+    except:
+            pass
+    #print distance_value
+    #print epigenetic_value
+    #print color_value
 #test.
 # check out size of beads in the scatterplot
 # check out the matrix_path
@@ -229,8 +267,6 @@ if dendro_test:
     import pylab
     from pylab import plot,show
     from scipy.cluster.vq import kmeans,vq
-
-
 
     matrix_path = "/home/ibai/4c2vhic/data/Six_zebra_models/Six_zebra_models_final_output_0.1_-0.1_13000/distances_of_current_model_Six_zebra_models"
     #matrix_path = "/home/ibai/4c2vhic/distances_of_current_model_zebra_200.txt"

@@ -129,3 +129,9 @@ scipy
 
     genome Painting make it better, no color_to color from only these:
     http://matplotlib.org/examples/color/colormaps_reference.html
+
+
+###### writeee
+    we modified the windows so the beads represent the same in SIX comparison
+
+    Pa3Fo1_Cristina _> takke data that is smoothed already in window30. Take only the locus. We apply normalization normal but we calculate Z-score of each chromosome.

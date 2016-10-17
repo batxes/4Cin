@@ -114,7 +114,7 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         # We calculated beforehand the numbers of multiplication for the normalization
         reads = [read*factors[i] for read in reads ]           
         # get the minimum read counts and swap them with the minimum of all values. We don't take into account no reads in a fragment
-        min_read = max(reads)
+        min_read = max(reads) #initialization
         for j in reads:
             if j != 1.0 and j < min_read:
                 min_read = j
@@ -124,10 +124,27 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         # apply Log10 to data to normalize it
         reads_normalized = [np.log10(read) for read in reads]
         HEATMAP_DATA_LOG.append(reads_normalized)
-        mean = np.mean(reads_normalized)
-        std_dev = np.std(reads_normalized)
+
         #Z-score calculation
-        reads_normalized = [(read - mean)/std_dev for read in reads_normalized]
+        ##### START      Divide for translocation data 
+        translocation_exp = True
+        translocation_bead = 59
+        if (translocation_exp):
+            chunk1 = reads_normalized[:translocation_bead]
+            print chunk1
+            mean1 = np.mean(chunk1)
+            std_dev1 = np.std(chunk1)
+            chunk1 = [(read - mean1)/std_dev1 for read in chunk1]
+            chunk2 = reads_normalized[translocation_bead:]
+            print chunk2
+            mean2 = np.mean(chunk2)
+            std_dev2 = np.std(chunk2)
+            chunk2 = [(read - mean2)/std_dev2 for read in chunk2]
+            reads_normalized = chunk1 + chunk2
+        else:
+            mean = np.mean(reads_normalized)
+            std_dev = np.std(reads_normalized)
+            reads_normalized = [(read - mean)/std_dev for read in reads_normalized]
         # Skewness shows if data is skewed toward the right or left tail of the normal distributed z scores. 
         # Negative skewness shows large proportion of experimental noise. Positive  = population of large structural variability.
         # Kurtosis shows if the distribution is single peaked or not. High kt = many peaks, we need low KT to show a single peak
