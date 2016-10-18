@@ -135,3 +135,5 @@ scipy
     we modified the windows so the beads represent the same in SIX comparison
 
     Pa3Fo1_Cristina _> takke data that is smoothed already in window30. Take only the locus. We apply normalization normal but we calculate Z-score of each chromosome.
+    
+    VIEWPOINT CAN BE 0! SO we have to do -1 to the line in the file
