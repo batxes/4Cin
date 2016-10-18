@@ -196,8 +196,8 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
             fig = plt.figure(figsize=(100, 100)) 
             plt.subplot(3,1,1)
             if translocation_exp:
-                reversed_list_aux = HEATMAP_DATA[:translocation_bead][::-1]
-                reversed_list_aux2 = HEATMAP_DATA[translocation_bead:][::-1]
+                reversed_list_aux = HEATMAP_DATA[i][:translocation_bead][::-1]
+                reversed_list_aux2 = HEATMAP_DATA[i][translocation_bead:][::-1]
                 plt.bar(range(len(HEATMAP_DATA[i])),reversed_list_aux+reversed_list_aux2,width=1)
             else:
                 plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
