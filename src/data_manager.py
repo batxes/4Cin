@@ -35,23 +35,45 @@ def fileCheck(f):
 # reads the file and extracts the values every N lines
 
 def valueReaderNWindow(f,window):
-    counter = 0
-    aux = 0
-    arrayList = []
-    for line in f:
-        counter += 1
-        values = re.split('\t',line)
-        values[3] = values[3].strip() #remove \n from the list
-        if (values[3] is '-'):
-            read = 0 + 1 # +1 to counter log10
-        else:
-            read = float(values[3]) + 1 # +1 to counter log10
-        aux += read
-        if counter == window:
-            counter = 0
-            aux = aux / window
-            arrayList.append(aux)
-            aux = 0
+    truncated_experiment = True
+    if truncated_experiment:
+        counter = 0
+        aux = 0
+        arrayList = []
+        for line in f:
+            counter += 1
+            values = re.split('\t',line)
+            values[3] = values[3].strip() #remove \n from the list
+            if (values[3] is '-'):
+                read = 0 + 1 # +1 to counter log10
+            else:
+                read = float(values[3]) + 1 # +1 to counter log10
+                if values[0] == "chr13":
+                    read = read*2 #truncated chromosome
+            aux += read
+            if counter == window:
+                counter = 0
+                aux = aux / window
+                arrayList.append(aux)
+                aux = 0
+    else:
+        counter = 0
+        aux = 0
+        arrayList = []
+        for line in f:
+            counter += 1
+            values = re.split('\t',line)
+            values[3] = values[3].strip() #remove \n from the list
+            if (values[3] is '-'):
+                read = 0 + 1 # +1 to counter log10
+            else:
+                read = float(values[3]) + 1 # +1 to counter log10
+            aux += read
+            if counter == window:
+                counter = 0
+                aux = aux / window
+                arrayList.append(aux)
+                aux = 0
     return arrayList
 
 # function Size Reader
@@ -127,7 +149,7 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
 
         #Z-score calculation
         ##### START      Divide for translocation data 
-        translocation_exp = True
+        translocation_exp = False
         translocation_bead = 59
         if (translocation_exp):
             chunk1 = reads_normalized[:translocation_bead]
