@@ -135,14 +135,11 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
             std_dev1 = np.std(chunk1)
             chunk1 = [(read - mean1)/std_dev1 for read in chunk1]
             chunk1 = chunk1[::-1]
-
             chunk2 = reads_normalized[translocation_bead:]
             mean2 = np.mean(chunk2)
             std_dev2 = np.std(chunk2)
             chunk2 = [(read - mean2)/std_dev2 for read in chunk2]
             chunk2 = chunk2[::-1]
-
-
             reads_normalized = chunk1 + chunk2
         else:
             mean = np.mean(reads_normalized)
@@ -198,7 +195,10 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         if plot:
             fig = plt.figure(figsize=(100, 100)) 
             plt.subplot(3,1,1)
-            plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
+            if translocation_exp:
+                plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i][::-1],width=1)
+            else:
+                plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
             plt.xlim(0,len(HEATMAP_DATA[i]))  
             plt.ylabel("Number of Reads")
             plt.xlabel(files[i])
