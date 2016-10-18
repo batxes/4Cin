@@ -11,6 +11,8 @@ except ImportError:
 except:
     pass
 
+translocation_exp = True
+translocation_bead = 59
 #############################################################################################################
 # code that calculates the average and standard deviation of the given 4c data file
 #
@@ -35,45 +37,23 @@ def fileCheck(f):
 # reads the file and extracts the values every N lines
 
 def valueReaderNWindow(f,window):
-    truncated_experiment = True
-    if truncated_experiment:
-        counter = 0
-        aux = 0
-        arrayList = []
-        for line in f:
-            counter += 1
-            values = re.split('\t',line)
-            values[3] = values[3].strip() #remove \n from the list
-            if (values[3] is '-'):
-                read = 0 + 1 # +1 to counter log10
-            else:
-                read = float(values[3]) + 1 # +1 to counter log10
-                if values[0] == "chr13":
-                    read = read*2 #truncated chromosome
-            aux += read
-            if counter == window:
-                counter = 0
-                aux = aux / window
-                arrayList.append(aux)
-                aux = 0
-    else:
-        counter = 0
-        aux = 0
-        arrayList = []
-        for line in f:
-            counter += 1
-            values = re.split('\t',line)
-            values[3] = values[3].strip() #remove \n from the list
-            if (values[3] is '-'):
-                read = 0 + 1 # +1 to counter log10
-            else:
-                read = float(values[3]) + 1 # +1 to counter log10
-            aux += read
-            if counter == window:
-                counter = 0
-                aux = aux / window
-                arrayList.append(aux)
-                aux = 0
+    counter = 0
+    aux = 0
+    arrayList = []
+    for line in f:
+        counter += 1
+        values = re.split('\t',line)
+        values[3] = values[3].strip() #remove \n from the list
+        if (values[3] is '-'):
+            read = 0 + 1 # +1 to counter log10
+        else:
+            read = float(values[3]) + 1 # +1 to counter log10
+        aux += read
+        if counter == window:
+            counter = 0
+            aux = aux / window
+            arrayList.append(aux)
+            aux = 0
     return arrayList
 
 # function Size Reader
@@ -149,24 +129,15 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
 
         #Z-score calculation
         ##### START      Divide for translocation data 
-        translocation_exp = False
-        translocation_bead = 59
         if (translocation_exp):
             chunk1 = reads_normalized[:translocation_bead]
-            mean1 = np.mean(chunk1)
-            std_dev1 = np.std(chunk1)
-            chunk1 = [(read - mean1)/std_dev1 for read in chunk1]
             chunk1 = chunk1[::-1]
             chunk2 = reads_normalized[translocation_bead:]
-            mean2 = np.mean(chunk2)
-            std_dev2 = np.std(chunk2)
-            chunk2 = [(read - mean2)/std_dev2 for read in chunk2]
             chunk2 = chunk2[::-1]
             reads_normalized = chunk1 + chunk2
-        else:
-            mean = np.mean(reads_normalized)
-            std_dev = np.std(reads_normalized)
-            reads_normalized = [(read - mean)/std_dev for read in reads_normalized]
+        mean = np.mean(reads_normalized)
+        std_dev = np.std(reads_normalized)
+        reads_normalized = [(read - mean)/std_dev for read in reads_normalized]
         # Skewness shows if data is skewed toward the right or left tail of the normal distributed z scores. 
         # Negative skewness shows large proportion of experimental noise. Positive  = population of large structural variability.
         # Kurtosis shows if the distribution is single peaked or not. High kt = many peaks, we need low KT to show a single peak
