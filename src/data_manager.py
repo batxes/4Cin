@@ -128,13 +128,6 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         HEATMAP_DATA_LOG.append(reads_normalized)
 
         #Z-score calculation
-        ##### START      Divide for translocation data 
-        if (translocation_exp):
-            chunk1 = reads_normalized[:translocation_bead]
-            chunk1 = chunk1[::-1]
-            chunk2 = reads_normalized[translocation_bead:]
-            chunk2 = chunk2[::-1]
-            reads_normalized = chunk1 + chunk2
         mean = np.mean(reads_normalized)
         std_dev = np.std(reads_normalized)
         reads_normalized = [(read - mean)/std_dev for read in reads_normalized]
@@ -188,16 +181,11 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         if plot:
             fig = plt.figure(figsize=(100, 100)) 
             plt.subplot(3,1,1)
+            plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
             if translocation_exp:
-                reversed_list_aux = HEATMAP_DATA[i][:translocation_bead][::-1]
-                reversed_list_aux2 = HEATMAP_DATA[i][translocation_bead:][::-1]
-                HEATMAP_DATA[i] = reversed_list_aux + reversed_list_aux2
-                bar_list = plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1,edgecolor='w')
                 for j in range(translocation_bead):
                     bar_list[j].set_color('r')
                     bar_list[j].set_edgecolor('w')
-            else:
-                plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
             plt.xlim(0,len(HEATMAP_DATA[i]))  
             plt.ylabel("Number of Reads")
             plt.xlabel(files[i])
