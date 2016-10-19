@@ -134,6 +134,10 @@ scipy
 ###### writeee
     we modified the windows so the beads represent the same in SIX comparison
 
-    Pa3Fo1_Cristina _> takke data that is smoothed already in window30. Take only the locus. We apply normalization normal but we calculate Z-score of each chromosome.
     
+    Pax3 data -> take our locus
+    then take chr2 and chr13 separately and apply prepare_data.py
+    then concatenate them and double the value of the aberrant 2+13 chromosome
+
     VIEWPOINT CAN BE 0! SO we have to do -1 to the line in the file
+
