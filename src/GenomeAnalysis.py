@@ -141,7 +141,7 @@ for i in range(number_of_models):
 #     print str(i)+"-> Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(total),"%",str(not_fulfilled*100/(total))     
     fulfil_percentage = not_fulfilled*100/total
     print "not_fulfilled -> {} out of {} restraints: {}% of all restraints are not fulfilled in this model.".format(not_fulfilled,total,fulfil_percentage)
-    if fulfil_percentage < cut_off_percentage:
+    if fulfil_percentage <= cut_off_percentage:
         models[i].append(not_fulfilled)
         ok_models += 1
     else:
