@@ -1,5 +1,6 @@
 #!/usr/bin/python
-
+import warnings
+warnings.filterwarnings("ignore")
 import sys
 import time
 import os
