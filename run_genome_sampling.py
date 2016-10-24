@@ -42,7 +42,7 @@ for cpu in range(number_of_cpu):
         os.system("{} run_genome.sh {} {} {} {} {} True".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
 
 if mode == "/bin/bash":
-    system(wait)
+    os.system(wait)
 
 
 

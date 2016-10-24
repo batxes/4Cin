@@ -1,18 +1,21 @@
 #script that takes as argument the distance matrix and the expected TAD size and outputs the directionality index plot
+import pylab
 
 #!/usr/bin/python
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import math
+plt.style.use('ggplot')
+
 
 add_mean_values = True
 
 if len(sys.argv) < 3:
-    print "wrong parameters"
+    print "wrong parameters. Distance Matrix and Tad size (in bins) is required."
     sys.exit()
 input_path = sys.argv[1]
 tad_size = int(sys.argv[2])
-print "input_path is {}".format(input_path)
 
 
 aux_list = []
@@ -24,10 +27,7 @@ with open(input_path,"r") as INPUT:
         aux_list.append(float(values[2][:-1]))
 max_value = max(aux_list)
 mean_value = np.mean(aux_list)
-print "Max Value is: {}".format(max_value)
-print "Mean value is {}".format(mean_value)
 size = int(np.sqrt(lines))
-print "Size of matrix: {}".format(tad_size)
 
 
 
@@ -48,7 +48,7 @@ with open(input_path,"r") as INPUT:
 
 di_list = []
 for i in range(size):
-    print "bin {}".format(i)
+    #print "bin {}".format(i)
     upstream = 0
     up_cont = 0
     if ((size-i) + tad_size) > size:
@@ -64,7 +64,7 @@ for i in range(size):
             upstream = upstream + matrix[j][i]
     if add_mean_values: 
         if up_cont < tad_size:
-            print "added {}".format(mean_value*(tad_size - up_cont))
+            #print "added {}".format(mean_value*(tad_size - up_cont))
             upstream = upstream + mean_value * (tad_size - up_cont)
     downstream = 0
     down_cont = 0
@@ -81,7 +81,7 @@ for i in range(size):
             downstream = downstream + matrix[j][i]
     if add_mean_values: 
         if down_cont < tad_size:
-            print "added {}".format(mean_value*(tad_size - down_cont))
+            #print "added {}".format(mean_value*(tad_size - down_cont))
             downstream = downstream + mean_value * (tad_size - down_cont)
     #apply the equation
     E = (downstream + upstream)/2
@@ -92,12 +92,22 @@ for i in range(size):
 #print "total= u - d    {}={} - {}".format(total, upstream, downstream)
     di_list.append(di)
 
-for i in range(len(di_list)):
-    print "{}: {}".format(i,di_list[i])
+#for i in range(len(di_list)):
+#    print "{}: {}".format(i,di_list[i])
 
 ###PLOTTING
 
-
+#we apply log2 so we have a smaller plotting
+di_list2 = []
+print di_list
+for i in di_list:
+    if i == 0:
+        di_list2.append(1)
+    if i < 0:
+        di_list2.append(math.log(math.fabs(i),2)*-1)
+    if i > 0:
+        di_list2.append(math.log(i,2))
+print di_list2
 index = np.arange(size)
 di_list_pos = []
 di_list_neg = []
@@ -112,12 +122,19 @@ for x in di_list:
         di_list_pos.append(x)
     else:
         di_list_pos.append(0)
-
-#ax.bar(index,di_list_pos)
-#ax.bar(index,di_list_neg)
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.set_xlim(0,size)
+ax.set_axis_bgcolor('white')
 plt.bar(index,di_list_pos,facecolor='#9999ff')
 plt.bar(index,di_list_neg,facecolor='#ff9999')
-plt.show()
 
-print matrix
-print mean_value
+try:
+    saved_in = input_path.split("/")
+    add_string = "/".join(saved_in[:-1])
+    fig.savefig("{}/Hi-C_DI_plot.png".format(add_string))
+    print "Plot saved in {}/Hi-C_DI_plot.png".format(add_string)
+except:
+    pass
+
+plt.show()
