@@ -27,7 +27,13 @@ with open(input_path,"r") as INPUT:
         aux_list.append(float(values[2][:-1]))
 max_value = max(aux_list)
 mean_value = np.mean(aux_list)
-size = int(np.sqrt(lines))
+
+with open(input_path,"r") as INPUT:
+    for line in INPUT:
+        values = line.split(",")
+        size = int(values[0])
+size += 1
+#size = int(np.sqrt(lines))
 
 
 
