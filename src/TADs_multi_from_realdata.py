@@ -117,9 +117,13 @@ c = plt.pcolor(z,cmap=plt.cm.PuRd,vmax=vmax, vmin=0)
 ax.set_frame_on(False)
 plt.colorbar()
 
-
+#viewpoints = 54,15,65,73 #pax3,epha4,sgpp2,farsb human
+#viewpoints = 135,143,90,74 #foxo1,mrps31,cog6,lhfp human
+viewpoints = 42,53,59,6 #pax3,sgpp2,farsb,epha4 mouse
+#viewpoints = 58,29,94,97 #foxo1,maml3,cog6,lhfp mouse
 #to set the viewpoints
 #plt.scatter(viewpoints, viewpoints, s=20, c=color,cmap=plt.cm.autumn)
+plt.scatter(viewpoints, viewpoints, s=20,cmap=plt.cm.autumn)
 
 #ax.set_yticks(viewpoints)
 #ax.set_xticks(viewpoints)
