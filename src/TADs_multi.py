@@ -61,12 +61,10 @@ try:
     genes = genes.split(",")
     genes = [ int(i) for i in genes]
     genes = [int(i/WINDOW) for i in genes]
-    
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
     
     number_of_models = int(config.get("ModelingValues", "number_of_models"))
-    
     gene_names = config.get("TADs", "gene_names")
     gene_names = re.sub('[\n\s\t]','',gene_names)
     gene_names = gene_names.split(",")
@@ -210,7 +208,7 @@ plt.colorbar()
 
 #to set the viewpoints
 #color = [10,5,5,10,10,10,10,10] -> depending on quantity of genes
-plt.scatter(viewpoints, viewpoints, s=20, c=color,cmap=plt.cm.autumn)
+#plt.scatter(viewpoints, viewpoints, s=20, c=color,cmap=plt.cm.autumn)
 
 
 
