@@ -10,8 +10,8 @@ from collections import defaultdict
 import operator
 plt.style.use('ggplot')
 
-tad_from = 10
-tad_to = 50
+tad_from = 15
+tad_to = 40
 
 add_mean_values = True
 
@@ -31,7 +31,6 @@ with open(input_path,"r") as INPUT:
         aux_list.append(float(values[2][:-1]))
 max_value = max(aux_list)
 mean_value = np.mean(aux_list)
-
 with open(input_path,"r") as INPUT:
     for line in INPUT:
         values = line.split(",")
@@ -45,8 +44,12 @@ matrix = np.zeros((size,size))
 with open(input_path,"r") as INPUT:
     for line in INPUT:
         values = line.split(",")
+        #ONLY for virtual HIC
         matrix[int(values[0])][int(values[1])] = max_value - float(values[2][:-1])
         matrix[int(values[1])][int(values[0])] = max_value - float(values[2][:-1])
+        
+        matrix[int(values[0])][int(values[1])] = float(values[2][:-1])
+        matrix[int(values[1])][int(values[0])] = float(values[2][:-1])
 
 
 #Calculate the directionality index (Dixo et. al. 2012 Nature)
@@ -95,9 +98,13 @@ for i in range(size):
             downstream = downstream + mean_value * (tad_size - down_cont)
     #apply the equation
     E = (downstream + upstream)/2
-    di1 = ((downstream-upstream)/(abs(downstream-upstream)))
-    di2 = ((((upstream-E)**2)/E)+((((downstream-E)**2)/E)))
-    di = di1 * di2
+    print "{}: {}+{}/2".format(i,downstream,upstream)
+    if E != 0:
+        di1 = ((downstream-upstream)/(abs(downstream-upstream)))
+        di2 = ((((upstream-E)**2)/E)+((((downstream-E)**2)/E)))
+        di = di1 * di2
+    else:
+        di = 0
     
 #print "total= u - d    {}={} - {}".format(total, upstream, downstream)
     di_list.append(di)
@@ -108,26 +115,20 @@ for i in range(size):
 ###PLOTTING
 
 #we apply log2 so we have a smaller plotting
-di_list2 = []
 positive = True
 boundary = False
 print di_list
 for i in di_list:
-    if i == 0:
-        di_list2.append(1)
-    if i < 0:
-        di_list2.append(math.log(math.fabs(i),2)*-1)
+    if i <= 0: #----
         if positive:
-            boundary = True
-            positive = False
-    if i > 0:
-        di_list2.append(math.log(i,2))
+            positive = False 
+    if i > 0: #+++
         if positive == False:
+            boundary = True
             positive = True
     if boundary:
         print "Boundary: {}".format(di_list.index(i))
         boundary = False
-print di_list2
 index = np.arange(size)
 di_list_pos = []
 di_list_neg = []
@@ -147,11 +148,14 @@ ax = fig.add_subplot(111)
 ax.set_xlim(0,size)
 ax.set_ylim(-100,100)
 ax.set_axis_bgcolor('white')
-#for mouse
+
+#for reverse DI
 di_list_neg = [i * -1 for i in di_list_neg] 
 di_list_pos = [i * -1 for i in di_list_pos] 
 plt.bar(index,di_list_neg,facecolor='#9999ff')
 plt.bar(index,di_list_pos,facecolor='#ff9999')
+
+#for rest
 #plt.bar(index,di_list_pos,facecolor='#9999ff')
 #plt.bar(index,di_list_neg,facecolor='#ff9999')
 
@@ -169,8 +173,6 @@ plt.show()
 ### Many times to find the boundaries:
 boundaries = defaultdict(int)
 for tad_size in range(tad_from,tad_to):
-    print tad_size
-
     di_list = []
     for i in range(size):
         #print "bin {}".format(i)
@@ -204,9 +206,12 @@ for tad_size in range(tad_from,tad_to):
                 downstream = downstream + mean_value * (tad_size - down_cont)
         #apply the equation
         E = (downstream + upstream)/2
-        di1 = ((downstream-upstream)/(abs(downstream-upstream)))
-        di2 = ((((upstream-E)**2)/E)+((((downstream-E)**2)/E)))
-        di = di1 * di2
+        if E != 0:
+            di1 = ((downstream-upstream)/(abs(downstream-upstream)))
+            di2 = ((((upstream-E)**2)/E)+((((downstream-E)**2)/E)))
+            di = di1 * di2
+        else:
+            di = 0
         
     #print "total= u - d    {}={} - {}".format(total, upstream, downstream)
         di_list.append(di)
@@ -217,20 +222,13 @@ for tad_size in range(tad_from,tad_to):
 
     ###############
     #we apply log2 so we have a smaller plotting
-    di_list2 = []
-    positive = True
-    boundary = False
     for i in di_list:
-        if i == 0:
-            di_list2.append(1)
-        if i < 0:
-            di_list2.append(math.log(math.fabs(i),2)*-1)
+        if i < 0: #----
             if positive:
-                boundary = True
-                positive = False
-        if i > 0:
-            di_list2.append(math.log(i,2))
+                positive = False 
+        if i >= 0: #+++
             if positive == False:
+                boundary = True
                 positive = True
         if boundary:
             #print "Boundary: {}".format(di_list.index(i))
