@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import math
 from collections import defaultdict
 import operator
-plt.style.use('ggplot')
+#plt.style.use('ggplot')
 
 tad_from = 15
 tad_to = 40
