@@ -1,4 +1,10 @@
 #script that takes as argument the distance matrix and the expected TAD size and outputs the directionality index plot
+
+
+
+#######!!! CARE THAT BOUDNARY CALLING CAN BE DIFFERENT FOR REVERSED DATA
+
+#######!!! CARE THAT BOUDNARY CALLING CAN BE DIFFERENT FOR REVERSED DATA
 import pylab
 
 #!/usr/bin/python
@@ -10,8 +16,8 @@ from collections import defaultdict
 import operator
 plt.style.use('ggplot')
 
-tad_from = 15
-tad_to = 40
+tad_from = 30
+tad_to = 90
 
 add_mean_values = True
 
@@ -122,9 +128,9 @@ for i in di_list:
     if i <= 0: #----
         if positive:
             positive = False 
+            boundary = True
     if i > 0: #+++
         if positive == False:
-            boundary = True
             positive = True
     if boundary:
         print "Boundary: {}".format(di_list.index(i))
@@ -146,7 +152,7 @@ for x in di_list:
 fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.set_xlim(0,size)
-ax.set_ylim(-100,100)
+ax.set_ylim(-20000,20000)
 ax.set_axis_bgcolor('white')
 
 #for reverse DI
@@ -223,15 +229,15 @@ for tad_size in range(tad_from,tad_to):
     ###############
     #we apply log2 so we have a smaller plotting
     for i in di_list:
-        if i < 0: #----
+        if i <= 0: #----
             if positive:
                 positive = False 
-        if i >= 0: #+++
-            if positive == False:
                 boundary = True
+        if i > 0: #+++
+            if positive == False:
                 positive = True
         if boundary:
-            #print "Boundary: {}".format(di_list.index(i))
+            print "Boundary: {}".format(di_list.index(i))
             boundaries[di_list.index(i)] += 1
             boundary = False
 sorted_x = sorted(boundaries.items(), key=operator.itemgetter(1), reverse=True)
