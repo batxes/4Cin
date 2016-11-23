@@ -11,6 +11,8 @@ except ImportError:
 except:
     pass
 
+translocation_exp = True
+translocation_bead = 59
 #############################################################################################################
 # code that calculates the average and standard deviation of the given 4c data file
 #
@@ -177,34 +179,30 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
     # If we want to plot
     for i in range(number_of_genes):
         if plot:
-            fig = plt.figure(figsize=(10, 10)) 
+            fig = plt.figure(figsize=(100, 100)) 
             plt.subplot(3,1,1)
             bar_list = plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
-            bar_list = plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
-            bar_list[viewpoints[i]].set_color('r')
-            bar_list[viewpoints[i]].set_edgecolor('w')
+            if translocation_exp:
+                for j in range(translocation_bead):
+                    bar_list[j].set_color('r')
+                    bar_list[j].set_edgecolor('w')
             plt.xlim(0,len(HEATMAP_DATA[i]))  
             plt.ylabel("Number of Reads")
             plt.xlabel(files[i])
-            plt.tick_params(axis='both', which='major', labelsize=14)
             plt.subplot(3,1,2)
             plt.plot(final_zscores[i])
             plt.xlim(0,len(final_zscores[i]))  
             plt.axhline(y=uZ)
             plt.axhline(y=lZ)
             plt.ylabel("Z score")
-            plt.tick_params(axis='both', which='major', labelsize=14)
+            plt.xlabel("Beads")
             plt.subplot(3,1,3)
-            bar_list = plt.bar(range(len(final_reads[i])),final_reads[i],width=1)
-            bar_list[viewpoints[i]].set_color('r')
-            bar_list[viewpoints[i]].set_edgecolor('w')
+            plt.bar(range(len(final_reads[i])),final_reads[i],width=1)
             plt.xlim(0,len(final_reads[i]))
             plt.ylabel("Distance restraints in Angstroms")
-            plt.xlabel("Beads")
-            plt.tick_params(axis='both', which='major', labelsize=14)
 #             plt.switch_backend('QT4Agg')
             figManager = plt.get_current_fig_manager()
-            plt.subplots_adjust(bottom=0.05, right=0.98, top=0.98, left=0.1)
+            plt.subplots_adjust(bottom=0.05, right=0.99, top=0.99, left=0.05)
             #figManager.window.showMaximized()
             #figManager.Maximize(True)
             plt.show()
@@ -220,9 +218,9 @@ if __name__ == "__main__":
     print "TESTING READS "
     if number_of_arguments == 5:
         config_file = sys.argv[1]
-        uZ = float(sys.argv[2])
-        lZ = float(sys.argv[3])
-        y2 = int(sys.argv[4])
+        uZ = sys.argv[2]
+        lZ = sys.argv[3]
+        y2 = sys.argv[4]
     elif number_of_arguments == 2:
         config_file = sys.argv[1]
         uZ = 0.1

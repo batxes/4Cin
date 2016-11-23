@@ -16,8 +16,8 @@ from collections import defaultdict
 import operator
 #plt.style.use('ggplot')
 
-tad_from = 30
-tad_to = 90
+tad_from = 15
+tad_to = 40
 
 add_mean_values = True
 
@@ -54,8 +54,9 @@ with open(input_path,"r") as INPUT:
         matrix[int(values[0])][int(values[1])] = max_value - float(values[2][:-1])
         matrix[int(values[1])][int(values[0])] = max_value - float(values[2][:-1])
         
-        matrix[int(values[0])][int(values[1])] = float(values[2][:-1])
-        matrix[int(values[1])][int(values[0])] = float(values[2][:-1])
+        #for original HIC
+        #matrix[int(values[0])][int(values[1])] = float(values[2][:-1])
+        #matrix[int(values[1])][int(values[0])] = float(values[2][:-1])
 
 
 #Calculate the directionality index (Dixo et. al. 2012 Nature)
@@ -104,14 +105,14 @@ for i in range(size):
             downstream = downstream + mean_value * (tad_size - down_cont)
     #apply the equation
     E = (downstream + upstream)/2
-    print "{}: {}+{}/2".format(i,downstream,upstream)
+    #print "{}: {}+{}/2".format(i,downstream,upstream)
     if E != 0:
         di1 = ((downstream-upstream)/(abs(downstream-upstream)))
         di2 = ((((upstream-E)**2)/E)+((((downstream-E)**2)/E)))
         di = di1 * di2
     else:
         di = 0
-    
+    print "{} di: {} ".format(i,di)
 #print "total= u - d    {}={} - {}".format(total, upstream, downstream)
     di_list.append(di)
 
@@ -121,17 +122,17 @@ for i in range(size):
 ###PLOTTING
 
 #we apply log2 so we have a smaller plotting
-positive = True
+positive = False
 boundary = False
 print di_list
 for i in di_list:
     if i <= 0: #----
         if positive:
             positive = False 
-            boundary = True
     if i > 0: #+++
         if positive == False:
             positive = True
+            boundary = True
     if boundary:
         print "Boundary: {}".format(di_list.index(i))
         boundary = False
@@ -156,14 +157,14 @@ ax.set_ylim(-20000,20000)
 ax.set_axis_bgcolor('white')
 
 #for reverse DI
-di_list_neg = [i * -1 for i in di_list_neg] 
-di_list_pos = [i * -1 for i in di_list_pos] 
-plt.bar(index,di_list_neg,facecolor='#9999ff')
-plt.bar(index,di_list_pos,facecolor='#ff9999')
+#di_list_neg = [i * -1 for i in di_list_neg] 
+#di_list_pos = [i * -1 for i in di_list_pos] 
+#plt.bar(index,di_list_neg,facecolor='#9999ff')
+#plt.bar(index,di_list_pos,facecolor='#ff9999')
 
 #for rest
-#plt.bar(index,di_list_pos,facecolor='#9999ff')
-#plt.bar(index,di_list_neg,facecolor='#ff9999')
+plt.bar(index,di_list_pos,facecolor='#9999ff')
+plt.bar(index,di_list_neg,facecolor='#ff9999')
 
 try:
     saved_in = input_path.split("/")
@@ -232,9 +233,9 @@ for tad_size in range(tad_from,tad_to):
         if i <= 0: #----
             if positive:
                 positive = False 
-                boundary = True
         if i > 0: #+++
             if positive == False:
+                boundary = True
                 positive = True
         if boundary:
             print "Boundary: {}".format(di_list.index(i))
@@ -242,4 +243,4 @@ for tad_size in range(tad_from,tad_to):
             boundary = False
 sorted_x = sorted(boundaries.items(), key=operator.itemgetter(1), reverse=True)
 for i in sorted_x:
-    print "Boundary:{} - times:{}".format(i[0],i[1])
+    print "Boundary:{} - times:{}/{}".format(i[0],i[1],tad_to-tad_from)
