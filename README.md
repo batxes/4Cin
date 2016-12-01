@@ -97,6 +97,11 @@ scipy
     Given the distance matrix and the the number of beads a TAD has in your virtual HI-C, it plots the directionality index bar plot.
     python di_calculation.py distance_six_zebra 20
 
+### Additional scripts
+Getting 4C data like from Hi-C
+
+python data/get_data.py  -> generates 4C like files from the Hi-C file
+
 ### Notes
 
 - If you want to concatenate the beads with a tube, after openning the model in UCSF-Chimera, write this in its command line: "shape tube #X-Y radius Z bandlength 10000" (X and Y being the first and last beads, Z being the thickness of tube in Angstroms.)
