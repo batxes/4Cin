@@ -208,7 +208,7 @@ plt.colorbar()
 
 #to set the viewpoints
 #color = [10,5,5,10,10,10,10,10] -> depending on quantity of genes
-#plt.scatter(viewpoints, viewpoints, s=20, c=color,cmap=plt.cm.autumn)
+plt.scatter(viewpoints, viewpoints, s=20, c=color,cmap=plt.cm.autumn)
 
 
 
