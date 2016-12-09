@@ -113,17 +113,18 @@ z = np.array(matrix_mean)
 
 
 vmax = max(max_list)
+vmax = 80 #foxo1 real hic human
 c = plt.pcolor(z,cmap=plt.cm.PuRd,vmax=vmax, vmin=0)
 ax.set_frame_on(False)
 plt.colorbar()
 
-viewpoints = 59,23,65,77 #pax3,epha4,sgpp2,farsb human
-#viewpoints = 141,144,90,87 #foxo1,mrps31,cog6,lhfp human
+#viewpoints = 51,15,57,69 #pax3,epha4,sgpp2,farsb human
+viewpoints = 111,115,61,58 #foxo1,mrps31,cog6,lhfp human
 #viewpoints = 47,53,62,13 #pax3,sgpp2,farsb,epha4 mouse
 #viewpoints = 58,50,96,97 #foxo1,maml3,cog6,lhfp mouse
 #to set the viewpoints
 #plt.scatter(viewpoints, viewpoints, s=20, c=color,cmap=plt.cm.autumn)
-#plt.scatter(viewpoints, viewpoints, s=20,cmap=plt.cm.autumn)
+plt.scatter(viewpoints, viewpoints, s=20,cmap=plt.cm.autumn)
 
 #ax.set_yticks(viewpoints)
 #ax.set_xticks(viewpoints)

@@ -14,10 +14,10 @@ import matplotlib.pyplot as plt
 import math
 from collections import defaultdict
 import operator
-#plt.style.use('ggplot')
+plt.style.use('ggplot')
 
-tad_from = 30
-tad_to = 90
+tad_from = 15
+tad_to = 35
 
 add_mean_values = True
 
@@ -128,10 +128,11 @@ for i in di_list:
     if i <= 0: #----
         if positive:
             positive = False 
-            boundary = True
+            #boundary = True #if NOT reversed
     if i > 0: #+++
         if positive == False:
             positive = True
+            boundary = True #if reversed
     if boundary:
         print "Boundary: {}".format(di_list.index(i))
         boundary = False
@@ -152,7 +153,9 @@ for x in di_list:
 fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.set_xlim(0,size)
-ax.set_ylim(-20000,20000)
+#ax.set_ylim(-20000,20000)
+#for real Hi-C
+ax.set_ylim(-100,100)
 ax.set_axis_bgcolor('white')
 
 #for reverse DI
@@ -232,12 +235,13 @@ for tad_size in range(tad_from,tad_to):
         if i <= 0: #----
             if positive:
                 positive = False 
-                boundary = True
+                #boundary = True  #if NOT reversed
         if i > 0: #+++
             if positive == False:
                 positive = True
+                boundary = True  #if reversed
         if boundary:
-            print "Boundary: {}".format(di_list.index(i))
+            #print "Boundary: {}".format(di_list.index(i))
             boundaries[di_list.index(i)] += 1
             boundary = False
 sorted_x = sorted(boundaries.items(), key=operator.itemgetter(1), reverse=True)
