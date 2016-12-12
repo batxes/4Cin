@@ -3,8 +3,6 @@
 
 
 #######!!! CARE THAT BOUDNARY CALLING CAN BE DIFFERENT FOR REVERSED DATA
-
-#######!!! CARE THAT BOUDNARY CALLING CAN BE DIFFERENT FOR REVERSED DATA
 import pylab
 
 #!/usr/bin/python
@@ -16,12 +14,8 @@ from collections import defaultdict
 import operator
 plt.style.use('ggplot')
 
-tad_from = 15
-<<<<<<< HEAD
-tad_to = 35
-=======
-tad_to = 40
->>>>>>> 278eae58142be466fbea94ab403d72496db00505
+tad_from = 20
+tad_to = 90
 
 add_mean_values = True
 
@@ -38,13 +32,14 @@ with open(input_path,"r") as INPUT:
     for line in INPUT:
         lines += 1
         values = line.split(",")
+        size = int(values[0])
         aux_list.append(float(values[2][:-1]))
 max_value = max(aux_list)
-mean_value = np.mean(aux_list)
 with open(input_path,"r") as INPUT:
     for line in INPUT:
         values = line.split(",")
-        size = int(values[0])
+        aux_list.append(max_value - float(values[2][:-1]))
+mean_value = np.mean(aux_list)
 size += 1
 #size = int(np.sqrt(lines))
 
@@ -82,7 +77,7 @@ for i in range(size):
     to_ = i
     for j in range(from_ ,to_):
         if j != i:
-#print "upstream: [{}][{}]: {}".format(j,i,matrix[j][i])
+ #           print "upstream: [{}][{}]: {}".format(j,i,matrix[j][i])
             up_cont = up_cont + 1
 #downstream = downstream + matrix[j][i]/(size-i) 
             upstream = upstream + matrix[j][i]
@@ -133,18 +128,11 @@ for i in di_list:
     if i <= 0: #----
         if positive:
             positive = False 
-<<<<<<< HEAD
-            #boundary = True #if NOT reversed
+            #boundary = True 
     if i > 0: #+++
         if positive == False:
             positive = True
-            boundary = True #if reversed
-=======
-    if i > 0: #+++
-        if positive == False:
-            positive = True
-            boundary = True
->>>>>>> 278eae58142be466fbea94ab403d72496db00505
+            boundary = True 
     if boundary:
         print "Boundary: {}".format(di_list.index(i))
         boundary = False
@@ -165,9 +153,9 @@ for x in di_list:
 fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.set_xlim(0,size)
-#ax.set_ylim(-20000,20000)
+ax.set_ylim(-20000,20000)
 #for real Hi-C
-ax.set_ylim(-100,100)
+#ax.set_ylim(-100,100)
 ax.set_axis_bgcolor('white')
 
 #for reverse DI
@@ -247,15 +235,11 @@ for tad_size in range(tad_from,tad_to):
         if i <= 0: #----
             if positive:
                 positive = False 
-<<<<<<< HEAD
-                #boundary = True  #if NOT reversed
-=======
->>>>>>> 278eae58142be466fbea94ab403d72496db00505
+                #boundary = True  
         if i > 0: #+++
             if positive == False:
-                boundary = True
                 positive = True
-                boundary = True  #if reversed
+                boundary = True  
         if boundary:
             #print "Boundary: {}".format(di_list.index(i))
             boundaries[di_list.index(i)] += 1
