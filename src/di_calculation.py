@@ -14,8 +14,8 @@ from collections import defaultdict
 import operator
 plt.style.use('ggplot')
 
-tad_from = 20
-tad_to = 90
+tad_from = 15
+tad_to = 50
 
 add_mean_values = True
 
