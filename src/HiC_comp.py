@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# script to compare virtual and original Hi-c's
+
 ## CREATE THE CMD TO USE IN CHIMERA
 import re
 import os
