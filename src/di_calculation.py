@@ -153,7 +153,10 @@ for x in di_list:
 fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.set_xlim(0,size)
-ax.set_ylim(-20000,20000)
+#limits will be 3/4 of maximum data
+lim = [abs(x) for x in di_list]
+ax.set_ylim(-1*max(lim)*3/4,max(lim)*3/4)
+#ax.set_ylim(-20000,20000)
 #for real Hi-C
 #ax.set_ylim(-100,100)
 ax.set_axis_bgcolor('white')

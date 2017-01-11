@@ -19,7 +19,6 @@ def chimera_worker(chimera_file):
     distance_output = subprocess.check_output(["chimera", "--nogui", chimera_file])
     return distance_output
 
-calculate_the_matrix = True #to get only the HIC from the text use TADS_generate_matrix
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 4: #Or all parameters, or no parameters 
@@ -86,7 +85,6 @@ path = "{}distances_of_current_model_{}".format(root,prefix)
 start_time = time.time()
 if calculate_the_matrix:
       
-    viewpoints = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
     #root = "/home/bioinfo/workspace/4c2vhic/{}_final_output_0.7_-0.3_8000/".format(prefix)
 #     root = "/home/bioinfo/workspace/genome/{}_output_0.2_-0.2_7000_without_2_and_3_4_6_7_8/".format(prefix)
     models = []
@@ -195,6 +193,7 @@ else:
 if verbose==3:  print "Generating matrix to plot..."     
 #matrix_mean = matrix_mean[15:-15,15:-15]
 #viewpoints = [x-15 for x in viewpoints]
+viewpoints = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
 fig = plt.figure()
 ax = plt.subplot(1,1,1)
 z = np.array(matrix_mean)

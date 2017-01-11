@@ -122,7 +122,7 @@ for core in range(0,number_of_files,number_of_cpu):
         remove(execute[i][0])
         remove(execute[i][0]+"c")
     if core!= 0:
-        sys.stdout.write("\r{}%".format( core*100/number_of_files))
+        sys.stdout.write("\r{}%\n".format( core*100/number_of_files))
         sys.stdout.flush()
 
 
@@ -146,7 +146,8 @@ for line in only_python_files:
     counter_line += 1
     matrixtxt.write("\n") 
 matrixtxt.close()
-print "matrix.txt written! in {}".format(root)
+print "matrix_parallel.txt written! in {}".format(root)
+print "\nThis is the whole RMSD matrix (all models vs all models)"
 #matrix2 = np.zeros((subset,subset))
 
 #models = []
@@ -254,12 +255,12 @@ for i in cluster_number:
         counter_line += 1
         matrixtxt.write("\n") 
     matrixtxt.close()
-    print "matrix{}.txt written! in {}".format(i,root)
+    print "\nmatrix{}.txt written! in {}".format(i,root)
         
         
     # create the file to open in chimera
     # superposition of the best models
-    print "\nCreating superposition of clusters\n"
+    print "\nCreating superposition of this cluster...\n"
     with open(working_dir+"data/"+prefix+"/"+prefix+"_superposition_"+str(i)+".py","w") as f:
         f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
         f.write("rc(\"open {}\")\n".format(cluster_models[0]))
@@ -269,4 +270,5 @@ for i in cluster_number:
             f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*NFRAGMENTS,k*NFRAGMENTS+NFRAGMENTS-1,NFRAGMENTS-1))
 
     print "created in {}data/{}/{}_superposition".format(working_dir,prefix,prefix)
+    print "\n------\n"
 
