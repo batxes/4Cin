@@ -54,6 +54,8 @@ try:
     n_viewpoints = len(viewpoints2)
     max_distance = int(config.get("EvoComp", "max_dist"))
     max_distance2 = int(config.get("EvoComp", "max_dist2"))
+    name = config.get("EvoComp","name")
+    name2 = config.get("EvoComp","name2")
     
     
     gene_names = config.get("EvoComp", "gene_names")
@@ -63,7 +65,6 @@ try:
     gene_names2 = re.sub('[\n\s\t]','',gene_names2)
     gene_names2 = gene_names2.split(",")
     
-    number_of_cpu = int(config.get("TADs", "number_of_cpu"))
     maximum_hic_value= float(config.get("EvoComp", "maximum_hic_value"))
 
 except:
@@ -75,10 +76,8 @@ viewpoints_ticks = [c+0.5 for c in viewpoints] #to match the gene_names in the m
 matrix = np.zeros((n_viewpoints,n_viewpoints))
 matrix2 = np.zeros((n_viewpoints,n_viewpoints))
 matrix_final = np.zeros((n_viewpoints,n_viewpoints))
-print viewpoints
-print viewpoints2
-print matrix_path
-print matrix_path2
+print "\nBeads to compare from first region: {}".format(viewpoints)
+print "Beads to compare from second region: {}".format(viewpoints2)
 
 count1 = -1
 print "Filling first half..."
@@ -123,17 +122,16 @@ array1 = []
 array2 = []
 for i in range(n_viewpoints):
     for j in range(n_viewpoints):
-        array1.append(matrix[i][j])
+        if i != j:
+            array1.append(matrix[i][j])
 for i in range(n_viewpoints):
     for j in range(n_viewpoints):
-        array2.append(matrix2[i][j])
+        if i != j:
+            array2.append(matrix2[i][j])
 
+print "\nCorrelation between both regions: "
 print "pearson: "+str(pearsonr(array1,array2))
 print "spearman: "+str(spearmanr(array1,array2))
-
-print len(array2)
-    
-
 
 if verbose==3:  print "Generating matrix to plot..."     
 fig = plt.figure()
@@ -164,10 +162,11 @@ plt.axis([0,z.shape[1],0,z.shape[0]])
 fig.set_facecolor('white')
 plt.show()
 
-pp = PdfPages('{}{}_evocomp.pdf'.format(storage_dir,prefix))
+pp = PdfPages('{}{}_vs_{}_evocomp.pdf'.format(storage_dir,name,name2))
 pp.savefig(fig)
 pp.close()
-print '{}_evocomp.pdf writen'.format(prefix)
+print "-------\nEvocomp.pdf shows in each matrix triangle the contact map between the conserved beads for each region."
+print '{}{}_vs_{}_evocomp.pdf writen'.format(storage_dir,name,name2)
 #Distance between #1 marker 1  and #10 marker 1 : 2203.213
 
 from matplotlib.colors import LinearSegmentedColormap
@@ -206,8 +205,9 @@ plt.axis([0,z.shape[1],0,z.shape[0]])
 fig.set_facecolor('white')
 plt.show()
 
-pp = PdfPages('{}{}_evocomp_diff.pdf'.format(storage_dir,prefix))
+pp = PdfPages('{}{}_vs_{}_evocomp_diff.pdf'.format(storage_dir,name,name2))
 pp.savefig(fig)
 pp.close()
-print '{}_evocomp_diff.pdf writen'.format(prefix)
+print "-------\nEvocomp_diff shows the difference between both half matrices."
+print '{}{}_vs_{}_evocomp_diff.pdf writen'.format(storage_dir,name,name2)
             

@@ -122,7 +122,7 @@ for core in range(0,number_of_files,number_of_cpu):
         remove(execute[i][0])
         remove(execute[i][0]+"c")
     if core!= 0:
-        sys.stdout.write("\r{}%\n".format( core*100/number_of_files))
+        sys.stdout.write("\r{}%".format( core*100/number_of_files))
         sys.stdout.flush()
 
 
@@ -146,7 +146,7 @@ for line in only_python_files:
     counter_line += 1
     matrixtxt.write("\n") 
 matrixtxt.close()
-print "matrix_parallel.txt written! in {}".format(root)
+print "\n\nmatrix_parallel.txt written! in {}".format(root)
 print "\nThis is the whole RMSD matrix (all models vs all models)"
 #matrix2 = np.zeros((subset,subset))
 
@@ -255,6 +255,7 @@ for i in cluster_number:
         counter_line += 1
         matrixtxt.write("\n") 
     matrixtxt.close()
+    print "\n------"
     print "\nmatrix{}.txt written! in {}".format(i,root)
         
         
@@ -270,5 +271,5 @@ for i in cluster_number:
             f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*NFRAGMENTS,k*NFRAGMENTS+NFRAGMENTS-1,NFRAGMENTS-1))
 
     print "created in {}data/{}/{}_superposition".format(working_dir,prefix,prefix)
-    print "\n------\n"
+    print "\n"
 
