@@ -14,14 +14,14 @@ import pylab
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 3 and number_of_arguments != 4: #Or all parameters, or no parameters 
-    print "Not enought parameters. Model to be painted and config file are needed. Distance matrix optional. You passed: ",sys.argv[1:]
+    print "Not enought parameters. Config file and model to be painted. Distance matrix optional (To paint RMSD matrix with epigenetic marks). You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) == 3:  #if we pass the arguments (in the cluster)
-    model = sys.argv[1]
-    ini_file = sys.argv[2]
+    model = sys.argv[2]
+    ini_file = sys.argv[1]
 if len(sys.argv) == 4:  #if we pass the arguments (in the cluster)
-    model = sys.argv[1]
-    ini_file = sys.argv[2]
+    model = sys.argv[2]
+    ini_file = sys.argv[1]
     distance_matrix = sys.argv[3]
 
 #read the config file
@@ -66,7 +66,7 @@ except:
 starts = []
 ends = []
 if bam_or_bed == "bam":
-    print "Reading Atac or h3k4me3 bam file..."
+    print "Reading bam file..."
     bamhandle = pysam.AlignmentFile(painting_path,"rb")
     with open ("bedbam_file","w") as stdout:
         with open (files[0],"r") as stdin:
@@ -79,6 +79,7 @@ if bam_or_bed == "bam":
                 chr_[0] = 'c'
                 values[0] = "".join(chr_)
                 read_count = bamhandle.count(values[0],int(values[1]),int(values[2])) #chrm, start, end
+                print values[0],read_count,
                 stdout.write("{}\t{}\t{}\t{}\n".format(values[0],values[1],values[2],read_count))
 
 
@@ -184,35 +185,43 @@ with open("coloring.cmd","w") as colored_model:
         #print "bead: {} color:{} value:{}".format(number,matplotlib.colors.rgb2hex(m.to_rgba(bead_values[number])),bead_values[number])
     colored_model.write("shape tube #{}-{} radius 200 bandlength 10000".format(0,NFRAGMENTS))
 
-
+print "Number of beads: {}".format(len(bead_values))
 print "Now, open coloring.cmd wich Chimera."
-print len(bead_values)
 
 print "Generatin some plots..."
 #plot statistic figures
 fig = pylab.figure(figsize=(8,8))
+fig.suptitle("Epigenetic Marks")
+pylab.xlabel("Bead Number")
+pylab.ylabel("Score")
 #pylab.plot(bead_values)
 pylab.bar(range(len(bead_values)),bead_values,color=cmap(norm(bead_values)),width=1,linewidth=0)
 #for i in range(len(bead_values)-1):
     #pylab.vlines(i,0,bead_values[i],color=cmap(norm(bead_values[i])),linewidth=6)
     #pylab.fill_between([range(len(bead_values))[i],range(len(bead_values))[i+1]],[bead_values[i],bead_values[i+1]],color=cmap(norm(bead_values[i])))
 axes = pylab.gca()
-axes.set_xlim([0,len(bead_values)-1])
+axes.set_xlim([0,len(bead_values)])
+#axes.set_xlim([0,len(bead_values)-1])
 try:
-        fig.savefig('genome_painting_stats_plot.png')
+        fig.savefig('genome_painting_stats_plot_{}.png'.format(prefix))
 except:
         pass
 
 fig = pylab.figure(figsize=(8,8))
 pylab.hist(bead_values,bins=100)
+fig.suptitle("Epigenetic Marks. Histogram.")
+pylab.ylabel("Frequency")
+pylab.xlabel("Score")
 try:
-        fig.savefig('genome_painting_stats_hist.png')
+        fig.savefig('genome_painting_stats_hist_{}.png'.format(prefix))
 except:
         pass
 fig = pylab.figure(figsize=(8,8))
 pylab.boxplot(bead_values)
+fig.suptitle("Epigenetic Marks. Boxplot.")
+pylab.ylabel("Score")
 try:
-        fig.savefig('genome_painting_stats_box.png')
+        fig.savefig('genome_painting_stats_box_{}.png'.format(prefix))
 except:
         pass
 

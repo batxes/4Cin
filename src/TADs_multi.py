@@ -22,7 +22,8 @@ def chimera_worker(chimera_file):
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 4: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file, matrix file (absolute path) and calculate_the_matrix True/False are required. You passed: ",sys.argv[1:]
+    print "Not enought parameters. Config file, matrix file path and calculate_the_matrix True/False are required. You passed: ",sys.argv[1:]
+    print "If calculating the matrix is not required, set config_file, directory where the Virtual Hi-C will create and False."
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
@@ -38,7 +39,7 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
         calculate_the_matrix = False
     else:
         print "Set True or False in calculate_the_matrix."
-        sys.exot()
+        sys.exit()
     
 #read the config file
 config = ConfigParser.ConfigParser()
@@ -84,32 +85,20 @@ distance_file = "get_genome_distance_{}".format(prefix)
 path = "{}distances_of_current_model_{}".format(root,prefix)
 start_time = time.time()
 if calculate_the_matrix:
-      
-    #root = "/home/bioinfo/workspace/4c2vhic/{}_final_output_0.7_-0.3_8000/".format(prefix)
-#     root = "/home/bioinfo/workspace/genome/{}_output_0.2_-0.2_7000_without_2_and_3_4_6_7_8/".format(prefix)
     models = []
-        # matrix = np.zeros((number_of_spheres,number_of_spheres,number_of_spheres))
         ## we get a file that (cmd) that we are gonna use it in chimera. It will write all distances in the model
     with open("{}".format(matrix_path), "r") as mtx:
         for line in mtx:
+            print line
             models = re.split("\t", line)
             print models
             break
-
-    
     models = models[1:-1]
     print models
-    
-    
-#     models = models[50:51] #testing
-    
-    
     counter = 0
     matrix = np.zeros((NFRAGMENTS,NFRAGMENTS,len(models)))
-    
     p = Pool(number_of_cpu)
     print number_of_cpu
-
 
     for model in models:
         print "{} - {}".format(counter,model)

@@ -8,14 +8,19 @@ import pylab
 #!/usr/bin/python
 import sys
 import numpy as np
-import matplotlib.pyplot as plt
 import math
 from collections import defaultdict
 import operator
-plt.style.use('ggplot')
+try:
+    import matplotlib.pyplot as plt
+    plt.style.use('ggplot')
+except ImportError:
+    pass
+except:
+    pass
 
-tad_from = 15
-tad_to = 50
+tad_from = 30
+tad_to = 60
 
 add_mean_values = True
 
@@ -25,6 +30,7 @@ if len(sys.argv) < 3:
 input_path = sys.argv[1]
 tad_size = int(sys.argv[2])
 
+print "\nCalculating Tad boundaries, with TAD sizes ranging between {} and  {}.".format(tad_from, tad_to)
 
 aux_list = []
 lines = 0
@@ -111,7 +117,7 @@ for i in range(size):
         di = di1 * di2
     else:
         di = 0
-    print "{} di: {} ".format(i,di)
+    #print "{} di: {} ".format(i,di)
 #print "total= u - d    {}={} - {}".format(total, upstream, downstream)
     di_list.append(di)
 
@@ -123,7 +129,8 @@ for i in range(size):
 #we apply log2 so we have a smaller plotting
 positive = False
 boundary = False
-print di_list
+#print di_list
+print "Boundaries found in the plot (Tad size: {}):".format(tad_size)
 for i in di_list:
     if i <= 0: #----
         if positive:
@@ -175,7 +182,7 @@ try:
     saved_in = input_path.split("/")
     add_string = "/".join(saved_in[:-1])
     fig.savefig("{}/Hi-C_DI_plot.png".format(add_string))
-    print "Plot saved in {}/Hi-C_DI_plot.png".format(add_string)
+    print "----\nPlot saved in {}/Hi-C_DI_plot.png\n----".format(add_string)
 except:
     pass
 
@@ -248,5 +255,7 @@ for tad_size in range(tad_from,tad_to):
             boundaries[di_list.index(i)] += 1
             boundary = False
 sorted_x = sorted(boundaries.items(), key=operator.itemgetter(1), reverse=True)
+print "Number of times a boundary was found: "
 for i in sorted_x:
-    print "Boundary:{} - times:{}/{}".format(i[0],i[1],tad_to-tad_from)
+    if i[0] != 0:
+        print "Boundary: {} - times found:{}/{}".format(i[0],i[1],tad_to-tad_from)
