@@ -19,8 +19,8 @@ except ImportError:
 except:
     pass
 
-tad_from = 30
-tad_to = 60
+tad_from = 15
+tad_to = 50
 
 add_mean_values = True
 

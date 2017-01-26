@@ -45,10 +45,6 @@ try:
     
     NFRAGMENTS_ALL = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS_ALL/WINDOW)
-    
-    working_dir = config.get("ModelingValues", "working_dir")
-
-
 
     painting_path = config.get("Painting","file_path")
     colormap = config.get("Painting","colormap")
@@ -79,7 +75,6 @@ if bam_or_bed == "bam":
                 chr_[0] = 'c'
                 values[0] = "".join(chr_)
                 read_count = bamhandle.count(values[0],int(values[1]),int(values[2])) #chrm, start, end
-                print values[0],read_count,
                 stdout.write("{}\t{}\t{}\t{}\n".format(values[0],values[1],values[2],read_count))
 
 
@@ -203,7 +198,8 @@ axes = pylab.gca()
 axes.set_xlim([0,len(bead_values)])
 #axes.set_xlim([0,len(bead_values)-1])
 try:
-        fig.savefig('genome_painting_stats_plot_{}.png'.format(prefix))
+        fig.savefig('data/{}/genome_painting_stats_plot_{}.png'.format(prefix,prefix))
+        print "Plot painted in data/{}/".format(prefix)
 except:
         pass
 
@@ -213,7 +209,8 @@ fig.suptitle("Epigenetic Marks. Histogram.")
 pylab.ylabel("Frequency")
 pylab.xlabel("Score")
 try:
-        fig.savefig('genome_painting_stats_hist_{}.png'.format(prefix))
+        fig.savefig('data/{}/genome_painting_stats_hist_{}.png'.format(prefix,prefix))
+        print "Histogram painted in data/{}/".format(prefix)
 except:
         pass
 fig = pylab.figure(figsize=(8,8))
@@ -221,7 +218,8 @@ pylab.boxplot(bead_values)
 fig.suptitle("Epigenetic Marks. Boxplot.")
 pylab.ylabel("Score")
 try:
-        fig.savefig('genome_painting_stats_box_{}.png'.format(prefix))
+        fig.savefig('data/{}/genome_painting_stats_box_{}.png'.format(prefix,prefix))
+        print "Box plot painted in data/{}/".format(prefix)
 except:
         pass
 
