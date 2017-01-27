@@ -35,35 +35,36 @@ color #b3b3b3 #32
 color #b3b3b3 #33
 color #b3b3b3 #34
 
-color #9700ff #63
-color #9704ff #62
-color #9708ff #61
-color #9712ff #60
-color #9716ff #59
-color #9720ff #58
-color #9724ff #57
-color #9728ff #56
-color #9732ff #55
-color #9736ff #54
-color #9740ff #53
-color #9744ff #52
-color #9748ff #51
-color #9752ff #50
-color #9756ff #49
-color #9760ff #48
-color #9764ff #47
-color #9768ff #46
-color #9772ff #45
-color #9776ff #44
-color #9780ff #43
-color #9784ff #42  
-color #9788ff #41
-color #9792ff #40
-color #9796ff #39
-color #97a0ff #38
-color #97a4ff #37
-color #97a8ff #36
-color #97b2ff #35
+color #0055d4 #63
+color #0055d4 #62
+color #0055d4 #61
+color #0055d4 #60
+color #0055d4 #59
+color #0055d4 #58
+color #0055d4 #57
+color #0055d4 #56
+color #558de2 #55
+color #558de2 #54
+color #558de2 #53
+color #558de2 #52
+color #AAc6F0 #51
+color #AAc6F0 #50
+color #ffffff #49
+color #f0e2aa #48
+color #f0e2aa #47
+color #e2c655 #46
+color #e2c655 #45
+color #e2c655 #44
+color #e2c655 #43
+color #d4aa00 #42
+color #d4aa00 #41
+color #d4aa00 #40
+color #d4aa00 #39
+color #d4aa00 #38
+color #d4aa00 #37
+color #d4aa00 #36
+color #d4aa00 #35
+
 
 color #b3b3b3 #64
 color #b3b3b3 #65
@@ -72,14 +73,22 @@ color #b3b3b3 #67
 color #b3b3b3 #68
 color #b3b3b3 #69
 color #b3b3b3 #70
-shape tube #0-71 radius 200 bandlength 10000
-shape sphere radius 500 center #7 color #ffffff
-shape sphere radius 500 center #8 color #ff5151
-shape sphere radius 500 center #9 color #c5c5c5
-shape sphere radius 500 center #53 color #458be8
-shape sphere radius 500 center #54 color #5d5d5d
-shape sphere radius 500 center #57 color #ff5151
-shape sphere radius 500 center #58 color #000000
-shape cone radius 700 height 800 center #8 color #ff5151 caps true
-shape cone radius 700 height 800 center #57 color #ff5151 caps true
-shape cone radius 700 height 800 center #53 color #458be8 caps true
+shape tube #0-70 radius 200 bandlength 10000
+
+
+
+shape sphere radius 300 center #7 color #819602
+shape sphere radius 300 center #9 color #8f12dd
+shape sphere radius 300 center #54 color #f08500
+shape sphere radius 300 center #58 color #f5143d
+shape cone radius 500 height 600 center #6 color #000000 caps false
+shape cone radius 500 height 600 center #8 color #000000 caps false
+shape cone radius 500 height 600 center #57 color #000000 caps false
+shape cone radius 500 height 600 center #53 color #000000 caps false
+~show #0-100 
+
+background solid white
+
+#verdekaka: 819602
+#naranja: f08500
+

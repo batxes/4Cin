@@ -35,36 +35,35 @@ color #b3b3b3 #32
 color #b3b3b3 #33
 color #b3b3b3 #34
 
-color #97b2ff #63
-color #97a8ff #62
-color #97a4ff #61
-color #97a0ff #60
-color #9796ff #59
-color #9792ff #58
-color #9788ff #57
-color #9784ff #56
-color #9780ff #55
-color #9776ff #54
-color #9772ff #53
-color #9768ff #52
-color #9764ff #51
-color #9760ff #50
-color #9756ff #49
-color #9752ff #48
-color #9748ff #47
-color #9744ff #46
-color #9740ff #45
-color #9736ff #44
-color #9732ff #43
-color #9728ff #42
-color #9724ff #41
-color #9720ff #40
-color #9716ff #39
-color #9712ff #38
-color #9708ff #37
-color #9704ff #36
-color #9700ff #35
-
+color #0055d4 #35
+color #0055d4 #36
+color #0055d4 #37
+color #0055d4 #38
+color #0055d4 #39
+color #0055d4 #40
+color #0055d4 #41
+color #0055d4 #42
+color #558de2 #43
+color #558de2 #44
+color #558de2 #45
+color #558de2 #46
+color #AAc6F0 #47
+color #AAc6F0 #48
+color #ffffff #49
+color #f0e2aa #50
+color #f0e2aa #51
+color #e2c655 #52
+color #e2c655 #53
+color #e2c655 #54
+color #e2c655 #55
+color #d4aa00 #56
+color #d4aa00 #57
+color #d4aa00 #58
+color #d4aa00 #59
+color #d4aa00 #60
+color #d4aa00 #61
+color #d4aa00 #62
+color #d4aa00 #63
 
 
 color #b3b3b3 #64
@@ -74,14 +73,48 @@ color #b3b3b3 #67
 color #b3b3b3 #68
 color #b3b3b3 #69
 color #b3b3b3 #70
+
 shape tube #0-71 radius 200 bandlength 10000
-shape sphere radius 500 center #7 color #ffffff
-shape sphere radius 500 center #8 color #ff5151
-shape sphere radius 500 center #9 color #c5c5c5
-shape sphere radius 500 center #47 color #458be8
-shape sphere radius 500 center #45 color #5d5d5d
-shape sphere radius 500 center #42 color #ff5151
-shape sphere radius 500 center #40 color #000000
-shape cone radius 700 height 800 center #8 color #ff5151 caps true
-shape cone radius 700 height 800 center #42 color #ff5151 caps true
-shape cone radius 700 height 800 center #47 color #458be8 caps true
+shape sphere radius 300 center #7 color #819602
+shape sphere radius 300 center #9 color #8f12dd
+shape sphere radius 300 center #45 color #f08500
+shape sphere radius 300 center #40 color #f5143d
+
+shape cone radius 500 height 600 center #6 color #000000 caps false
+shape cone radius 500 height 600 center #8 color #000000 caps false
+shape cone radius 500 height 600 center #42 color #000000 caps false
+shape cone radius 500 height 600 center #47 color #000000 caps false
+
+~show #0-100 
+background solid white
+
+#blue to yellow
+#color #0055d4 #35
+#color #1261d7 #36
+#color #246dda #37
+#color #3679dd #38
+#color #4885e0 #39
+#color #f5143d #40
+#color #6d9de6 #41
+#color #7faae9 #42
+#color #91b9ec #43
+#color #a3c2ef #44
+#color #ff8000 #45
+#color #c8daf5 #46
+#color #dae6f8 #47
+#color #ecf2fb #48
+#color #ffffff #49
+#color #fbf8ec #50
+#color #f8f2da #51
+#color #f5ecc8 #52
+#color #f2e6b6 #53
+#color #efe0a3 #54
+#color #ecda91 #55
+#color #e9d47f #56
+#color #e6ce6d #57
+#color #e3c85b #58
+#color #e0c248 #59
+#color #ddbc36 #60
+#color #dab624 #61
+#color #d7b012 #62
+#color #d4aa00 #63
