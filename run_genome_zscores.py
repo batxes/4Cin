@@ -41,6 +41,8 @@ for z_min in range(min_z,max_z+z_bins,z_bins):
             print("{} run_genome.sh {} -{} {} 0 {} False".format(mode,float(z_min)/10,float(z_max)/10,dist,ini_file))
 if mode == "/bin/bash":
     system(wait)
+print("When the jobs have finished, run 'python src/calculate_best_zscores.py {} True'. Set last variable to False if fails.".format(sys.argv[1]))
+
 
 
 

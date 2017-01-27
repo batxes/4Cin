@@ -25,6 +25,7 @@ try:
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
     working_dir = config.get("ModelingValues", "working_dir")
+    locus_size = int(config.get("Pre-ModelingValues", "locus_size"))
     min_dist = int(config.get("Pre-ModelingValues", "min_dist"))
     max_dist = int(config.get("Pre-ModelingValues", "max_dist"))
     dist_bins = int(config.get("Pre-ModelingValues", "dist_bins"))
@@ -49,7 +50,8 @@ results_path = "{}data/{}/{}_best_maxd_results.txt".format(working_dir,prefix,pr
 aux_file = "get_genome_length.py"
 number_of_spheres = NFRAGMENTS - 1
 
-print "!! NOTE !! remember that we need models with 0.1 and -0.1 of uZ and lZ for the best calculation."
+maxd_list = []
+size_list = []
 with open (results_path,"w") as output_results:
     for maxd in np.arange(min_dist,max_dist+1,dist_bins):
         root = "{}data/{}/{}_output_0.1_-0.1_{}/".format(working_dir,prefix,prefix,maxd)
@@ -83,9 +85,17 @@ with open (results_path,"w") as output_results:
         size = np.mean(all_distances)
         #print "{}: {}".format(root,size)
         output_results.write("With max distance {}: {}A Equivalent to a genome of {} Mbp\n".format(maxd,size,size/0.0846/1000000)) #in Mbp
+        maxd_list.append(maxd)
+        size_list.append(size/0.0846)
         print "With max distance {}: {}A Equivalent to a genome of {} Mbp".format(maxd,size,size/0.0846/1000000)
 if os.path.isfile(aux_file):
     os.remove(aux_file)
     os.remove(aux_file+"c")
 
 print "Results writen in: {}".format(results_path)
+print "\nNow run: 'python run_genome_zscores.py {} qsub'".format(ini_file)
+
+
+
+####calculate best maxd
+config.set("ModelingValues", "prefix",)

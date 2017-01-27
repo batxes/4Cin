@@ -40,6 +40,7 @@ for dist in range(min_dist,max_dist+dist_bins,dist_bins):
         print("{} run_genome.sh 0.1 -0.1 {} 0 {} False".format(mode,dist,ini_file))
 if mode == "/bin/bash":
     system(wait)
+print("When the jobs have finished, run 'python src/calculate_best_maxd.py {}'".format(sys.argv[1]))
 
 
 
