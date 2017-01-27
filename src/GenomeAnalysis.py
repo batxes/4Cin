@@ -30,9 +30,9 @@ try:
     lZ = float(config.get("ModelingValues", "min_z"))
     y2 = int(config.get("ModelingValues", "max_dist"))
     
-    files = config.get("ModelingValues", "files")
-    files = re.sub('[\n\s\t]','',files)
-    files = files.split(",")    
+    data_dir = config.get("ModelingValues", "data_dir")
+    files = [f for f in os.listdir(data_dir) if os.path.isfile(os.path.join(data_dir, f))]
+    files = [data_dir + f for f in files]
     
     viewpoints = config.get("ModelingValues", "viewpoints")
     viewpoints = re.sub('[\n\s\t]','',viewpoints)

@@ -45,9 +45,8 @@ try:
     k_mean = int(config.get("Clustering", "kmeans"))
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
-    print root
 
-    number_of_cpu = int(config.get("Clustering", "number_of_cpu"))
+    number_of_cpu = int(config.get("ModelingValues", "number_of_cpu"))
     subset = int(config.get("AnalysisValues", "subset"))
     
 except:

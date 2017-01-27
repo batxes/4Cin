@@ -42,7 +42,6 @@ try:
     k_mean = int(config.get("Clustering", "kmeans"))
     NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
     NFRAGMENTS = int(NFRAGMENTS/WINDOW)
-    print root
 
     subset = int(config.get("AnalysisValues", "subset"))
     

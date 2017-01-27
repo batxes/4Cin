@@ -71,9 +71,8 @@ try:
     color = config.get("TADs", "color")
     color = re.sub('[\n\s\t]','',color)
     color = color.split(",")
-    color = [ int(i) for i in color]
     
-    number_of_cpu = int(config.get("TADs", "number_of_cpu"))
+    number_of_cpu = int(config.get("ModelingValues", "number_of_cpu"))
     maximum_hic_value= int(config.get("TADs", "maximum_hic_value"))
 
 except:

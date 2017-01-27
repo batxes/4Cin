@@ -1,7 +1,6 @@
 #!/bin/bash
 #$ -N _4c2vhic
 #$ -cwd
-#s -pe make 24
 
 
 
