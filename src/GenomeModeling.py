@@ -20,6 +20,8 @@ import numpy as np
 import ConfigParser
 from data_manager import fileCheck, sizeReader,  calculateNWindowedDistances
 
+
+
 drome = False
 
 number_of_arguments = len(sys.argv)
@@ -40,7 +42,7 @@ try:
     config.read(ini_file)
     prefix = config.get("ModelingValues", "prefix")
     working_dir = config.get("ModelingValues", "working_dir")
-    verbose = int(config.get("ModelingValues", "verbose"))
+    verbose = config.get("ModelingValues", "verbose")
     WINDOW = float(config.get("ModelingValues", "WINDOW"))
     data_dir = config.get("ModelingValues", "data_dir")
     files = [f for f in os.listdir(data_dir) if os.path.isfile(os.path.join(data_dir, f))]
@@ -77,6 +79,11 @@ except:
     print e
     sys.exit()
 
+if verbose == "True":
+    def verboseprint(text):
+        print text;
+else:   
+    verboseprint = lambda *a: None      # do-nothing function
 
 ###################################### ###################################### 
 ###################################### ###################################### 
@@ -160,8 +167,7 @@ for sample in range(starting_point, starting_point+number_of_models):
     scores = []
     
     chimera_file = prefix+str(sample)+".py"
-    if (verbose == 3):
-        print "Generating ", chimera_file, "..."
+    verboseprint ("Generating {} ...".format(chimera_file))
     values_file = prefix+str(sample)+".txt"
     w = IMP.display.ChimeraWriter(storage_folder+"/"+chimera_file)
     m = IMP.Model()
@@ -186,8 +192,7 @@ for sample in range(starting_point, starting_point+number_of_models):
                 radius_sum = 10000
             radius = radius_scale * radius_sum #sphere radius proportional to fragments
             fragment_bp_quantity.append(radius_sum)
-            if (verbose == 3):
-                print "Fragment number: "+str(i)+" size: "+str(radius_sum)+" radius: "+str(radius)
+            verboseprint ("Fragment number:{} size:{} radius:{}".format(i,radius_sum,radius))
             #decorator with sphere  
             #Creating very far away particles (10000) could alter the final result of the beads that are not restrained
             d = IMP.core.XYZR.setup_particle(p, IMP.algebra.Sphere3D(IMP.algebra.Vector3D(randint(0,int(y2)), randint(0,int(y2)), randint(0,int(y2))), radius)) 
@@ -375,41 +380,32 @@ for sample in range(starting_point, starting_point+number_of_models):
         print "Optimizing twith Brownian Dynamics for the RMF file (movie)."
         bd.optimize(frames)
     
-    #if I want no log
     IMP.base.set_log_level(IMP.base.SILENT)
     
-    if (verbose == 3):
-        #print "Number of restraints: %i" % (m.get_number_of_restraints()) #deprectad in last IMP 2.5.1
-        print "Number of restraints: %i" % (len(restraints))
+    verboseprint( "Number of restraints: %i" % (len(restraints)))
     
     #first score
     scores.append(m.evaluate(False))
-    if (verbose == 3):
-        print "Start score: ",scores[-1]
-        print "\nStarts the optimization... "
+    verboseprint ("Start score: {}".format(scores[-1]))
+    verboseprint ("\nStarts the optimization... ")
 
     #First hightemp iterations, do not stop the optimization
-    if (verbose == 3):
-        print "High temp iterations"
+    verboseprint ("High temp iterations")
     for i in range(0,hightemp):
         temperature = alpha * (1.1 * NROUNDS - i) / NROUNDS
         mc.set_kt(temperature)
         scores.append(mc.optimize(STEPS))
-        if (verbose == 3):
-            print i, scores[-1], "temp: ",mc.get_kt()
+        verboseprint ("{} {} temp:{}".format(i, scores[-1],mc.get_kt()))
     
     needed_time = time.time() - start_time
     lownrj = scores[-1]
-
-    if (verbose == 3):
-        print "Time for High temp iterations" , needed_time
-        print "Low temp iterations"
+    verboseprint ("Time for High temp iterations {}".format(needed_time))
+    verboseprint ("Low temp iterations")
     for i in range(hightemp,NROUNDS): 
         temperature = alpha * (1.1 * NROUNDS - i) / NROUNDS
         mc.set_kt(temperature)
         scores.append(mc.optimize(STEPS))
-        if (verbose == 3):
-            print i, scores[-1], "temp: ",mc.get_kt()
+        verboseprint ("{} {} temp:{}".format(i, scores[-1],mc.get_kt()))
         # Calculate the score variation and check if the optimization
         # can be stopped or not
         if lownrj > 0:
@@ -448,11 +444,9 @@ for sample in range(starting_point, starting_point+number_of_models):
         for r in restraints[n:n2]:
             suma4 = suma4 + r.evaluate(False)
 #         print n-n2, " connectivity HLB restraints: ",suma4
-    if (verbose == 3):
-        print "Total: ",suma1+suma2+suma3+suma4
-        print "------------------------\n"
-        #print "Number of restraints: %i" % (m.get_number_of_restraints()) #deprectad in last IMP 2.5.1
-        print "Number of restraints: %i" % (len(restraints))
+    verboseprint ("Total: ".format(suma1+suma2+suma3+suma4))
+    verboseprint ("------------------------\n")
+    verboseprint ("Number of restraints: %i" % (len(restraints)))
 #     if cg.set_stop_on_good_score(True):
 #         print "\n\ntermino con: "+str(i)
 #         break;
@@ -464,12 +458,10 @@ for sample in range(starting_point, starting_point+number_of_models):
     # print "\n\n############"
     # for r in restraints:
     #     print r.get_name(), r.evaluate(False)
-    if (verbose == 3):
-        needed_time = time.time() - start_time
-        print "Time for Low temp iterations" , needed_time
+    needed_time = time.time() - start_time
+    verboseprint ("Time for Low temp iterations".format(needed_time))
     
     
-        print "\nFINISH"
     if (sampling):
         f1 = open (score_file,"a+")
         f1.write(str(sample)+"\t"+str(scores[-1])+"\n")
@@ -498,9 +490,8 @@ for sample in range(starting_point, starting_point+number_of_models):
                 #             print "restraint "+str(j)+"not fulfilled"
 #                                 if (verbose == 3):
 #                                     print "Restraint " +str(j)+"-"+str(viewpoints[i])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-real_d)
-        if (verbose == 3):
-            print "total: "+str(total_restraints)
-            print "Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(n_restraints[0]),"%",str(not_fulfilled*100/n_restraints[0])
+        verboseprint ("total: {}".format(total_restraints))
+        verboseprint ("Not fulfilled restraints: {}/{} %{}".format(not_fulfilled,n_restraints[0],not_fulfilled*100/n_restraints[0]))
 
 
     # GENERATE THE TXT FILE WITH THE DATA
@@ -520,20 +511,20 @@ for sample in range(starting_point, starting_point+number_of_models):
         g = IMP.core.XYZRGeometry(sphere)
         w.add_geometry(g)
 
-    print "\nModel number {}".format(sample)
-    print "Human Score: ",scores[-1]/1000000
+    verboseprint ("\nModel number {}".format(sample))
+    verboseprint ("Human Score: ".format(scores[-1]/1000000))
     exv_value = suma2/1000000
     exv_values.append(exv_value)
-    if (verbose == 3):
-        print "EXV: ", exv_value
+    verboseprint ("EXV: {}".format(exv_value))
     
     hub_value = suma3/1000000
     hub_values.append(hub_value)
-    if (verbose == 3):
-        print "HUB: ", hub_value
-        needed_time = time.time() - start_time         
-        print str(needed_time)+" seconds!"       
+    verboseprint ("HUB: {}".format(hub_value))
+    needed_time = time.time() - start_time         
+    verboseprint ("{} seconds.".format(needed_time))       
 
-print "Mean exv for distance "+str(y2)+" is: "+str(np.mean(exv_values))  
-print "Mean hub for distance "+str(y2)+" is: "+str(np.mean(hub_values))  
-
+    verboseprint ("Mean exv for distance {} is: {}".format(y2,np.mean(exv_values))) 
+    verboseprint ("Mean hub for distance {} is: {}".format(y2,np.mean(hub_values)))  
+    verboseprint ("\nModel number {} finished.".format(sample))
+print ("Modeling process finished from {} to {}".format(starting_point, starting_point+number_of_models))
+ 
