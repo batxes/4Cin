@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import os
 import sys, re
 import numpy as np
 from math import fabs
@@ -67,7 +68,7 @@ def calculate_heatdifference(path, n_files_inside,files,prefix):
     #     plt.xlabel("Genomic Position")
 
     #NOW CALCULATE THE 4C DATA'S HEATMAP (WITHOUT APLLYING LOG)
-    HEAT_MAP_DATA, HEATMAP_DATA_LOG= calculateNWindowedDistances(WINDOW,0,0,y2,files,False,True) #stored in HEATMAP_DATA_LOG
+    HEAT_MAP_DATA, HEATMAP_DATA_LOG= calculateNWindowedDistances(fragments_in_each_bead,0,0,y2,files,False,True) #stored in HEATMAP_DATA_LOG
     
     heatmap_data_modified = []
 
@@ -142,20 +143,22 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
         sys.exit()
     
 #read the config file
-config = ConfigParser.ConfigParser()
+config = ConfigParser.SafeConfigParser()
 try:
     config.read(ini_file)
     prefix = config.get("ModelingValues", "prefix")
     maxD = int(config.get("ModelingValues", "max_dist"))
-    WINDOW = float(config.get("ModelingValues", "WINDOW"))
-    files = config.get("ModelingValues", "files")
-    files = re.sub('[\n\s\t]','',files)
-    files = files.split(",")    
+    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
+    data_dir = config.get("ModelingValues", "data_dir")
+    file_names = config.get("ModelingValues", "file_names")
+    file_names = re.sub('[\n\s\t]','',file_names)
+    file_names = file_names.split(",")
+    files = [data_dir+f for f in file_names]
     working_dir = config.get("ModelingValues", "working_dir")
     number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
-    min_z = float(config.get("Pre-ModelingValues", "min_z"))
-    max_z = float(config.get("Pre-ModelingValues", "max_z"))
-    z_bins = float(config.get("Pre-ModelingValues", "z_bins"))
+    from_zscore = float(config.get("Pre-ModelingValues", "from_zscore"))
+    to_zscore = float(config.get("Pre-ModelingValues", "to_zscore"))
+    zscore_bins = float(config.get("Pre-ModelingValues", "zscore_bins"))
 except:
     print "\nError reading the configuration file.\n"
     e = sys.exc_info()[1]
@@ -169,8 +172,8 @@ with open (results_path,"w") as output_results:
     best_uZ = 0
     best_lZ = 0
     best_score = 0.0
-    for uZ in np.arange(min_z,max_z+0.01,z_bins):
-        for lZ in np.arange(-min_z, -max_z-0.01, -z_bins):
+    for uZ in np.arange(from_zscore,to_zscore+0.01,zscore_bins):
+        for lZ in np.arange(-from_zscore, -to_zscore-0.01, -zscore_bins):
             score = calculate_heatdifference(working_dir+"data/"+prefix+"/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(maxD),number_of_models,files,prefix)
             output_results.write(str(uZ)+","+str(lZ)+","+str(maxD)+"\t"+str(score)+"\n")
             all_scores.append(score)
@@ -181,4 +184,18 @@ with open (results_path,"w") as output_results:
     #output_results.write("MIN: {}".format(min(all_scores)))   
     output_results.write("Max: {}".format(max(all_scores)))   
     #print min(all_scores)
-    print "Best uZ: {}, Best lZ: {}".format(best_uZ,best_lZ)
+try:
+    config.set("ModelingValues", "to_zscore",str(best_uZ))
+    config.set("ModelingValues", "from_zscore",str(best_lZ))
+    with open(ini_file,"w+") as configfile:
+        config.write(configfile)
+except:
+    print "\nError writing the configuration file.\n"
+    print sys.exc_info()
+    sys.exit()
+
+print "{} has been updated".format(ini_file)
+
+print "Best uZ: {}, Best lZ: {}".format(best_uZ,best_lZ)
+
+print "Now run python 'run_genome_sampling.py {} qsub,sbatch,local'".format(ini_file)

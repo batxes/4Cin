@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import warnings
-warnings.filterwarnings("ignore")
+warnings.filterwarnings('ignore')
 import sys
 import time
 import os
@@ -20,13 +20,15 @@ import numpy as np
 import ConfigParser
 from data_manager import fileCheck, sizeReader,  calculateNWindowedDistances
 
-
-
-drome = False
-
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 7:  
-    print "Not enought parameters. uZ, lZ, maxDis, starting_point, config_file and is_big_sampling are required. You passed: ",sys.argv[1:]
+    print "Not enought parameters. uZ, lZ, maxDis, starting_point, config_file and is_big_sampling are required."
+    print " -uz: upper z-score"
+    print " -lz: lower z-score"
+    print " -maxDis: Maximum distance between fragments"
+    print " -starting_point: number of the first model"
+    print " -config_file: file with more data. Check config_template.ini for an example"
+    print " -is_big_sampling: True for final models. False for premodeling"
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     uZ = float(sys.argv[1])
@@ -43,22 +45,24 @@ try:
     prefix = config.get("ModelingValues", "prefix")
     working_dir = config.get("ModelingValues", "working_dir")
     verbose = config.get("ModelingValues", "verbose")
-    WINDOW = float(config.get("ModelingValues", "WINDOW"))
+    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
     data_dir = config.get("ModelingValues", "data_dir")
-    files = [f for f in os.listdir(data_dir) if os.path.isfile(os.path.join(data_dir, f))]
-    files = [data_dir + f for f in files]
-    viewpoints = config.get("ModelingValues", "viewpoints")
-    viewpoints = re.sub('[\n\s\t]','',viewpoints)
-    viewpoints = viewpoints.split(",")
-    viewpoints = [ int(i) for i in viewpoints]
-    viewpoints = [int(i/WINDOW) for i in viewpoints]
-    genes = config.get("ModelingValues", "genes")
-    genes = re.sub('[\n\s\t]','',genes)
-    genes = genes.split(",")
-    genes = [ int(i) for i in genes]
-    genes = [int(i/WINDOW) for i in genes]
-    NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
-    NFRAGMENTS = int(NFRAGMENTS/WINDOW)
+    file_names = config.get("ModelingValues", "file_names")
+    file_names = re.sub('[\n\s\t]','',file_names)
+    file_names = file_names.split(",")
+    files = [data_dir+f for f in file_names]
+    viewpoint_fragments = config.get("ModelingValues", "viewpoint_fragments")
+    viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
+    viewpoint_fragments = viewpoint_fragments.split(",")
+    viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
+    viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
+    are_genes = config.get("ModelingValues", "are_genes")
+    are_genes = re.sub('[\n\s\t]','',are_genes)
+    are_genes = are_genes.split(",")
+    are_genes = [ int(i) for i in are_genes]
+    are_genes = [int(i/fragments_in_each_bead) for i in are_genes]
+    number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+    number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
     ignore_beads = config.get("ModelingValues", "ignore_beads")
     if ignore_beads != "NO":
         ignore_beads = re.sub('[\n\s\t]','',ignore_beads)
@@ -114,7 +118,7 @@ endLoopCount = 0
 stopCount = 15
 endLoopValue = 0.00001
 hightemp = int (0.025 * NROUNDS )
-alpha = 1.0 * NFRAGMENTS #the weight of the fragments
+alpha = 1.0 * number_of_fragments #the weight of the fragments
 
 
 
@@ -179,17 +183,15 @@ for sample in range(starting_point, starting_point+number_of_models):
     ##########################    REPRESENTATION ##########################    REPRESENTATION
     ##########################    REPRESENTATION ##########################    REPRESENTATION
     
-    for i in range(NFRAGMENTS):
+    for i in range(number_of_fragments):
         
             # Create "untyped" Particles
             p = IMP.kernel.Particle(m,"particle_"+str(i))
             
             
             radius_sum = 0
-            for j in range(int(WINDOW)):
-                radius_sum = radius_sum + reads_size[(i*int(WINDOW))+j]
-            if drome:
-                radius_sum = 10000
+            for j in range(int(fragments_in_each_bead)):
+                radius_sum = radius_sum + reads_size[(i*int(fragments_in_each_bead))+j]
             radius = radius_scale * radius_sum #sphere radius proportional to fragments
             fragment_bp_quantity.append(radius_sum)
             verboseprint ("Fragment number:{} size:{} radius:{}".format(i,radius_sum,radius))
@@ -197,8 +199,8 @@ for sample in range(starting_point, starting_point+number_of_models):
             #Creating very far away particles (10000) could alter the final result of the beads that are not restrained
             d = IMP.core.XYZR.setup_particle(p, IMP.algebra.Sphere3D(IMP.algebra.Vector3D(randint(0,int(y2)), randint(0,int(y2)), randint(0,int(y2))), radius)) 
             bead_radii.append(radius)
-            if i in(viewpoints):
-                if i in(genes):
+            if i in(viewpoint_fragments):
+                if i in(are_genes):
                     color = IMP.display.Color(1,0.7,0)
                 else: 
                     color = IMP.display.Color(0,1,0)
@@ -206,7 +208,7 @@ for sample in range(starting_point, starting_point+number_of_models):
             else:
                 
 #               #one theme of color #blue, purple, red
-                #color = IMP.display.Color(1/float(NFRAGMENTS)*i,0.0,1-1/float(NFRAGMENTS)*i) 
+                #color = IMP.display.Color(1/float(number_of_fragments)*i,0.0,1-1/float(number_of_fragments)*i) 
                 
                 
                 #another them (only grey)
@@ -237,7 +239,7 @@ for sample in range(starting_point, starting_point+number_of_models):
     #------------------
     
     r_count = 0
-    reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(WINDOW),uZ,lZ, y2,files)
+    reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, y2,files)
     
     for j in range(len(files)):
         reads_weight = reads_weights[j]
@@ -246,15 +248,15 @@ for sample in range(starting_point, starting_point+number_of_models):
         #get the number of reads and their size from our files
         f = fileCheck(files[j])
         reads_size = sizeReader(f)
-        n_fragments = len(reads_size)/int(WINDOW)  
+        n_fragments = len(reads_size)/int(fragments_in_each_bead)  
         
 # # # # # # # # # # # # # # # # # # # # # # # # #harmonic restraints got from file
         counter = 0
         if (RESTRAINTS[0]):
-            p1 = genome[viewpoints[j]]
+            p1 = genome[viewpoint_fragments[j]]
             for i in range(n_fragments):
                 counter += 1
-                if i != viewpoints[j]:
+                if i != viewpoint_fragments[j]:
                     if reads_value[i] != 0: #aplying the Z Score lower bound and upper bound (see calculate10WindowedDistances)
                         if i not in ignore_beads:
 
@@ -474,22 +476,22 @@ for sample in range(starting_point, starting_point+number_of_models):
         for i in range(len(files)):
             values = reads_values[i] 
             for j in range(n_fragments):
-                if j != viewpoints[i]:
+                if j != viewpoint_fragments[i]:
                     # the distance is to the surface, not to the center, so add radius*2
-                    real_d = IMP.core.get_distance(spheres[j],spheres[viewpoints[i]]) 
+                    real_d = IMP.core.get_distance(spheres[j],spheres[viewpoint_fragments[i]]) 
     #                 real_d = real_d + radius*2
-                    real_d = real_d + bead_radii[j] + bead_radii[viewpoints[i]]
+                    real_d = real_d + bead_radii[j] + bead_radii[viewpoint_fragments[i]]
                     
                     should_be_d = values[j] #take out the Z score near 0 average values
                     if should_be_d != 0:
                         total_restraints += 1
 
-                        should_be_d = values[j] + bead_radii[j] + bead_radii[viewpoints[i]]
+                        should_be_d = values[j] + bead_radii[j] + bead_radii[viewpoint_fragments[i]]
                         if (should_be_d + std_dev < real_d  or should_be_d - std_dev > real_d):
                             not_fulfilled += 1
                 #             print "restraint "+str(j)+"not fulfilled"
 #                                 if (verbose == 3):
-#                                     print "Restraint " +str(j)+"-"+str(viewpoints[i])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-real_d)
+#                                     print "Restraint " +str(j)+"-"+str(viewpoint_fragments[i])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-real_d)
         verboseprint ("total: {}".format(total_restraints))
         verboseprint ("Not fulfilled restraints: {}/{} %{}".format(not_fulfilled,n_restraints[0],not_fulfilled*100/n_restraints[0]))
 
@@ -498,9 +500,9 @@ for sample in range(starting_point, starting_point+number_of_models):
     f = open (storage_folder+"/"+values_file,"w")  
     for i in range(len(files)):
         for j in range(n_fragments):
-            if j != viewpoints[i]:
-                real_d = IMP.core.get_distance(spheres[j],spheres[viewpoints[i]]) 
-                real_d = real_d + bead_radii[j] + bead_radii[viewpoints[i]]
+            if j != viewpoint_fragments[i]:
+                real_d = IMP.core.get_distance(spheres[j],spheres[viewpoint_fragments[i]]) 
+                real_d = real_d + bead_radii[j] + bead_radii[viewpoint_fragments[i]]
                 f.write(str(real_d)+"\t")
             else:
                 f.write("0\t")
@@ -526,5 +528,5 @@ for sample in range(starting_point, starting_point+number_of_models):
     verboseprint ("Mean exv for distance {} is: {}".format(y2,np.mean(exv_values))) 
     verboseprint ("Mean hub for distance {} is: {}".format(y2,np.mean(hub_values)))  
     verboseprint ("\nModel number {} finished.".format(sample))
-print ("Modeling process finished from {} to {}".format(starting_point, starting_point+number_of_models))
+print "Modeling from {} to {} with variables {} {} {} finished".format(starting_point,starting_point+number_of_models,uZ,lZ,y2)
  

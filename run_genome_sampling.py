@@ -4,13 +4,14 @@ import sys
 import os
 import re
 import ConfigParser
+import subprocess
 
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 3:  
     print "Not enought parameters. Config_file and run_mode are required. You passed: ",sys.argv[1:]
     print " -Config_file: Configuration filemax_dist."
-    print " -run_mode: '/bin/bash', 'qsub'"
+    print " -run_mode: 'local', 'qsub', 'sbatch'"
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
@@ -22,9 +23,9 @@ try:
     config.read(ini_file)
     number_of_models = int(config.get("ModelingValues", "number_of_models"))
     max_dist = int(config.get("ModelingValues", "max_dist"))
-    max_z = float(config.get("ModelingValues", "max_z"))
-    min_z = float(config.get("ModelingValues", "min_z"))
-    number_of_cpu = int(config.get("ModelingValues", "number_of_cpu"))
+    max_z = float(config.get("ModelingValues", "max_zscore"))
+    min_z = float(config.get("ModelingValues", "min_zscore"))
+    number_of_cpus = int(config.get("ModelingValues", "number_of_cpus"))
     prefix = config.get("ModelingValues", "prefix")
 except:
     print "\nError reading the configuration file.\n"
@@ -32,17 +33,21 @@ except:
     print e
     sys.exit()
 
-
-for cpu in range(number_of_cpu):
-    if mode == "/bin/bash":
-        print("{} run_genome.sh {} {} {} {} {} True &".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
-        os.system("{} run_genome.sh {} {} {} {} {} True &".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
+local_processes = []
+for cpu in range(number_of_cpus):
+    if mode == "local":
+        p = subprocess.Popen(['python','src/GenomeModeling.py',str(max_z),str(min_z),str(max_dist),str(cpu*number_of_models),str(ini_file),'True'])
+        print("python src/genomeModeling.py {} {} {} {} {} True &".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
+        local_processes.append(p)
     if mode == "qsub":
         print("{} run_genome.sh {} {} {} {} {} True".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
         os.system("{} run_genome.sh {} {} {} {} {} True".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
+    if mode == "sbatch":
+        print("{} run_genome.slurm {} {} {} {} {} True".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
+        os.system("{} run_genome.slurm {} {} {} {} {} True".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
 
-if mode == "/bin/bash":
-    os.system(wait)
+if mode == "local":
+    exit_codes = [p.wait() for p in local_processes]
 
-
+print("\n\nWhen the jobs have finished, run 'python src/GenomeAnalysis.py {}'".format(sys.argv[1]))
 

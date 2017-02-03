@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import sys
 import operator
 import re
@@ -7,7 +6,7 @@ import subprocess
 from os import listdir, remove
 from os.path import isfile, join
 import numpy as np
-from itertools import combinations
+from itertools import combinations,izip
 import ConfigParser
 import scipy.cluster.hierarchy as sch
 import matplotlib
@@ -17,15 +16,24 @@ from pylab import plot,show
 from numpy import vstack,array
 from numpy.random import rand
 from scipy.cluster.vq import kmeans,vq
+from multiprocessing import Process, Lock, Pool, current_process
+
+
+def chimera_worker(chimera_file):
+    distance_output = subprocess.check_output(["chimera", "--nogui", chimera_file[0]])
+    return distance_output,chimera_file[1],chimera_file[2],current_process().name
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 2: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file is missing. You passed: ",sys.argv[1:]
+if number_of_arguments != 4: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config file, subset and K value are missing."
+    print " -config_file: file with more data. Check config_template.ini for an example"
+    print " -subset: number of best models gathered in the analysis"
+    print " -K value: number of cluster you expect to have. Value 2 is recommended."
     sys.exit()
-if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
+if len(sys.argv) > 3:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
-
-
+    subset = int(sys.argv[2])
+    k_mean = int(sys.argv[3])
 
 #read the config file
 config = ConfigParser.ConfigParser()
@@ -34,16 +42,15 @@ try:
     working_dir = config.get("ModelingValues", "working_dir")
     
     prefix = config.get("ModelingValues", "prefix")
-    WINDOW = float(config.get("ModelingValues", "WINDOW"))
-    min_z = float(config.get("ModelingValues", "min_z"))
-    max_z = float(config.get("ModelingValues", "max_z"))
+    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
+    min_z = float(config.get("ModelingValues", "min_zscore"))
+    max_z = float(config.get("ModelingValues", "max_zscore"))
     max_dist = int(config.get("ModelingValues", "max_dist"))
     root = "{}data/{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,max_z,min_z,max_dist)
-    k_mean = int(config.get("Clustering", "kmeans"))
-    NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
-    NFRAGMENTS = int(NFRAGMENTS/WINDOW)
+    number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+    number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
 
-    subset = int(config.get("AnalysisValues", "subset"))
+    number_of_cpu = int(config.get("ModelingValues", "number_of_cpus"))
     
 except:
     print "\nError reading the configuration file.\n"
@@ -58,61 +65,73 @@ only_python_files = []
 for pyfile in listdir(root):
     if pyfile.endswith(".py"):
         only_python_files.append(pyfile)
-print only_python_files
 only_python_files = only_python_files[:subset]
-print only_python_files
 print len(only_python_files)
 
 # generate a chimera file with match. Chimera when matched, it calculates the RMSD 
-NFRAGMENTS = NFRAGMENTS -1
+number_of_fragments = number_of_fragments -1
 
 # combi = combinations(range(len(only_python_files)),2)
 combi = combinations(range(subset),2)
+p = Pool(number_of_cpu)
+instructions = []
+print "Generating instructions..."
+number_of_files = 0
 for pair in combi:
-
+    instruction_files = []
+    number_of_files += 1
     counter_line = pair[0]
     counter_column = pair[1]
-
-    print "line: {}, column {}".format(counter_line,counter_column)
-    rmsd_file = open ("{}_calculate_rmsd{}.py".format(prefix,counter_column), "w")
+    chimera_file = "{}_calculate_rmsd{}_{}.py".format(prefix,counter_line,counter_column)
+    rmsd_file = open (chimera_file, "w")
     rmsd_file.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
     rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_line]))
     rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_column]))
-    rmsd_file.write("rc(\"match #{}-{} #{}-{}\")\n".format((NFRAGMENTS+1),(NFRAGMENTS+1)+NFRAGMENTS ,0,NFRAGMENTS))
-    
+    rmsd_file.write("rc(\"match #{}-{} #{}-{}\")\n".format((number_of_fragments+1),(number_of_fragments+1)+number_of_fragments ,0,number_of_fragments))
     rmsd_file.close()
-    #         output = os.system("chimera --nogui ../{}_calculate_rmsd.py".format(prefix))
-    rmsd_output = subprocess.check_output(["chimera", "--nogui", "{}_calculate_rmsd{}.py".format(prefix,counter_column)])
-    remove("{}_calculate_rmsd{}.py".format(prefix,counter_column)) 
-    remove("{}_calculate_rmsd{}.pyc".format(prefix,counter_column)) 
-    string = ""
-    lista = []
-    for line2 in rmsd_output:
-        string = string + line2
-        if line2 == "\n":
-            lista.append(string)
-            string = ""
-         
-    #RMSD between 103 atom pairs is 4404.816 angstroms
-    #print lista
-    for line2 in lista:
+    instruction_files.append(chimera_file)
+    instruction_files.append(counter_line)
+    instruction_files.append(counter_column)
+    instructions.append(instruction_files)
+print "Populating matrix.txt ..."
+for core in range(0,number_of_files,number_of_cpu):
+    if len(instructions) - core < number_of_cpu:
+        execute = instructions[core:len(instructions)-core]
+    else:
+        execute = instructions[core:core+number_of_cpu] 
+    # WE NEED TO EXECUTE THIS DEPENDING ON CPU SIZE
+    rmsd_output = p.map(chimera_worker,execute)
+    #print rmsd_output
+    for i in range(len(execute)):
+        #print "Writing [{}][{}]".format(rmsd_output[i][1],rmsd_output[i][2])
+        string = ""
+        lista = []
+        for line2 in rmsd_output[i][0]:
+            string = string + line2
+            if line2 == "\n":
+                lista.append(string)
+                string = ""
+        #RMSD between 103 atom pairs is 4404.816 angstroms
+        for line2 in lista:
+            exp = re.search(r"(\d+\.\d+) angstroms",line2)
+            if (exp):
+                value = exp.group(1)
+                matrix[rmsd_output[i][1]][rmsd_output[i][2]] = value
+                matrix[rmsd_output[i][2]][rmsd_output[i][1]] = value    
+                value = 0
+    #delete files while we execute them
+    for i in range(len(execute)):
+        remove(execute[i][0])
+        remove(execute[i][0]+"c")
+    if core!= 0:
+        sys.stdout.write("\r{}%".format( core*100/number_of_files))
+        sys.stdout.flush()
 
-        exp = re.search(r"(\d+\.\d+) angstroms",line2)
-        if (exp):
-            
-            value = exp.group(1)
 
-#                if matrix[counter_line][counter_column] == 0:
-            matrix[counter_line][counter_column] = value
-#                if matrix[counter_column][counter_line] == 0:
-            matrix[counter_column][counter_line] = value    
-    #                 matrix.write(str(value)+"\t")
-            value = 0
-      
       
       
 #write matrix       
-matrixtxt = open("{}matrix.txt".format(root), "w")      
+matrixtxt = open("{}matrix_parallel.txt".format(root), "w")      
 matrixtxt.write("\t")
 for p_file in only_python_files:
     matrixtxt.write(p_file)
@@ -129,7 +148,8 @@ for line in only_python_files:
     counter_line += 1
     matrixtxt.write("\n") 
 matrixtxt.close()
-print "matrix.txt written! in {}".format(root)
+print "\n\nmatrix_parallel.txt written! in {}".format(root)
+print "\nThis is the whole RMSD matrix (all models vs all models)"
 #matrix2 = np.zeros((subset,subset))
 
 #models = []
@@ -215,7 +235,7 @@ if not(len(cluster_number) == k_mean):
     print "There is a different number of cluster than set in K. Exiting..."
     sys.exit()
         
-NFRAGMENTS = NFRAGMENTS +1 
+number_of_fragments = number_of_fragments +1 
 # Write the matrix data in different files, k_mean times
 for i in cluster_number:
     matrixtxt = open("{}matrix{}.txt".format(root,i), "w")      
@@ -237,19 +257,21 @@ for i in cluster_number:
         counter_line += 1
         matrixtxt.write("\n") 
     matrixtxt.close()
-    print "matrix{}.txt written! in {}".format(i,root)
+    print "\n------"
+    print "\nmatrix{}.txt written! in {}".format(i,root)
         
         
     # create the file to open in chimera
     # superposition of the best models
-    print "\nCreating superposition of clusters\n"
+    print "\nCreating superposition of this cluster...\n"
     with open(working_dir+"data/"+prefix+"/"+prefix+"_superposition_"+str(i)+".py","w") as f:
         f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
         f.write("rc(\"open {}\")\n".format(cluster_models[0]))
         for k in range(1,len(cluster_models)):
             imodel = cluster_models[k]
             f.write("rc(\"open {}\")\n".format(imodel))
-            f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*NFRAGMENTS,k*NFRAGMENTS+NFRAGMENTS-1,NFRAGMENTS-1))
+            f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_fragments,k*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
 
     print "created in {}data/{}/{}_superposition".format(working_dir,prefix,prefix)
+    print "\n"
 

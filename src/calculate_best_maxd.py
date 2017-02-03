@@ -17,17 +17,17 @@ if number_of_arguments != 2:
 ini_file = sys.argv[1]
 
 #read the config file
-config = ConfigParser.ConfigParser()
+config = ConfigParser.SafeConfigParser()
 try:
     config.read(ini_file)
     prefix = config.get("ModelingValues", "prefix")
-    WINDOW = float(config.get("ModelingValues", "WINDOW"))
-    NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
-    NFRAGMENTS = int(NFRAGMENTS/WINDOW)
+    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
+    number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+    number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
     working_dir = config.get("ModelingValues", "working_dir")
-    locus_size = int(config.get("Pre-ModelingValues", "locus_size"))
-    min_dist = int(config.get("Pre-ModelingValues", "min_dist"))
-    max_dist = int(config.get("Pre-ModelingValues", "max_dist"))
+    locus_size = float(config.get("Pre-ModelingValues", "locus_size"))
+    from_dist = int(config.get("Pre-ModelingValues", "from_dist"))
+    to_dist = int(config.get("Pre-ModelingValues", "to_dist"))
     dist_bins = int(config.get("Pre-ModelingValues", "dist_bins"))
     number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
 
@@ -48,12 +48,12 @@ if not os.path.exists("{}data/{}".format(working_dir, prefix)):
 
 results_path = "{}data/{}/{}_best_maxd_results.txt".format(working_dir,prefix,prefix)
 aux_file = "get_genome_length.py"
-number_of_spheres = NFRAGMENTS - 1
+number_of_spheres = number_of_fragments - 1
 
 maxd_list = []
 size_list = []
 with open (results_path,"w") as output_results:
-    for maxd in np.arange(min_dist,max_dist+1,dist_bins):
+    for maxd in np.arange(from_dist,to_dist+1,dist_bins):
         root = "{}data/{}/{}_output_0.1_-0.1_{}/".format(working_dir,prefix,prefix,maxd)
         all_distances = []
         for i in range(number_of_models):
@@ -86,16 +86,30 @@ with open (results_path,"w") as output_results:
         #print "{}: {}".format(root,size)
         output_results.write("With max distance {}: {}A Equivalent to a genome of {} Mbp\n".format(maxd,size,size/0.0846/1000000)) #in Mbp
         maxd_list.append(maxd)
-        size_list.append(size/0.0846)
+        size_list.append(size/0.0846/1000000)
         print "With max distance {}: {}A Equivalent to a genome of {} Mbp".format(maxd,size,size/0.0846/1000000)
 if os.path.isfile(aux_file):
     os.remove(aux_file)
     os.remove(aux_file+"c")
 
 print "Results writen in: {}".format(results_path)
-print "\nNow run: 'python run_genome_zscores.py {} qsub'".format(ini_file)
-
-
 
 ####calculate best maxd
-config.set("ModelingValues", "prefix",)
+best_maxd = maxd_list[size_list.index(min(size_list, key=lambda x:abs(x-locus_size)))]
+print "Best max distance for the modeling is: {}".format(best_maxd)
+
+try:
+    config.set("ModelingValues", "max_dist",str(best_maxd))
+    with open(ini_file,"w+") as configfile:
+        config.write(configfile)
+except:
+    print "\nError writing the configuration file.\n"
+    print sys.exc_info()
+    sys.exit()
+
+print "{} has been updated".format(ini_file)
+
+print "\nNow run: 'python run_genome_zscores.py {} qsub,sbatch,local'".format(ini_file)
+
+
+

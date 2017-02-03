@@ -12,54 +12,59 @@ from os.path import isfile, join
 from data_manager import  calculateNWindowedDistances
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 2: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config_file is required. You passed: ",sys.argv[1:]
+if number_of_arguments != 5: #Or all parameters, or no parameters 
+    print "Not enought parameters. Config_file, subset, std_dev and cut_off_percentage are required."
+    print " -config_file: file with more data. Check config_template.ini for an example"
+    print " -subet: number of best models you want to retrieve from all models"
+    print " -std_dev: in Angstroms. Freedom in Angstroms that is given to a restraint so it is considered as fulfilled restraint. For example: 1000 if max_distance is 10000"
+    print " -cut_off_percentage: Maximum percentage of not fulfilled restraints that will be allowed to take as a good model. For example: 15"
+
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
+    subset = int(sys.argv[2])
+    std_dev = int(sys.argv[3])
+    cut_off_percentage = int(sys.argv[4])
 
 #read the config file
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    verbose = int(config.get("ModelingValues", "verbose"))
+    verbose = config.get("ModelingValues", "verbose")
     prefix = config.get("ModelingValues", "prefix")
-    
-    WINDOW = float(config.get("ModelingValues", "WINDOW"))
-    uZ = float(config.get("ModelingValues", "max_z"))
-    lZ = float(config.get("ModelingValues", "min_z"))
+    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
+    uZ = float(config.get("ModelingValues", "max_zscore"))
+    lZ = float(config.get("ModelingValues", "min_zscore"))
     y2 = int(config.get("ModelingValues", "max_dist"))
-    
     data_dir = config.get("ModelingValues", "data_dir")
-    files = [f for f in os.listdir(data_dir) if os.path.isfile(os.path.join(data_dir, f))]
-    files = [data_dir + f for f in files]
-    
-    viewpoints = config.get("ModelingValues", "viewpoints")
-    viewpoints = re.sub('[\n\s\t]','',viewpoints)
-    viewpoints = viewpoints.split(",")
-    viewpoints = [ int(i) for i in viewpoints]
-    viewpoints = [int(i/WINDOW) for i in viewpoints]
-    
-    NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
-    NFRAGMENTS = int(NFRAGMENTS/WINDOW)
-    
+    file_names = config.get("ModelingValues", "file_names")
+    file_names = re.sub('[\n\s\t]','',file_names)
+    file_names = file_names.split(",")
+    files = [data_dir+f for f in file_names]
+    viewpoint_fragments = config.get("ModelingValues", "viewpoint_fragments")
+    viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
+    viewpoint_fragments = viewpoint_fragments.split(",")
+    viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
+    viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
+    number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+    number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
     working_dir = config.get("ModelingValues", "working_dir")
     number_of_models = int(config.get("ModelingValues", "number_of_models"))
-
-
-    subset = int(config.get("AnalysisValues", "subset"))
-    std_dev = int(config.get("AnalysisValues", "std_dev"))
     jump = number_of_models
-    cut_off_percentage = int(config.get("AnalysisValues", "cut_off_percentage"))
-    
 except:
     print "\nError reading the configuration file.\n"
-    e = sys.exc_info()[1]
-    print e
+    print sys.exc_info()[1]
     sys.exit()
 
 root = "{}data/{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,y2)
 score_file = "{}/score.txt".format(root)
+if verbose == "True":
+    def verboseprint(text):
+        print text;
+else:
+    verboseprint = lambda *a: None      # do-nothing function
+
+
 
 
 pyfiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.endswith(".py") ]
@@ -70,12 +75,6 @@ except OSError:
     pass
 scorefiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.startswith("score") ]
 number_of_score_files = len(scorefiles)
-
-
-
-
-
-
 
 models = defaultdict(list) # dict: each model ahs a list of 2 values
 
@@ -104,7 +103,7 @@ with open (score_file, "r") as f:
 
 # models = models[:number_of_models]    #take aonly the first ones 
         
-reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(WINDOW),uZ,lZ, y2,files)
+reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, y2,files)
 
 
 print "getting best {} models\n".format(subset)
@@ -125,8 +124,8 @@ for i in range(number_of_models):
     for k in range(len(files)):
 
         values = reads_values[k] 
-        for j in range(NFRAGMENTS):
-            if j != viewpoints[k]:
+        for j in range(number_of_fragments):
+            if j != viewpoint_fragments[k]:
                 
                 real_d = distances_in_model[k][j]
                  
@@ -136,8 +135,8 @@ for i in range(number_of_models):
                     if (should_be_d + std_dev < float(real_d)  or should_be_d - std_dev > float(real_d)):
                         not_fulfilled += 1
             #             print "restraint "+str(j)+"not fulfilled"
-                        if (verbose == 3):
-                            print "Restraint " +str(j)+"-"+str(viewpoints[k])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-float(real_d))
+                        
+                        verboseprint ("Restraint " +str(j)+"-"+str(viewpoint_fragments[k])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-float(real_d)))
 #     print str(i)+"-> Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(total),"%",str(not_fulfilled*100/(total))     
     fulfil_percentage = not_fulfilled*100/total
     print "not_fulfilled -> {} out of {} restraints: {}% of all restraints are not fulfilled in this model.".format(not_fulfilled,total,fulfil_percentage)
@@ -159,12 +158,11 @@ for i in range(number_of_models):
 
 #order the dictionary by score
 sorted_models = sorted(models.items(), key=operator.itemgetter(1))
-print "Number of models below cutoff: {}".format(len(sorted_models))
+print "\nNumber of models below cutoff: {}".format(len(sorted_models))
 
 # store them in a folder
-print "copying best {} models\n".format(subset)
 storage_folder = working_dir+"data/"+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2)+"/" #the dir where the data will be saved
-print storage_folder
+print "copying best {} models to {}".format(subset,storage_folder)
 if not os.path.exists(storage_folder): os.makedirs(storage_folder)   
 
 models_subset = sorted_models [:subset]
@@ -178,15 +176,16 @@ for k in range(subset):
 
 # create the file to open in chimera
 # superposition of the best models
-print "Creating superposition of {} models\n".format(subset)
 with open(working_dir+"data/"+prefix+"_superposition.py","w") as f:
     f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
     f.write("rc(\"open {}{}.py\")\n".format(prefix,models_subset[0][0]))
     for k in range(1,subset):
         i = models_subset[k][0]
 #         print("rc(\"open {}{}.py\")\n".format(prefix,i))
-#         print("rc(\"match #{}-{} #0-{}\")\n".format((k+1)*NFRAGMENTS,(k+1)*NFRAGMENTS+NFRAGMENTS-1,NFRAGMENTS-1))
+#         print("rc(\"match #{}-{} #0-{}\")\n".format((k+1)*number_of_fragments,(k+1)*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
         f.write("rc(\"open {}{}.py\")\n".format(prefix,i))
-        f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*NFRAGMENTS,k*NFRAGMENTS+NFRAGMENTS-1,NFRAGMENTS-1))
+        f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_fragments,k*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
 
-print "created in {}data/{}_superposition".format(working_dir,prefix)
+print "Superposition of {} models created in {}data/{}\n".format(subset,working_dir,prefix)
+
+print "Now run 'python src/GenomeClustering.py {} {} 2'".format(ini_file,subset)
