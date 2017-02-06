@@ -22,8 +22,8 @@ def chimera_worker(chimera_file):
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 4: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file, matrix file path and calculate_the_matrix True/False are required. You passed: ",sys.argv[1:]
-    print "If calculating the matrix is not required, set config_file, directory where the Virtual Hi-C will create and False."
+    print "Not enought parameters. Config file, matrix file path and calculate_the_matrix True/False are required. "
+
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
@@ -32,9 +32,15 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     root = matrix_path.split("/")[0:-1]
     root = '/'.join(root)
     root = root+"/"
-    print root
     if sys.argv[3] == "True":
-        calculate_the_matrix = True
+        y_or_n = raw_input ("Are you sure you want to calculate the matrix again? (Y/N): ")
+        if y_or_n == "Y": 
+            calculate_the_matrix = True
+        elif y_or_n == "N":
+            calculate_the_matrix = False
+        else: 
+            print "Bad input."
+            sys.exit()
     elif sys.argv[3] == "False":
         calculate_the_matrix = False
     else:
@@ -47,37 +53,31 @@ try:
     config.read(ini_file)
     
     prefix = config.get("ModelingValues", "prefix")
-    verbose = int(config.get("ModelingValues", "verbose"))
-    WINDOW = float(config.get("ModelingValues", "WINDOW"))
+    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
+    show_fragments_in_vhic = config.get("TADs", "show_fragments_in_vhic")
+    show_fragments_in_vhic = re.sub('[\n\s\t]','',show_fragments_in_vhic)
+    show_fragments_in_vhic = show_fragments_in_vhic.split(",")
+    show_fragments_in_vhic = [ int(i) for i in show_fragments_in_vhic]
+    show_fragments_in_vhic = [int(i/fragments_in_each_bead) for i in show_fragments_in_vhic]
     
-    viewpoints = config.get("TADs", "viewpoints")
-    viewpoints = re.sub('[\n\s\t]','',viewpoints)
-    viewpoints = viewpoints.split(",")
-    viewpoints = [ int(i) for i in viewpoints]
-    viewpoints = [int(i/WINDOW) for i in viewpoints]
+    number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+    number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
     
-    genes = config.get("ModelingValues", "genes")
-    genes = re.sub('[\n\s\t]','',genes)
-    genes = genes.split(",")
-    genes = [ int(i) for i in genes]
-    genes = [int(i/WINDOW) for i in genes]
-    NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
-    NFRAGMENTS = int(NFRAGMENTS/WINDOW)
-    
-    number_of_models = int(config.get("ModelingValues", "number_of_models"))
-    gene_names = config.get("TADs", "gene_names")
-    gene_names = re.sub('[\n\s\t]','',gene_names)
-    gene_names = gene_names.split(",")
-    color = config.get("TADs", "color")
+    name_of_fragments = config.get("TADs", "name_of_fragments")
+    name_of_fragments = re.sub('[\n\s\t]','',name_of_fragments)
+    name_of_fragments = name_of_fragments.split(",")
+    color = config.get("TADs", "color_of_fragments")
     color = re.sub('[\n\s\t]','',color)
     color = color.split(",")
     
-    number_of_cpu = int(config.get("ModelingValues", "number_of_cpu"))
+    number_of_cpus = int(config.get("ModelingValues", "number_of_cpus"))
     maximum_hic_value= int(config.get("TADs", "maximum_hic_value"))
+
+
 
 except:
     print "\nError reading the configuration file.\n"
-    e = sys.exc_info()[1]
+    e = sys.exc_info()
     print e
     sys.exit()
 distance_file = "get_genome_distance_{}".format(prefix)
@@ -88,46 +88,37 @@ if calculate_the_matrix:
         ## we get a file that (cmd) that we are gonna use it in chimera. It will write all distances in the model
     with open("{}".format(matrix_path), "r") as mtx:
         for line in mtx:
-            print line
             models = re.split("\t", line)
-            print models
             break
     models = models[1:-1]
-    print models
     counter = 0
-    matrix = np.zeros((NFRAGMENTS,NFRAGMENTS,len(models)))
-    p = Pool(number_of_cpu)
-    print number_of_cpu
+    matrix = np.zeros((number_of_fragments,number_of_fragments,len(models)))
+    p = Pool(number_of_cpus)
 
     for model in models:
         print "{} - {}".format(counter,model)
         chimera_files = []
-        combi = combinations(range(0,NFRAGMENTS),2)
+        combi = combinations(range(0,number_of_fragments),2)
         instruction_list = []
         for pair in combi:
             instruction_list.append("rc(\"distance #"+str(pair[0])+" #"+str(pair[1])+"\")\n")
-#         print len(instruction_list)
-        for cpu in range(number_of_cpu):
-            instru_start = (cpu) * (len(instruction_list)/number_of_cpu) 
-            if cpu == number_of_cpu-1:
+        for cpu in range(number_of_cpus):
+            instru_start = (cpu) * (len(instruction_list)/number_of_cpus) 
+            if cpu == number_of_cpus-1:
                 instru_end =  len(instruction_list)
             else:
-                instru_end =  (cpu+1) * (len(instruction_list)/number_of_cpu) 
+                instru_end =  (cpu+1) * (len(instruction_list)/number_of_cpus) 
                 
             dis_file = distance_file+"cpu"+str(cpu)+".py"
             with open (dis_file,'w') as output:
                 output.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
                 output.write("rc(\"open {}\")\n".format(model))
-#                 print root
-#                 print model  
-#                 print instru_start, instru_end
                 for instru in instruction_list[instru_start:instru_end]:
-#                     print instru
                     output.write(instru)
                 chimera_files.append(dis_file)
 
             
-        if verbose==3:  print "Calculating in chimera..."       
+        print "Calculating in chimera..."       
         distance_output = p.map(chimera_worker,chimera_files)
 
         
@@ -157,9 +148,9 @@ if calculate_the_matrix:
 
 
     f= open(path, 'w') #store the data in file
-    matrix_mean = np.zeros((NFRAGMENTS,NFRAGMENTS))
-    for line in range(NFRAGMENTS):
-        for column in range(NFRAGMENTS):
+    matrix_mean = np.zeros((number_of_fragments,number_of_fragments))
+    for line in range(number_of_fragments):
+        for column in range(number_of_fragments):
             mean_value = np.mean(matrix[line][column])
 #         print "[{}][{}] = {}".format(line,column,mean_value)
             matrix_mean[line][column] = mean_value
@@ -172,16 +163,16 @@ if calculate_the_matrix:
         os.remove(chi_file+"c")
 else:
     with open(path, 'r') as std_in:
-        matrix_mean = np.zeros((NFRAGMENTS,NFRAGMENTS))
+        matrix_mean = np.zeros((number_of_fragments,number_of_fragments))
         for line in std_in:
             values = line.split(",")
             matrix_mean[int(values[0])][int(values[1])] = float(values[2])
 
 
-if verbose==3:  print "Generating matrix to plot..."     
+print "Generating matrix to plot..."     
 #matrix_mean = matrix_mean[15:-15,15:-15]
-#viewpoints = [x-15 for x in viewpoints]
-viewpoints = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
+#show_fragments_in_vhic = [x-15 for x in show_fragments_in_vhic]
+show_fragments_in_vhic = [c+0.5 for c in show_fragments_in_vhic] #to match the name_of_fragments in the matrix Since the ticks don't match with the heatmap.
 fig = plt.figure()
 ax = plt.subplot(1,1,1)
 z = np.array(matrix_mean)
@@ -193,16 +184,16 @@ ax.set_frame_on(False)
 plt.colorbar()
 
 
-#to set the viewpoints
+#to set the show_fragments_in_vhic
 #color = [10,5,5,10,10,10,10,10] -> depending on quantity of genes
-plt.scatter(viewpoints, viewpoints, s=20, c=color,cmap=plt.cm.autumn)
+plt.scatter(show_fragments_in_vhic, show_fragments_in_vhic, s=20, c=color,cmap=plt.cm.autumn)
 
 
 
-ax.set_yticks(viewpoints)
-ax.set_xticks(viewpoints)
-ax.set_xticklabels(gene_names, minor=False)
-ax.set_yticklabels(gene_names, minor=False)
+ax.set_yticks(show_fragments_in_vhic)
+ax.set_xticks(show_fragments_in_vhic)
+ax.set_xticklabels(name_of_fragments, minor=False)
+ax.set_yticklabels(name_of_fragments, minor=False)
 plt.tick_params(axis='both', which='major', labelsize=8)
 plt.xticks(rotation=90)
 
@@ -214,7 +205,7 @@ fig.set_facecolor('white')
 pp = PdfPages('{}{}_HiC.pdf'.format(root,prefix))
 pp.savefig(fig)
 pp.close()
-print '{}_HiC.pdf writen'.format(prefix)
-print "{} segundos".format(time.time() - start_time)
+print 'Virtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
+print "{} seconds".format(time.time() - start_time)
 #Distance between #1 marker 1  and #10 marker 1 : 2203.213
             

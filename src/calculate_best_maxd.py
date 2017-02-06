@@ -52,6 +52,7 @@ number_of_spheres = number_of_fragments - 1
 
 maxd_list = []
 size_list = []
+print "Calculating optimal max_dist parameter for the modeling...\n"
 with open (results_path,"w") as output_results:
     for maxd in np.arange(from_dist,to_dist+1,dist_bins):
         root = "{}data/{}/{}_output_0.1_-0.1_{}/".format(working_dir,prefix,prefix,maxd)
@@ -95,8 +96,10 @@ if os.path.isfile(aux_file):
 print "Results writen in: {}".format(results_path)
 
 ####calculate best maxd
-best_maxd = maxd_list[size_list.index(min(size_list, key=lambda x:abs(x-locus_size)))]
-print "Best max distance for the modeling is: {}".format(best_maxd)
+
+best_value = min(size_list, key=lambda x:abs(x-locus_size))
+best_maxd = maxd_list[size_list.index(best_value)]
+print "\nBest max distance for the modeling is: {}".format(best_maxd)
 
 try:
     config.set("ModelingValues", "max_dist",str(best_maxd))

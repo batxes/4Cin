@@ -36,8 +36,8 @@ local_processes = []
 for z_min in range(from_zscore,to_zscore+zscore_bins,zscore_bins):
     for z_max in range(from_zscore,to_zscore+zscore_bins,zscore_bins):
         if mode == "local":
-            p = subprocess.Popen(['/usr/bin/python', 'src/GenomeModeling.py', str(float(z_min)/10) ,str(float(z_max)/-10), str(dist),' 0' ,str(ini_file) ,'False'])
-            print("/usr/bin/python src/GenomeModeling.py {} {} {} 0 {} False".format(float(z_min)/10,float(z_max)/-10,dist,ini_file))
+            p = subprocess.Popen(['/usr/bin/python', 'src/run_modeling.py', str(float(z_min)/10) ,str(float(z_max)/-10), str(dist),' 0' ,str(ini_file) ,'False'])
+            print("/usr/bin/python src/run_modeling.py {} {} {} 0 {} False".format(float(z_min)/10,float(z_max)/-10,dist,ini_file))
             local_processes.append(p)
         if mode == "qsub":
             os.system("{} run_genome.sh {} -{} {} 0 {} False".format(mode,float(z_min)/10,float(z_max)/10,dist,ini_file))

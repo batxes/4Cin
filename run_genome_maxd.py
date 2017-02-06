@@ -33,8 +33,8 @@ except:
 local_processes = []
 for dist in range(from_dist,to_dist+dist_bins,dist_bins):
     if mode == "local":
-        p = subprocess.Popen(['/usr/bin/python', 'src/GenomeModeling.py', '0.1' ,'-0.1', str(dist),' 0' ,str(ini_file) ,'False'])
-        print("/usr/bin/python src/GenomeModeling.py 0.1 -0.1 {} 0 {} False".format(dist,ini_file))
+        p = subprocess.Popen(['/usr/bin/python', 'src/run_modeling.py', '0.1' ,'-0.1', str(dist),' 0' ,str(ini_file) ,'False'])
+        print("/usr/bin/python src/run_modeling.py 0.1 -0.1 {} 0 {} False".format(dist,ini_file))
         local_processes.append(p)
     if mode == "qsub":
         os.system("{} run_genome.sh 0.1 -0.1 {} 0 {} False".format(mode,dist,ini_file))

@@ -15,7 +15,7 @@ import pylab
 from pylab import plot,show
 from numpy import vstack,array
 from numpy.random import rand
-from scipy.cluster.vq import kmeans,vq
+#from scipy.cluster.vq import kmeans,vq
 from multiprocessing import Process, Lock, Pool, current_process
 
 
@@ -66,7 +66,9 @@ for pyfile in listdir(root):
     if pyfile.endswith(".py"):
         only_python_files.append(pyfile)
 only_python_files = only_python_files[:subset]
-print len(only_python_files)
+if len(only_python_files) != subset:
+    print "There are no {} models in {}. \nOnly {} models were found in the directory.".format(subset,root,len(only_python_files))
+    sys.exit()
 
 # generate a chimera file with match. Chimera when matched, it calculates the RMSD 
 number_of_fragments = number_of_fragments -1
@@ -149,7 +151,7 @@ for line in only_python_files:
     matrixtxt.write("\n") 
 matrixtxt.close()
 print "\n\nmatrix_parallel.txt written! in {}".format(root)
-print "\nThis is the whole RMSD matrix (all models vs all models)"
+print "This is the whole RMSD matrix (all models vs all models)"
 #matrix2 = np.zeros((subset,subset))
 
 #models = []
@@ -192,6 +194,7 @@ ax2.set_yticks([])
 # Plot distance matrix.
 axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
 idx1 = Z1['leaves']
+dendogra_colors = Z1['color_list']
 idx2 = Z2['leaves']
 D = D[idx1,:]
 D = D[:,idx2]
@@ -212,7 +215,8 @@ except:
 n = subset
 cluster_number = []
 cluster_dict = dict()
-for i in range(subset-2):
+solutions = [] #gather the clustering proccesses when we have the same number as kmeans 
+for i in range(subset-2): #descend branches until the bottom
     new_cluster_id = n+i
     old_cluster_id_0 = Y[i, 0]
     old_cluster_id_1 = Y[i, 1]
@@ -228,19 +232,20 @@ for i in range(subset-2):
     else:
         combined_ids += [old_cluster_id_1]
     cluster_dict[new_cluster_id] = combined_ids
-for i in cluster_dict:
+    if len(cluster_dict) == k_mean:
+        aux_dict = dict(cluster_dict)
+        solutions.append(aux_dict)
+cluster_dict_def = solutions[-1]    
+#get only the last clustering, since it is the one with all models
+for i in cluster_dict_def:
     cluster_number.append(i)
-
-if not(len(cluster_number) == k_mean):
-    print "There is a different number of cluster than set in K. Exiting..."
-    sys.exit()
         
 number_of_fragments = number_of_fragments +1 
 # Write the matrix data in different files, k_mean times
 for i in cluster_number:
     matrixtxt = open("{}matrix{}.txt".format(root,i), "w")      
     matrixtxt.write("\t")
-    cluster_values = [int(j) for j in cluster_dict[i]]
+    cluster_values = [int(j) for j in cluster_dict_def[i]]
     cluster_models = [only_python_files[k] for k in cluster_values]
     for p_file in cluster_models:
         matrixtxt.write(p_file)
@@ -259,11 +264,12 @@ for i in cluster_number:
     matrixtxt.close()
     print "\n------"
     print "\nmatrix{}.txt written! in {}".format(i,root)
+    print "This is one of the clusters. These models are more similar between them."
         
         
     # create the file to open in chimera
     # superposition of the best models
-    print "\nCreating superposition of this cluster...\n"
+    print "Creating superposition of this cluster..."
     with open(working_dir+"data/"+prefix+"/"+prefix+"_superposition_"+str(i)+".py","w") as f:
         f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
         f.write("rc(\"open {}\")\n".format(cluster_models[0]))
@@ -273,5 +279,18 @@ for i in cluster_number:
             f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_fragments,k*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
 
     print "created in {}data/{}/{}_superposition".format(working_dir,prefix,prefix)
-    print "\n"
+n_clusters = len(set(dendogra_colors))-1
+print "\n{} clusters were found in the clustering process. They can be checked here: {}{}_heatmap.png".format(n_clusters,root,prefix)
+if k_mean != n_clusters:
+    print "Number of clusters found and k means value set are different. Consider redoing the clustering with different k means value or getting a different subset of models in the analysis process."
+else:
+    lines_in_file = 0
+    for m in cluster_number:
+        num_lines = sum(1 for line in open('{}matrix{}.txt'.format(root,m)))
+        if num_lines > lines_in_file:
+            biggest_matrix = m
+            lines_in_file = num_lines
+
+
+    print "\nClustering was succesful. Now run 'python src/calculate_vhic.py {} {}matrix{}.txt True'".format(ini_file,root,biggest_matrix)
 

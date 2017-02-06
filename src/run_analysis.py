@@ -15,9 +15,9 @@ number_of_arguments = len(sys.argv)
 if number_of_arguments != 5: #Or all parameters, or no parameters 
     print "Not enought parameters. Config_file, subset, std_dev and cut_off_percentage are required."
     print " -config_file: file with more data. Check config_template.ini for an example"
-    print " -subet: number of best models you want to retrieve from all models"
+    print " -subet: number of best models you want to retrieve from all models. 200 is a good subset"
     print " -std_dev: in Angstroms. Freedom in Angstroms that is given to a restraint so it is considered as fulfilled restraint. For example: 1000 if max_distance is 10000"
-    print " -cut_off_percentage: Maximum percentage of not fulfilled restraints that will be allowed to take as a good model. For example: 15"
+    print " -cut_off_percentage: Maximum percentage of not fulfilled restraints that will be allowed to take as a good model. For example: 25"
 
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
@@ -50,6 +50,8 @@ try:
     number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
     working_dir = config.get("ModelingValues", "working_dir")
     number_of_models = int(config.get("ModelingValues", "number_of_models"))
+    number_of_cpus = int(config.get("ModelingValues", "number_of_cpus"))
+    number_of_models = number_of_models / number_of_cpus
     jump = number_of_models
 except:
     print "\nError reading the configuration file.\n"
@@ -165,12 +167,15 @@ storage_folder = working_dir+"data/"+prefix+"/"+prefix+"_final_output_"+str(uZ)+
 print "copying best {} models to {}".format(subset,storage_folder)
 if not os.path.exists(storage_folder): os.makedirs(storage_folder)   
 
-models_subset = sorted_models [:subset]
-for k in range(subset):
-    
-    i = models_subset[k][0]
-    shutil.copyfile("{}{}{}.py".format(root,prefix,i), "{}{}{}.py".format(storage_folder,prefix,i) )
-    shutil.copyfile("{}{}{}.txt".format(root,prefix,i), "{}{}{}.txt".format(storage_folder,prefix,i) )
+try: 
+    models_subset = sorted_models [:subset]
+    for k in range(subset):
+        i = models_subset[k][0]
+        shutil.copyfile("{}{}{}.py".format(root,prefix,i), "{}{}{}.py".format(storage_folder,prefix,i) )
+        shutil.copyfile("{}{}{}.txt".format(root,prefix,i), "{}{}{}.txt".format(storage_folder,prefix,i) )
+except:
+    print "\n !!!!Can not get {} models. Seek less models or relax the std_dev and cut_off_percentage.\n -- Currently: std_dev={} and cut_off_percentage={}".format(subset,std_dev,cut_off_percentage)
+    sys.exit()
 
 
 
@@ -188,4 +193,4 @@ with open(working_dir+"data/"+prefix+"_superposition.py","w") as f:
 
 print "Superposition of {} models created in {}data/{}\n".format(subset,working_dir,prefix)
 
-print "Now run 'python src/GenomeClustering.py {} {} 2'".format(ini_file,subset)
+print "Now run 'python src/run_clustering.py {} {} 2'".format(ini_file,subset)

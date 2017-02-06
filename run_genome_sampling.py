@@ -26,6 +26,7 @@ try:
     max_z = float(config.get("ModelingValues", "max_zscore"))
     min_z = float(config.get("ModelingValues", "min_zscore"))
     number_of_cpus = int(config.get("ModelingValues", "number_of_cpus"))
+    number_of_models = number_of_models / number_of_cpus
     prefix = config.get("ModelingValues", "prefix")
 except:
     print "\nError reading the configuration file.\n"
@@ -36,8 +37,8 @@ except:
 local_processes = []
 for cpu in range(number_of_cpus):
     if mode == "local":
-        p = subprocess.Popen(['python','src/GenomeModeling.py',str(max_z),str(min_z),str(max_dist),str(cpu*number_of_models),str(ini_file),'True'])
-        print("python src/genomeModeling.py {} {} {} {} {} True &".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
+        p = subprocess.Popen(['python','src/run_modeling.py',str(max_z),str(min_z),str(max_dist),str(cpu*number_of_models),str(ini_file),'True'])
+        print("python src/run_modeling.py {} {} {} {} {} True &".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
         local_processes.append(p)
     if mode == "qsub":
         print("{} run_genome.sh {} {} {} {} {} True".format(mode,max_z,min_z,max_dist,cpu*number_of_models,ini_file))
@@ -49,5 +50,6 @@ for cpu in range(number_of_cpus):
 if mode == "local":
     exit_codes = [p.wait() for p in local_processes]
 
-print("\n\nWhen the jobs have finished, run 'python src/GenomeAnalysis.py {}'".format(sys.argv[1]))
+print("\n\nWhen the jobs have finished, run 'python src/run_analysis.py {} {} {} {}' (default values)".format(sys.argv[1],200,max_dist/10,25))
+
 

@@ -57,14 +57,16 @@ def calculate_heatdifference(path, n_files_inside,files,prefix):
         mean_all_data.append(mean_one_gene_array)
 
     if plot:
-           
+        fig = plt.figure(figsize=(10,10))   
         ax = plt.subplot(2,1,2)
         z = np.array(mean_all_data)
         c = plt.pcolor(z,cmap=plt.cm.terrain_r)
         plt.colorbar()
         ax.set_yticks(np.arange(z.shape[1])+0.5, minor=False)
         plt.axis([0,z.shape[1],0,z.shape[0]])
-        ax.set_yticklabels(files)
+        labels = [(x.split("/")[-1])[:15] for x in files]
+        ax.set_yticklabels(labels)
+        plt.xlabel("Beads")
     #     plt.xlabel("Genomic Position")
 
     #NOW CALCULATE THE 4C DATA'S HEATMAP (WITHOUT APLLYING LOG)
@@ -83,6 +85,7 @@ def calculate_heatdifference(path, n_files_inside,files,prefix):
         array_modified = [slope*(read-x1)+y1 for read in array]
         heatmap_data_modified.append(array_modified)
     if plot: 
+        plt.title("Top: Raw data reads per bear. \nBottom: Average distance between beads of the models.")
         ax = plt.subplot(2,1,1)
         z = np.array(heatmap_data_modified)
         c = plt.pcolor(z,cmap=plt.cm.terrain_r)
@@ -90,7 +93,9 @@ def calculate_heatdifference(path, n_files_inside,files,prefix):
         plt.colorbar()
         ax.set_yticks(np.arange(z.shape[1])+0.5, minor=False)
         plt.axis([0,z.shape[1],0,z.shape[0]])
-        ax.set_yticklabels(files)
+        labels = [(x.split("/")[-1])[:15] for x in files]
+        ax.set_yticklabels(labels)
+        plt.subplots_adjust(bottom=0.1, right=0.999, top=0.9, left=0.2)
     #     plt.xlabel("Genomic Position")
         plt.savefig('{}_heatmap.png'.format(path))
         plt.close('all')
@@ -185,8 +190,8 @@ with open (results_path,"w") as output_results:
     output_results.write("Max: {}".format(max(all_scores)))   
     #print min(all_scores)
 try:
-    config.set("ModelingValues", "to_zscore",str(best_uZ))
-    config.set("ModelingValues", "from_zscore",str(best_lZ))
+    config.set("ModelingValues", "max_zscore",str(best_uZ))
+    config.set("ModelingValues", "min_zscore",str(best_lZ))
     with open(ini_file,"w+") as configfile:
         config.write(configfile)
 except:
@@ -197,5 +202,7 @@ except:
 print "{} has been updated".format(ini_file)
 
 print "Best uZ: {}, Best lZ: {}".format(best_uZ,best_lZ)
+if plot:
+    print "\nFigures comparing raw data vs modeling were created in {}data/{}/".format(working_dir,prefix)
 
-print "Now run python 'run_genome_sampling.py {} qsub,sbatch,local'".format(ini_file)
+print "\nNow run python 'run_genome_sampling.py {} qsub,sbatch,local'".format(ini_file)

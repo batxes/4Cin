@@ -1,5 +1,5 @@
 # 4c2vhic
-This is a suite of scripts that lets you generate 3D models of the chromatin of your favourite locus, using 4C-seq data as the only input. It is able to crete Hi-C like contact maps of these 3D models and analyze the region further. 
+This is a suite of scripts that lets you generate 3D models of the chromatin of your favourite locus, using 4C data as the only input. It is able to create Hi-C like contact maps of these 3D models and analyze the region further. 
 
 Used in Acemel RD, Tena JJ, Irastorza-Azcarate I, Marletaz F, Gomez-Marin C, de la Calle-Mustienes E, Bertrand S, Diaz SG, Aldea D, Aury JM et al.: A single three-dimensional chromatin compartment in amphioxus indicates a stepwise evolution of vertebrate Hox bimodal regulation. Nat Genet 2016, 48: 336-341. (http://www.nature.com/ng/journal/v48/n3/full/ng.3497.html)
 
@@ -18,7 +18,7 @@ matplotlib
 scipy
 
 
-### Simple Usage (run this commands)
+### Fast Usage (run this commands)
 0 - # Modify config.ini paths
 
 1 - python run_genome_maxd.py config.ini /bin/bash
@@ -37,7 +37,7 @@ scipy
 
 5.5 - # 3D models are ready
 
-6 - python src/GenomeAnalysis.py config.ini
+6 - python src/run_analysis.py config.ini
 
 7 - 
 
@@ -62,15 +62,15 @@ scipy
 5 - With the max distance and the upper and lower z-scores, modeling can start. Run "run_genome_sampling.py" setting the previous variables in the config file (under [ModelingValues]).
     Example: python run_genome_sampling.py
 
-6 - run "src/GenomeAnalysis.py" to get a subset of all the models. The best models ordered by the IMP scoring function are gathered and also makes a superposition of all those models. The models are very likely to be mirror image of other models, getting two populations of models.
+6 - run "src/run_analysis.py" to get a subset of all the models. The best models ordered by the IMP scoring function are gathered and also makes a superposition of all those models. The models are very likely to be mirror image of other models, getting two populations of models.
     Take into account that we need to tweak the std_dev and the cut_of_percentage under [AnalysisValues]. In my essays, I have seen that getting a 10-15% of the population and setting a 15% restraints fulfillment works well. 
-    Example: python src/GenomeAnalysis.py config.ini 
+    Example: python src/run_analysis.py config.ini 
 
-7 - run "GenomeClustering.py" to get populations of best models depending on the similarity of the RMSD.
+7 - run "run_clustering.py" to get populations of best models depending on the similarity of the RMSD.
     K value needs to be set in the config file under [Clustering] to get that amount of populations. Also generates a superposition of each of the populations. If we get 2 populations that are mirror image of each other, we can be sure that the modeling went correctly.
-    Example: python src/GenomeClustering.py config.ini
+    Example: python src/run_clustering.py config.ini
 
-8 - run "TADs_multi.py" to generate the virtual Hi-C of one of the populations of the final models. We will set different values in the config file under [TADs] like:
+8 - run "calculate_vhic.py" to generate the virtual Hi-C of one of the populations of the final models. We will set different values in the config file under [TADs] like:
     -viewpoints: to plot circles of genes or other interesting fragments in the virtual Hi-C
     -gene_names: the name of the previous viewpoints.
     -color: will set different colors to the viewpoints. The numbers follow the matplotlib palette.
@@ -78,7 +78,7 @@ scipy
     -maximum_hic_values: will smooth or "burn" the virtual Hi-C heatmap.
 
     We will set also the config file, the matrix file of one of the populations (normally the biggest one) and True if it is the first time we calculate the matrix. If we already calculated and we just one to add viewpoints, change color of them or set a different maximum_hic_value, we will set to False
-    Example: python src/TADs_multi.py config.ini /home/user/4c2vhic/data/MyModels/MyModels_final_output/matrix397.txt True
+    Example: python src/calculate_vhic.py config.ini /home/user/4c2vhic/data/MyModels/MyModels_final_output/matrix397.txt True
     
 9 - run "Final_genome_models.py"
     Takes as argument the matrix of one of the solutions from GenomeClustering.py. It will tell us which model is the one closest to the average. The beads of the models will be concatenated and all models will be matched. If we have many it will be slow, so we can modify the superposition.cmd file that we will launched using chimera. "chimera superposition.cmd" 

@@ -72,6 +72,8 @@ try:
         ignore_beads = [] #empty
     if big_sampling == "True":
         number_of_models = int(config.get("ModelingValues", "number_of_models"))
+        number_of_cpus = int(config.get("ModelingValues", "number_of_cpus"))
+        number_of_models = number_of_models / number_of_cpus
     elif big_sampling == "False":
         number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
     else:
