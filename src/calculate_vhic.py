@@ -222,10 +222,10 @@ print """\nWhat do you want to do now?:
     'python src/get_representative_model.py {} {}'
 
 -To paint a model with epigenetic marks (bam/bed file required):
-    'python src/paint_model.py'
+    'python src/paint_model.py {} your_model.py '
 
 -To call the TAD boundaries, run:
     'python src/di_calculation'
 
 -To compare this virtual Hi-C to another one, run:
-    'python src/Evocomp mutcomp'""".format(sys.argv[0],sys.argv[1],sys.argv[2],sys.argv[1],sys.argv[2])        
+    'python src/Evocomp mutcomp'""".format(sys.argv[0],sys.argv[1],sys.argv[2],sys.argv[1],sys.argv[2],sys.argv[1])        

@@ -1,4 +1,4 @@
-open data/Shh_mouse_wt_models/Shh_mouse_wt_models_final_output_0.1_-0.1_10000/Shh_mouse_wt_models23307.py
+open /home/ibai/4c2vhic/data/My_models/My_models_final_output_0.1_-0.1_5000/mtx1_models/My_models13.py
 color #000000 #0
 color #999999 #1
 color #000000 #2

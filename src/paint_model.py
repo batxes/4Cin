@@ -24,36 +24,43 @@ if len(sys.argv) == 4:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
     distance_matrix = sys.argv[3]
 
+storage_dir = model.split("/")[:-1]
+storage_dir = "/".join(storage_dir)
 #read the config file
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    verbose = int(config.get("ModelingValues", "verbose"))
     prefix = config.get("ModelingValues", "prefix")
     
-    WINDOW = float(config.get("ModelingValues", "WINDOW"))
+    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
     data_dir = config.get("ModelingValues", "data_dir")
-    files = [f for f in os.listdir(data_dir) if os.path.isfile(os.path.join(data_dir, f))]
-    files = [data_dir + f for f in files]
-    viewpoints = config.get("ModelingValues", "viewpoints")
-    viewpoints = re.sub('[\n\s\t]','',viewpoints)
-    viewpoints = viewpoints.split(",")
-    viewpoints = [ int(i) for i in viewpoints]
-    viewpoints = [int(i/WINDOW) for i in viewpoints]
+    working_dir = config.get("ModelingValues", "working_dir")
+    file_names = config.get("ModelingValues", "file_names")
+    file_names = re.sub('[\n\s\t]','',file_names)
+    file_names = file_names.split(",")
+    files = [data_dir+f for f in file_names]
+
     
-    NFRAGMENTS_ALL = int(config.get("ModelingValues", "NFRAGMENTS"))
-    NFRAGMENTS = int(NFRAGMENTS_ALL/WINDOW)
+    viewpoint_fragments = config.get("ModelingValues", "viewpoint_fragments")
+    viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
+    viewpoint_fragments = viewpoint_fragments.split(",")
+    viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
+    viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
+    
+    number_of_fragments_ALL = int(config.get("ModelingValues", "number_of_fragments"))
+    number_of_fragments = int(number_of_fragments_ALL/fragments_in_each_bead)
 
     painting_path = config.get("Painting","file_path")
     colormap = config.get("Painting","colormap")
-    bam_or_bed = config.get("Painting","bam_or_bed")
-    
-    
-    
 except:
     print "\nError reading the configuration file.\n"
     e = sys.exc_info()[1]
     print e
+    sys.exit()
+
+bam_or_bed = painting_path[-3:]
+if bam_or_bed != "bam" and bam_or_bed != "bed":
+    print "Data file used to paint needs to be a bam or bed file."
     sys.exit()
 
 #read the files and create a bed_file
@@ -90,7 +97,7 @@ elif bam_or_bed == "bed":
         print "Writing bed file with DNA met data..."
         with open ("bedbam_file","w") as stdout:
             for line in stdin:
-                if counter == NFRAGMENTS_ALL:
+                if counter == number_of_fragments_ALL:
                     break
                 else:
                     values = line.split("\t")
@@ -121,7 +128,7 @@ with open ("bedbam_file","r") as stdin:
         added_region += float(values[2])-float(values[1])
         added_reads += float(values[3])
         counter += 1
-        if counter == WINDOW:
+        if counter == fragments_in_each_bead:
             normalized_read = added_reads/added_region
             bead_values.append(normalized_read)
             #print normalized_read
@@ -129,7 +136,7 @@ with open ("bedbam_file","r") as stdin:
             added_region = 0
             added_reads = 0
     #We dont use the last bead (Modeling does int())
-    #if counter != WINDOW and counter != 0:  #we add the min value to the last bead if it did not reach to Nfragments 
+    #if counter != fragments_in_each_bead and counter != 0:  #we add the min value to the last bead if it did not reach to Nfragments 
     #    normalized_read = added_reads/added_region
     #    bead_values.append(normalized_read)
 
@@ -163,25 +170,25 @@ for min_value in bead_values:
 #norm = mpl.colors.Normalize(vmin=vmax, vmax=inlier2)
 
 #for dnamet, h3k27ac,atac
-print "min value = ",vmin
-print "max value = ",vmax
+#print "min value = ",vmin
+#print "max value = ",vmax
 norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
 
 
 m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
-with open("coloring.cmd","w") as colored_model:
+with open("{}/coloring.cmd".format(storage_dir),"w") as colored_model:
     colored_model.write("open {}\n".format(model))
-    for number in range(NFRAGMENTS):
+    for number in range(number_of_fragments):
         current_color = matplotlib.colors.rgb2hex(m.to_rgba(bead_values[number]))
         colored_model.write("color {} #{}\n".format(current_color,number))
         #print "bead: {} color:{} value:{}".format(number,matplotlib.colors.rgb2hex(m.to_rgba(bead_values[number])),bead_values[number])
-    colored_model.write("shape tube #{}-{} radius 200 bandlength 10000".format(0,NFRAGMENTS))
+    colored_model.write("shape tube #{}-{} radius 200 bandlength 10000".format(0,number_of_fragments))
 
-print "Number of beads: {}".format(len(bead_values))
+print "coloring.cmd generated in {}/".format(storage_dir)
 print "Now, open coloring.cmd wich Chimera."
 
-print "Generatin some plots..."
+print "\nGenerating some plots..."
 #plot statistic figures
 fig = pylab.figure(figsize=(8,8))
 fig.suptitle("Epigenetic Marks")
@@ -196,8 +203,8 @@ axes = pylab.gca()
 axes.set_xlim([0,len(bead_values)])
 #axes.set_xlim([0,len(bead_values)-1])
 try:
-        fig.savefig('data/{}/genome_painting_stats_plot_{}.png'.format(prefix,prefix))
-        print "Plot painted in data/{}/".format(prefix)
+        fig.savefig('{}/genome_painting_stats_plot_{}.png'.format(storage_dir,prefix))
+        print "Plot painted in {}/".format(storage_dir,prefix)
 except:
         pass
 
@@ -207,8 +214,8 @@ fig.suptitle("Epigenetic Marks. Histogram.")
 pylab.ylabel("Frequency")
 pylab.xlabel("Score")
 try:
-        fig.savefig('data/{}/genome_painting_stats_hist_{}.png'.format(prefix,prefix))
-        print "Histogram painted in data/{}/".format(prefix)
+        fig.savefig('{}/genome_painting_stats_hist_{}.png'.format(storage_dir,prefix))
+        print "Histogram painted in {}/".format(storage_dir,prefix)
 except:
         pass
 fig = pylab.figure(figsize=(8,8))
@@ -216,8 +223,8 @@ pylab.boxplot(bead_values)
 fig.suptitle("Epigenetic Marks. Boxplot.")
 pylab.ylabel("Score")
 try:
-        fig.savefig('data/{}/genome_painting_stats_box_{}.png'.format(prefix,prefix))
-        print "Box plot painted in data/{}/".format(prefix)
+        fig.savefig('{}/genome_painting_stats_box_{}.png'.format(storage_dir,prefix))
+        print "Box plot painted in {}/".format(storage_dir,prefix)
 except:
         pass
 
