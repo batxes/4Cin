@@ -23,6 +23,10 @@ def chimera_worker(chimera_file):
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 4: #Or all parameters, or no parameters 
     print "Not enought parameters. Config file, matrix file path and calculate_the_matrix True/False are required. "
+    print " -config_file: file with more data. Check config_template.ini for an example"
+    print " -matrix file path: Path to one of the matrices (a cluster) calculated in the clustering. Located in the directory of the final models."
+    print " -calculate_the_matrix: True if we want to (re)calculate the virtual Hi-C"
+
 
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
@@ -34,9 +38,9 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     root = root+"/"
     if sys.argv[3] == "True":
         y_or_n = raw_input ("Are you sure you want to calculate the matrix again? (Y/N): ")
-        if y_or_n == "Y": 
+        if y_or_n == "Y" or y_or_n == "y": 
             calculate_the_matrix = True
-        elif y_or_n == "N":
+        elif y_or_n == "N" or y_or_n == "n":
             calculate_the_matrix = False
         else: 
             print "Bad input."
@@ -143,7 +147,7 @@ if calculate_the_matrix:
                 matrix[int(distance.group(2))][int(distance.group(1))][counter] = float(distance.group(3))
          
         counter += 1        
-        print "{} segundos".format(time.time() - start_time)
+        print "{} seconds needed.".format(time.time() - start_time)
 
 
 
@@ -205,7 +209,18 @@ fig.set_facecolor('white')
 pp = PdfPages('{}{}_HiC.pdf'.format(root,prefix))
 pp.savefig(fig)
 pp.close()
-print 'Virtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
-print "{} seconds".format(time.time() - start_time)
+print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
 #Distance between #1 marker 1  and #10 marker 1 : 2203.213
-            
+print """\nWhat do you want to do now?:
+
+-If the virtual Hi-C is too red or white, modify the maximum_hic_value in the config file and run:
+    'python {} {} {} False'
+
+-To get the representative model and superposition of best models:
+    'python src/Final_genome_models.py'
+
+-To paint a model with epigenetic marks (bam/bed file required):
+    'python src/paint_model.py'
+
+-To compare this virtual Hi-C to another one, run:
+    'python src/Evocomp mutcomp'""".format(sys.argv[0],sys.argv[1],sys.argv[2])        

@@ -133,7 +133,7 @@ for core in range(0,number_of_files,number_of_cpu):
       
       
 #write matrix       
-matrixtxt = open("{}matrix_parallel.txt".format(root), "w")      
+matrixtxt = open("{}matrix.txt".format(root), "w")      
 matrixtxt.write("\t")
 for p_file in only_python_files:
     matrixtxt.write(p_file)
@@ -150,7 +150,7 @@ for line in only_python_files:
     counter_line += 1
     matrixtxt.write("\n") 
 matrixtxt.close()
-print "\n\nmatrix_parallel.txt written! in {}".format(root)
+print "\n\nmatrix.txt written! in {}".format(root)
 print "This is the whole RMSD matrix (all models vs all models)"
 #matrix2 = np.zeros((subset,subset))
 
@@ -176,7 +176,6 @@ D = matrix
 
 # Compute and plot first dendrogram.
 fig = pylab.figure(figsize=(8,8))
-
 ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
 Y = sch.linkage(D, method='average')
 Z1 = sch.dendrogram(Y, orientation='right')
@@ -193,6 +192,7 @@ ax2.set_yticks([])
 
 # Plot distance matrix.
 axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
+pylab.xlabel("RMSD matrix in Angstroms.")
 idx1 = Z1['leaves']
 dendogra_colors = Z1['color_list']
 idx2 = Z2['leaves']
