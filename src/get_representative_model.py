@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+#script that calculates which is the average position of all the beads and gets the model that is most similar to it.
+#It also generates the superposition of the models in the cluster given.
+
 import re
 import os
 from os import listdir
@@ -20,7 +23,11 @@ import ConfigParser
 number_of_arguments = len(sys.argv)
 
 if number_of_arguments != 3:             
-    print "Not enought parameters. Config file and matrix file (data/my_models/my_models_final/matrix397.txt) are required. You passed: ",sys.argv[1:]
+    print "Not enought parameters. Config file and matrix file path are required"
+    print " -config_file: file with more data. Check config_template.ini for an example"
+    print " -matrix file path: Path to one of the matrices (a cluster) calculated in the clustering. Located in the directory of the final models."
+
+    
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     root = sys.argv[2]
@@ -36,22 +43,15 @@ config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
 
-    WINDOW = float(config.get("ModelingValues", "WINDOW"))
-    NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
-    NFRAGMENTS = int(NFRAGMENTS/WINDOW)
-    working_dir = config.get("ModelingValues", "working_dir")
-    root = working_dir+root
+    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
+    number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+    number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
     
-    viewpoints = config.get("ModelingValues", "viewpoints")
-    viewpoints = re.sub('[\n\s\t]','',viewpoints)
-    viewpoints = viewpoints.split(",")
-    viewpoints = [ int(i) for i in viewpoints]
-    viewpoints = [int(i/WINDOW) for i in viewpoints]
-    genes = config.get("ModelingValues", "genes")
-    genes = re.sub('[\n\s\t]','',genes)
-    genes = genes.split(",")
-    genes = [ int(i) for i in genes]
-    genes = [int(i/WINDOW) for i in genes]
+    viewpoint_fragments = config.get("ModelingValues", "viewpoint_fragments")
+    viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
+    viewpoint_fragments = viewpoint_fragments.split(",")
+    viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
+    viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
 
     
 except:
@@ -92,12 +92,12 @@ with open (write_pdb,'w') as output:
         output.write("rc(\"open {}\")\n".format(model))
         counter += 1       
     for model in range(len(models)-1):
-        output.write("rc(\"match #{}-{} #0-{}\")\n".format((model+1)*NFRAGMENTS,(model+1)*NFRAGMENTS+NFRAGMENTS-1,NFRAGMENTS-1))
+        output.write("rc(\"match #{}-{} #0-{}\")\n".format((model+1)*number_of_fragments,(model+1)*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
      
-    start_id = len(models)*NFRAGMENTS    
+    start_id = len(models)*number_of_fragments    
     for model in range(len(models)):
         
-        output.write("rc(\"combine #{}-{} newchainids False name combine modelId {}\")\n".format(model*NFRAGMENTS,(model*NFRAGMENTS+NFRAGMENTS-1),start_id))
+        output.write("rc(\"combine #{}-{} newchainids False name combine modelId {}\")\n".format(model*number_of_fragments,(model*number_of_fragments+number_of_fragments-1),start_id))
         output.write("rc(\"write format pdb #{} {}{}.pdb\")\n".format(start_id,pdb_output,models[model][:-3])) #with -3 we take out the ".PY"
         start_id+=1
         #combine #0-210 newchainids False name combine modelId 211    
@@ -131,7 +131,7 @@ for pdbFile in pdbFiles:
     all_models.append(one_model)
     
 mean_model = []
-for bead in range(NFRAGMENTS):   
+for bead in range(number_of_fragments):   
     lista_x = []
     lista_y = []
     lista_z = []           
@@ -153,7 +153,7 @@ sum_of_distances = []
 
 for model in all_models:
     d_sum = 0
-    for bead in range(NFRAGMENTS):
+    for bead in range(number_of_fragments):
         
         d = (model[bead][0]-mean_model[bead][0])**2 + (model[bead][1]-mean_model[bead][1])**2 + (model[bead][2]-mean_model[bead][2])**2
         square_d = np.sqrt(d)
@@ -163,14 +163,14 @@ for model in all_models:
   
 
 
-print "MIN:"
+print "\nModel closest to average (Representative):"
 # print sum_of_distances.index(min(sum_of_distances))
 print pdbFiles[sum_of_distances.index(min(sum_of_distances))]
-print "MAX:"
+print "Most different model to average:"
 print pdbFiles[sum_of_distances.index(max(sum_of_distances))]
-sum_of_distances.remove(max(sum_of_distances))
-print "Second MAX:"
-print pdbFiles[sum_of_distances.index(max(sum_of_distances))]
+#sum_of_distances.remove(max(sum_of_distances))
+#print "Second MAX:"
+#print pdbFiles[sum_of_distances.index(max(sum_of_distances))]
 
 
 # save all models of this matrix in another dir
@@ -178,7 +178,7 @@ storage_folder =  "{}mtx1_models/".format(root)
 
 # store them in a folder
 # storage_folder = "../"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2)+"/" #the dir where the data will be saved
-print "saving in: {}".format(storage_folder)
+print "\nCopying models from the same cluster in: {}".format(storage_folder)
 if not os.path.exists(storage_folder): os.makedirs(storage_folder)   
 
 
@@ -191,33 +191,33 @@ for i in pdbFiles:
     
 number_of_files_to_super = pdbFiles
 # number_of_files_to_super = number_of_files_to_super[:5]
-NFRAGMENTS = NFRAGMENTS - 1 
+number_of_fragments = number_of_fragments - 1 
 with open("{}superposition.cmd".format(storage_folder),"w") as superposition:
     for i in number_of_files_to_super:
         i = i[:-4]
         superposition.write("open {}.py \n".format(i))
     for i in range(len(number_of_files_to_super)):
         
-        for j in range(NFRAGMENTS+1):
-            if j in viewpoints:
-                superposition.write("color {} #{}\n".format(color_gene,j+i*(NFRAGMENTS+1)))
+        for j in range(number_of_fragments+1):
+            if j in viewpoint_fragments:
+                superposition.write("color {} #{}\n".format(color_gene,j+i*(number_of_fragments+1)))
             else:
-                superposition.write("color {} #{}\n".format(color_grey,j+i*(NFRAGMENTS+1)))
+                superposition.write("color {} #{}\n".format(color_grey,j+i*(number_of_fragments+1)))
         i += 1      
     for i in range(len(number_of_files_to_super)-1):
         i += 1
-        superposition.write("match #{}-{} #0-{}\n".format(i*(NFRAGMENTS+1),i*(NFRAGMENTS+1)+NFRAGMENTS,NFRAGMENTS))
+        superposition.write("match #{}-{} #0-{}\n".format(i*(number_of_fragments+1),i*(number_of_fragments+1)+number_of_fragments,number_of_fragments))
     for i in range(len(number_of_files_to_super)):
-        superposition.write("shape tube #{}-{} radius 20 bandlength 10000\n".format(i*(NFRAGMENTS+1),i*(NFRAGMENTS+1)+NFRAGMENTS))
+        superposition.write("shape tube #{}-{} radius 20 bandlength 10000\n".format(i*(number_of_fragments+1),i*(number_of_fragments+1)+number_of_fragments))
         
     #if we want a model to be highlighted
 #     for i in range(len(number_of_files_to_super)):
 #         if number_of_files_to_super[i] == "HoxGenomeZebra21741.pdb":
-#             superposition.write("shape tube #{}-{} radius 100 bandlength 10000\n".format(i*(NFRAGMENTS+1),i*(NFRAGMENTS+1)+NFRAGMENTS)) 
+#             superposition.write("shape tube #{}-{} radius 100 bandlength 10000\n".format(i*(number_of_fragments+1),i*(number_of_fragments+1)+number_of_fragments)) 
 #         else:
-#             superposition.write("shape tube #{}-{} radius 20 bandlength 10000\n".format(i*(NFRAGMENTS+1),i*(NFRAGMENTS+1)+NFRAGMENTS))
-        superposition.write("close #{}-{}\n".format(i*(NFRAGMENTS+1),i*(NFRAGMENTS+1)+NFRAGMENTS))
-print "Superposition file generated in {}.".format(storage_folder)
+#             superposition.write("shape tube #{}-{} radius 20 bandlength 10000\n".format(i*(number_of_fragments+1),i*(number_of_fragments+1)+number_of_fragments))
+        superposition.write("close #{}-{}\n".format(i*(number_of_fragments+1),i*(number_of_fragments+1)+number_of_fragments))
+print "Superposition file generated in {}superposition.cmd. Open it with UCSF Chimera.".format(storage_folder)
 
 
 

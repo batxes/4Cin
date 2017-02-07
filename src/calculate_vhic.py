@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-## CREATE THE CMD TO USE IN CHIMERA
+#script that measures the distance between all the beads in each model, calculates the average distance between all models, and generates a heatmap of these distances, also called, virtual Hi-C.
+
 import re
 import os
 import sys
@@ -178,6 +179,7 @@ print "Generating matrix to plot..."
 #show_fragments_in_vhic = [x-15 for x in show_fragments_in_vhic]
 show_fragments_in_vhic = [c+0.5 for c in show_fragments_in_vhic] #to match the name_of_fragments in the matrix Since the ticks don't match with the heatmap.
 fig = plt.figure()
+plt.title("Virtual Hi-C")
 ax = plt.subplot(1,1,1)
 z = np.array(matrix_mean)
 
@@ -217,10 +219,13 @@ print """\nWhat do you want to do now?:
     'python {} {} {} False'
 
 -To get the representative model and superposition of best models:
-    'python src/Final_genome_models.py'
+    'python src/get_representative_model.py {} {}'
 
 -To paint a model with epigenetic marks (bam/bed file required):
     'python src/paint_model.py'
 
+-To call the TAD boundaries, run:
+    'python src/di_calculation'
+
 -To compare this virtual Hi-C to another one, run:
-    'python src/Evocomp mutcomp'""".format(sys.argv[0],sys.argv[1],sys.argv[2])        
+    'python src/Evocomp mutcomp'""".format(sys.argv[0],sys.argv[1],sys.argv[2],sys.argv[1],sys.argv[2])        
