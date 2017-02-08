@@ -19,18 +19,22 @@ except ImportError:
 except:
     pass
 
-tad_from = 15
-tad_to = 50
 
 add_mean_values = True
 
 if len(sys.argv) < 3:
-    print "wrong parameters. Distance Matrix and Tad size (in bins) for the plot is required."
-    sys.exit()
-input_path = sys.argv[1]
-tad_size = int(sys.argv[2])
+    print "wrong parameters. Virtual Hi-C Matrix and Tad size (in bins) for the plot are required."
+    print " -Virtual Hi-C Matrix: file generated after calculate_vhic.py."
+    print " -Tad size: expected size of a TAD in the locus (in bins). Check the Virtual Hi-C plot if needed."
 
-print "\nCalculating Tad boundaries, with TAD sizes ranging between {} and  {}.".format(tad_from, tad_to)
+    sys.exit()
+try:
+    input_path = sys.argv[1]
+    tad_size = int(sys.argv[2])
+except Exception as e:
+    print e
+    sys.exit()
+
 
 aux_list = []
 lines = 0
@@ -40,6 +44,8 @@ with open(input_path,"r") as INPUT:
         values = line.split(",")
         size = int(values[0])
         aux_list.append(float(values[2][:-1]))
+tad_to = size
+tad_from = 1
 max_value = max(aux_list)
 with open(input_path,"r") as INPUT:
     for line in INPUT:
@@ -131,6 +137,7 @@ positive = False
 boundary = False
 #print di_list
 print "Boundaries found in the plot (Tad size: {}):".format(tad_size)
+boundaries = []
 for i in di_list:
     if i <= 0: #----
         if positive:
@@ -141,8 +148,12 @@ for i in di_list:
             positive = True
             boundary = True 
     if boundary:
-        print "Boundary: {}".format(di_list.index(i))
+        boundaries.append(di_list.index(i))
         boundary = False
+        
+for b in boundaries:
+    if b != 0:
+        print "Boundary: {}".format(b)
 index = np.arange(size)
 di_list_pos = []
 di_list_neg = []
@@ -158,6 +169,7 @@ for x in di_list:
     else:
         di_list_pos.append(0)
 fig = plt.figure()
+plt.title("Differential Analysis.")
 ax = fig.add_subplot(111)
 ax.set_xlim(0,size)
 #limits will be 3/4 of maximum data
@@ -255,7 +267,10 @@ for tad_size in range(tad_from,tad_to):
             boundaries[di_list.index(i)] += 1
             boundary = False
 sorted_x = sorted(boundaries.items(), key=operator.itemgetter(1), reverse=True)
+print "\nCalculating Tad boundaries, with TAD sizes ranging between {} and {}.".format(tad_from, tad_to)
 print "Number of times a boundary was found: "
 for i in sorted_x:
     if i[0] != 0:
-        print "Boundary: {} - times found:{}/{}".format(i[0],i[1],tad_to-tad_from)
+        print "Boundary: {} -  found {} times out of {}".format(i[0],i[1],tad_to-tad_from)
+
+print "\nReminder: boundaries are found between bins that change from negative to positive values."

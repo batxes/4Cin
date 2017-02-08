@@ -20,7 +20,6 @@ def fileCheck(f):
 
 #####
 #MAIN
-#yolo
 ####
 if len(sys.argv) < 2:
     print "Usage: prepare_data.py 4c-seq_files."

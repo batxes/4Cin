@@ -73,13 +73,13 @@ def sizeReader(f):
 #
 # sums up all the read counts of the inputa data 
 
-def calculateNWindowedValues(WINDOW, files):
+def calculateNWindowedValues(fragments_in_each_bead, files):
     read_sums = []
     factors = []
     for i in range(len(files)):
         reads = []
         f = fileCheck(files[i])
-        reads = valueReaderNWindow(f,WINDOW)
+        reads = valueReaderNWindow(f,fragments_in_each_bead)
         read_sums.append(sum(reads))
     for i in read_sums:
         value = max(read_sums)/i
@@ -181,8 +181,8 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
             plt.subplot(3,1,1)
             bar_list = plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
             bar_list = plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
-            bar_list[viewpoints[i]].set_color('r')
-            bar_list[viewpoints[i]].set_edgecolor('w')
+            bar_list[viewpoint_fragments[i]].set_color('r')
+            bar_list[viewpoint_fragments[i]].set_edgecolor('w')
             plt.xlim(0,len(HEATMAP_DATA[i]))  
             plt.ylabel("Number of Reads")
             plt.xlabel(files[i])
@@ -196,8 +196,8 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
             plt.tick_params(axis='both', which='major', labelsize=14)
             plt.subplot(3,1,3)
             bar_list = plt.bar(range(len(final_reads[i])),final_reads[i],width=1)
-            bar_list[viewpoints[i]].set_color('r')
-            bar_list[viewpoints[i]].set_edgecolor('w')
+            bar_list[viewpoint_fragments[i]].set_color('r')
+            bar_list[viewpoint_fragments[i]].set_edgecolor('w')
             plt.xlim(0,len(final_reads[i]))
             plt.ylabel("Distance restraints in Angstroms")
             plt.xlabel("Beads")
@@ -237,28 +237,26 @@ if __name__ == "__main__":
     try:
         config.read(config_file)
         prefix = config.get("ModelingValues", "prefix")
-        WINDOW = float(config.get("ModelingValues", "WINDOW"))
-        files = config.get("ModelingValues", "files")
-        files = re.sub('[\n\s\t]','',files)
-        files = files.split(",")    
-        viewpoints = config.get("ModelingValues", "viewpoints")
-        viewpoints = re.sub('[\n\s\t]','',viewpoints)
-        viewpoints = viewpoints.split(",")
-        viewpoints = [ int(i) for i in viewpoints]
-        viewpoints = [int(i/WINDOW) for i in viewpoints]
-        genes = config.get("ModelingValues", "genes")
-        genes = re.sub('[\n\s\t]','',genes)
-        genes = genes.split(",")
-        genes = [ int(i) for i in genes]
-        genes = [int(i/WINDOW) for i in genes]
-        NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
-        NFRAGMENTS = int(NFRAGMENTS/WINDOW)
+        fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
+        data_dir = config.get("ModelingValues", "data_dir")
+        file_names = config.get("ModelingValues", "file_names")
+        file_names = re.sub('[\n\s\t]','',file_names)
+        file_names = file_names.split(",")    
+        files = [data_dir+f for f in file_names]
+
+        viewpoint_fragments = config.get("ModelingValues", "viewpoint_fragments")
+        viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
+        viewpoint_fragments = viewpoint_fragments.split(",")
+        viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
+        viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
+        number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+        number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
     except:
         print "\nError reading the configuration file.\n"
         e = sys.exc_info()[1]
         print e
         sys.exit()
-    calculateNWindowedDistances(WINDOW, uZ, lZ, y2, files, True, False)
+    calculateNWindowedDistances(fragments_in_each_bead, uZ, lZ, y2, files, True, False)
 
 
     

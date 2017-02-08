@@ -23,7 +23,7 @@ def chimera_worker(chimera_file):
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 4: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file, matrix file path and calculate_the_matrix True/False are required. "
+    print "Not enough parameters. Config file, matrix file path and calculate_the_matrix True/False are required. "
     print " -config_file: file with more data. Check config_template.ini for an example"
     print " -matrix file path: Path to one of the matrices (a cluster) calculated in the clustering. Located in the directory of the final models."
     print " -calculate_the_matrix: True if we want to (re)calculate the virtual Hi-C"
@@ -86,7 +86,7 @@ except:
     print e
     sys.exit()
 distance_file = "get_genome_distance_{}".format(prefix)
-path = "{}distances_of_current_model_{}".format(root,prefix)
+path = "{}vhic_{}.txt".format(root,prefix)
 start_time = time.time()
 if calculate_the_matrix:
     models = []
@@ -163,6 +163,7 @@ if calculate_the_matrix:
             f.write(str(line)+","+str(column)+","+str(mean_value))   
             f.write("\n")
     f.close()
+    print "\nThe virtual Hi-C data is in {}.".format(path)
     for chi_file in chimera_files:
         os.remove(chi_file)
         os.remove(chi_file+"c")
@@ -174,7 +175,7 @@ else:
             matrix_mean[int(values[0])][int(values[1])] = float(values[2])
 
 
-print "Generating matrix to plot..."     
+print "Generating virtual Hi-C plot..."     
 #matrix_mean = matrix_mean[15:-15,15:-15]
 #show_fragments_in_vhic = [x-15 for x in show_fragments_in_vhic]
 show_fragments_in_vhic = [c+0.5 for c in show_fragments_in_vhic] #to match the name_of_fragments in the matrix Since the ticks don't match with the heatmap.
@@ -208,7 +209,7 @@ plt.axis([0,z.shape[1],0,z.shape[0]])
 fig.set_facecolor('white')
 #plt.show()
 
-pp = PdfPages('{}{}_HiC.pdf'.format(root,prefix))
+pp = PdfPages('{}{}_vHiC.pdf'.format(root,prefix))
 pp.savefig(fig)
 pp.close()
 print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
@@ -225,7 +226,7 @@ print """\nWhat do you want to do now?:
     'python src/paint_model.py {} your_model.py '
 
 -To call the TAD boundaries, run:
-    'python src/di_calculation'
+    'python src/calculate_boundaries.py {} tad_size'
 
 -To compare this virtual Hi-C to another one, run:
-    'python src/Evocomp mutcomp'""".format(sys.argv[0],sys.argv[1],sys.argv[2],sys.argv[1],sys.argv[2],sys.argv[1])        
+    'python src/Evocomp mutcomp'""".format(sys.argv[0],sys.argv[1],sys.argv[2],sys.argv[1],sys.argv[2],sys.argv[1],path)        
