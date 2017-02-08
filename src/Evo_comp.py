@@ -22,55 +22,77 @@ from scipy.stats.stats import spearmanr
 
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 4: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file, matrix_distance1 and matrix_distance2 are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 5: #Or all parameters, or no parameters 
+    print "Not enough parameters. Config file 1, config file 2,  vhic 1 and vhic 2 are required."
+    print " -config_files 1 and 2: Config files of the regions you want to compare. Check config_template.ini for an example"
+    print " -Virtual Hi-C Matrices 1 and 2: vhic's related to config file 1 and 2. Files are generated after calculate_vhic.py. "
+
+
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
-    matrix_path = sys.argv[2]
-    matrix_path2 = sys.argv[3]
+    ini_file2 = sys.argv[2]
+    matrix_path = sys.argv[3]
+    matrix_path2 = sys.argv[4]
     
 #read the config file
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
     
-    prefix = config.get("ModelingValues", "prefix")
-    storage_dir = config.get("EvoComp", "storage_dir")
-    verbose = int(config.get("ModelingValues", "verbose"))
-    WINDOW = float(config.get("EvoComp", "WINDOW"))
-    WINDOW2 = float(config.get("EvoComp", "WINDOW2"))
+    prefix1 = config.get("ModelingValues", "prefix")
+    storage_dir = config.get("ModelingValues", "working_dir")
+    storage_dir = storage_dir + "data/" + prefix1 + "/"
+    WINDOW = float(config.get("ModelingValues", "fragments_in_each_bead"))
     
-    viewpoints = config.get("EvoComp", "viewpoints")
+    viewpoints = config.get("EvoComp", "fragments_to_comp")
     viewpoints = re.sub('[\n\s\t]','',viewpoints)
     viewpoints = viewpoints.split(",")
     viewpoints = [ int(i) for i in viewpoints]
     viewpoints = [int(i/WINDOW) for i in viewpoints]
-    viewpoints2 = config.get("EvoComp", "viewpoints2")
-    viewpoints2 = re.sub('[\n\s\t]','',viewpoints2)
-    viewpoints2 = viewpoints2.split(",")
-    viewpoints2 = [ int(i) for i in viewpoints2]
-    viewpoints2 = [int(i/WINDOW2) for i in viewpoints2]
-    n_viewpoints = len(viewpoints2)
-    max_distance = int(config.get("EvoComp", "max_dist"))
-    max_distance2 = int(config.get("EvoComp", "max_dist2"))
-    name = config.get("EvoComp","name")
-    name2 = config.get("EvoComp","name2")
+    n_viewpoints = len(viewpoints)
+    max_distance = int(config.get("ModelingValues", "max_dist"))
     
     
-    gene_names = config.get("EvoComp", "gene_names")
+    gene_names = config.get("EvoComp", "name_of_fragments")
     gene_names = re.sub('[\n\s\t]','',gene_names)
     gene_names = gene_names.split(",")
-    gene_names2 = config.get("EvoComp", "gene_names2")
-    gene_names2 = re.sub('[\n\s\t]','',gene_names2)
-    gene_names2 = gene_names2.split(",")
     
     maximum_hic_value= float(config.get("EvoComp", "maximum_hic_value"))
 
 except:
-    print "\nError reading the configuration file.\n"
+    print "\nError reading the configuration file 1.\n"
     e = sys.exc_info()[1]
     print e
+    sys.exit()
+#read the config file2
+config2 = ConfigParser.ConfigParser()
+try:
+    config.read(ini_file2)
+    
+    prefix2 = config.get("ModelingValues", "prefix")
+    WINDOW2 = float(config.get("ModelingValues", "fragments_in_each_bead"))
+    
+    viewpoints2 = config.get("EvoComp", "fragments_to_comp")
+    viewpoints2 = re.sub('[\n\s\t]','',viewpoints2)
+    viewpoints2 = viewpoints2.split(",")
+    viewpoints2 = [ int(i) for i in viewpoints2]
+    viewpoints2 = [int(i/WINDOW2) for i in viewpoints2]
+    max_distance2 = int(config.get("ModelingValues", "max_dist"))
+    
+    
+    gene_names2 = config.get("EvoComp", "name_of_fragments")
+    gene_names2 = re.sub('[\n\s\t]','',gene_names2)
+    gene_names2 = gene_names2.split(",")
+    
+
+except:
+    print "\nError reading the configuration file 2.\n"
+    e = sys.exc_info()[1]
+    print e
+    sys.exit()
+if len(viewpoints) != len(viewpoints2):
+    print "\nFragments to compare between {} and {} are different. Comparing {} and {} fragments. Check config files.".format(prefix1,prefix2,len(viewpoints),len(viewpoints2))
     sys.exit()
 viewpoints_ticks = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
 matrix = np.zeros((n_viewpoints,n_viewpoints))
@@ -129,12 +151,13 @@ for i in range(n_viewpoints):
         if i != j:
             array2.append(matrix2[i][j])
 
-print "\nCorrelation between both regions: "
+print "\nCorrelation between both regions: (Type, correlation, P-value)"
 print "pearson: "+str(pearsonr(array1,array2))
 print "spearman: "+str(spearmanr(array1,array2))
 
-if verbose==3:  print "Generating matrix to plot..."     
+print "Generating matrix to plot..."     
 fig = plt.figure()
+plt.title("Conserved regions vhic comparison")
 ax = plt.subplot(1,1,1)
 z = np.array(matrix_final)
 
@@ -162,11 +185,11 @@ plt.axis([0,z.shape[1],0,z.shape[0]])
 fig.set_facecolor('white')
 plt.show()
 
-pp = PdfPages('{}{}_vs_{}_evocomp.pdf'.format(storage_dir,name,name2))
+pp = PdfPages('{}{}_vs_{}_evocomp.pdf'.format(storage_dir,prefix1,prefix2))
 pp.savefig(fig)
 pp.close()
 print "-------\nEvocomp.pdf shows in each matrix triangle the contact map between the conserved beads for each region."
-print '{}{}_vs_{}_evocomp.pdf writen'.format(storage_dir,name,name2)
+print '{}{}_vs_{}_evocomp.pdf written'.format(storage_dir,prefix1,prefix2)
 #Distance between #1 marker 1  and #10 marker 1 : 2203.213
 
 from matplotlib.colors import LinearSegmentedColormap
@@ -183,6 +206,7 @@ cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'black'),(0.5 / v
 
 
 fig = plt.figure()
+plt.title("Similarity between conserved regions vhic")
 ax = plt.subplot(1,1,1)
 z = np.array(matrix_diff)
 
@@ -205,9 +229,9 @@ plt.axis([0,z.shape[1],0,z.shape[0]])
 fig.set_facecolor('white')
 plt.show()
 
-pp = PdfPages('{}{}_vs_{}_evocomp_diff.pdf'.format(storage_dir,name,name2))
+pp = PdfPages('{}{}_vs_{}_evocomp_diff.pdf'.format(storage_dir,prefix1,prefix2))
 pp.savefig(fig)
 pp.close()
 print "-------\nEvocomp_diff shows the difference between both half matrices."
-print '{}{}_vs_{}_evocomp_diff.pdf writen'.format(storage_dir,name,name2)
+print '{}{}_vs_{}_evocomp_diff.pdf writen'.format(storage_dir,prefix1,prefix2)
             

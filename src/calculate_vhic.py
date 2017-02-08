@@ -229,4 +229,10 @@ print """\nWhat do you want to do now?:
     'python src/calculate_boundaries.py {} tad_size'
 
 -To compare this virtual Hi-C to another one, run:
-    'python src/Evocomp mutcomp'""".format(sys.argv[0],sys.argv[1],sys.argv[2],sys.argv[1],sys.argv[2],sys.argv[1],path)        
+    'python src/Evocomp.py {} config_file2 {} vhic2'
+    
+-To compare this virtual Hi-C to another one, run:
+    'python src/mutcomp'
+    
+    
+    """.format(sys.argv[0],sys.argv[1],sys.argv[2],sys.argv[1],sys.argv[2],sys.argv[1],path,sys.argv[1],path)        
