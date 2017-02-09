@@ -57,26 +57,26 @@ config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
     
-    prefix = config.get("ModelingValues", "prefix")
-    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
-    show_fragments_in_vhic = config.get("TADs", "show_fragments_in_vhic")
+    prefix = config.get("Modeling", "prefix")
+    fragments_in_each_bead = float(config.get("Modeling", "fragments_in_each_bead"))
+    show_fragments_in_vhic = config.get("VHiC", "show_fragments_in_vhic")
     show_fragments_in_vhic = re.sub('[\n\s\t]','',show_fragments_in_vhic)
     show_fragments_in_vhic = show_fragments_in_vhic.split(",")
     show_fragments_in_vhic = [ int(i) for i in show_fragments_in_vhic]
     show_fragments_in_vhic = [int(i/fragments_in_each_bead) for i in show_fragments_in_vhic]
     
-    number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+    number_of_fragments = int(config.get("Modeling", "number_of_fragments"))
     number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
     
-    name_of_fragments = config.get("TADs", "name_of_fragments")
+    name_of_fragments = config.get("VHiC", "name_of_fragments")
     name_of_fragments = re.sub('[\n\s\t]','',name_of_fragments)
     name_of_fragments = name_of_fragments.split(",")
-    color = config.get("TADs", "color_of_fragments")
+    color = config.get("VHiC", "color_of_fragments")
     color = re.sub('[\n\s\t]','',color)
     color = color.split(",")
     
-    number_of_cpus = int(config.get("ModelingValues", "number_of_cpus"))
-    maximum_hic_value= int(config.get("TADs", "maximum_hic_value"))
+    number_of_cpus = int(config.get("Modeling", "number_of_cpus"))
+    maximum_hic_value= int(config.get("VHiC", "maximum_hic_value"))
 
 
 
@@ -216,7 +216,7 @@ print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
 #Distance between #1 marker 1  and #10 marker 1 : 2203.213
 print """\nWhat do you want to do now?:
 
--If the virtual Hi-C is too red or white, modify the maximum_hic_value in the config file and run:
+-If the virtual Hi-C is too red or white, modify the maximum_hic_value in section [VHiC] in the config file and run:
     'python {} {} {} False'
 
 -To get the representative model and superposition of best models:
@@ -228,11 +228,10 @@ print """\nWhat do you want to do now?:
 -To call the TAD boundaries, run:
     'python src/calculate_boundaries.py {} tad_size'
 
--To compare this virtual Hi-C to another one, run:
-    'python src/Evocomp.py {} config_file2 {} vhic2'
+-To compare conserved regions between 2 virtual Hi-Cs (Different species or homolog regions), run:
+    'python src/Evo_comp.py {} config_file2 {} vhic2'
     
--To compare this virtual Hi-C to another one, run:
-    'python src/mutcomp'
-    
-    
-    """.format(sys.argv[0],sys.argv[1],sys.argv[2],sys.argv[1],sys.argv[2],sys.argv[1],path,sys.argv[1],path)        
+-To compare this virtual Hi-C to another one of the same region (Mutants), run:
+    'python src/Mut_comp {} config_file2 {} vhic2'
+
+""".format(sys.argv[0],sys.argv[1],sys.argv[2],sys.argv[1],sys.argv[2],sys.argv[1],path,sys.argv[1],path,sys.argv[1],path)        

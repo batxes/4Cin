@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+# script that runs a small number of modeling rounds with different Z-score values.
 import sys
 import os
 import ConfigParser
@@ -20,11 +21,11 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
-    from_zscore= int(10*float(config.get("Pre-ModelingValues", "from_zscore")))
-    to_zscore= int(10*float(config.get("Pre-ModelingValues", "to_zscore")))
-    zscore_bins = int(10*float(config.get("Pre-ModelingValues", "zscore_bins")))
-    dist = int(config.get("ModelingValues", "max_dist"))
+    number_of_models = int(config.get("Pre-Modeling", "number_of_models"))
+    from_zscore= int(10*float(config.get("Pre-Modeling", "from_zscore")))
+    to_zscore= int(10*float(config.get("Pre-Modeling", "to_zscore")))
+    zscore_bins = int(10*float(config.get("Pre-Modeling", "zscore_bins")))
+    dist = int(config.get("Modeling", "max_dist"))
 except:
     print "\nError reading the configuration file.\n"
     e = sys.exc_info()[1]

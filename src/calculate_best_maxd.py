@@ -8,6 +8,7 @@ import sys
 import subprocess
 import numpy as np
 import ConfigParser
+
 #for each model (50 normally) we will get the length of the chromatin
 
 number_of_arguments = len(sys.argv)
@@ -20,16 +21,16 @@ ini_file = sys.argv[1]
 config = ConfigParser.SafeConfigParser()
 try:
     config.read(ini_file)
-    prefix = config.get("ModelingValues", "prefix")
-    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
-    number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+    prefix = config.get("Modeling", "prefix")
+    fragments_in_each_bead = float(config.get("Modeling", "fragments_in_each_bead"))
+    number_of_fragments = int(config.get("Modeling", "number_of_fragments"))
     number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
-    working_dir = config.get("ModelingValues", "working_dir")
-    locus_size = float(config.get("Pre-ModelingValues", "locus_size"))
-    from_dist = int(config.get("Pre-ModelingValues", "from_dist"))
-    to_dist = int(config.get("Pre-ModelingValues", "to_dist"))
-    dist_bins = int(config.get("Pre-ModelingValues", "dist_bins"))
-    number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
+    working_dir = config.get("Modeling", "working_dir")
+    locus_size = float(config.get("Pre-Modeling", "locus_size"))
+    from_dist = int(config.get("Pre-Modeling", "from_dist"))
+    to_dist = int(config.get("Pre-Modeling", "to_dist"))
+    dist_bins = int(config.get("Pre-Modeling", "dist_bins"))
+    number_of_models = int(config.get("Pre-Modeling", "number_of_models"))
 
 except:
     print "\nError reading the configuration file.\n"
@@ -102,7 +103,7 @@ best_maxd = maxd_list[size_list.index(best_value)]
 print "\nBest max distance for the modeling is: {}".format(best_maxd)
 
 try:
-    config.set("ModelingValues", "max_dist",str(best_maxd))
+    config.set("Modeling", "max_dist",str(best_maxd))
     with open(ini_file,"w+") as configfile:
         config.write(configfile)
 except:

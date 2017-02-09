@@ -38,10 +38,10 @@ config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
     
-    prefix1 = config.get("ModelingValues", "prefix")
-    storage_dir = config.get("ModelingValues", "working_dir")
+    prefix1 = config.get("Modeling", "prefix")
+    storage_dir = config.get("Modeling", "working_dir")
     storage_dir = storage_dir + "data/" + prefix1 + "/"
-    WINDOW = float(config.get("ModelingValues", "fragments_in_each_bead"))
+    WINDOW = float(config.get("Modeling", "fragments_in_each_bead"))
     
     viewpoints = config.get("EvoComp", "fragments_to_comp")
     viewpoints = re.sub('[\n\s\t]','',viewpoints)
@@ -49,7 +49,7 @@ try:
     viewpoints = [ int(i) for i in viewpoints]
     viewpoints = [int(i/WINDOW) for i in viewpoints]
     n_viewpoints = len(viewpoints)
-    max_distance = int(config.get("ModelingValues", "max_dist"))
+    max_distance = int(config.get("Modeling", "max_dist"))
     
     
     gene_names = config.get("EvoComp", "name_of_fragments")
@@ -68,15 +68,15 @@ config2 = ConfigParser.ConfigParser()
 try:
     config.read(ini_file2)
     
-    prefix2 = config.get("ModelingValues", "prefix")
-    WINDOW2 = float(config.get("ModelingValues", "fragments_in_each_bead"))
+    prefix2 = config.get("Modeling", "prefix")
+    WINDOW2 = float(config.get("Modeling", "fragments_in_each_bead"))
     
     viewpoints2 = config.get("EvoComp", "fragments_to_comp")
     viewpoints2 = re.sub('[\n\s\t]','',viewpoints2)
     viewpoints2 = viewpoints2.split(",")
     viewpoints2 = [ int(i) for i in viewpoints2]
     viewpoints2 = [int(i/WINDOW2) for i in viewpoints2]
-    max_distance2 = int(config.get("ModelingValues", "max_dist"))
+    max_distance2 = int(config.get("Modeling", "max_dist"))
     
     
     gene_names2 = config.get("EvoComp", "name_of_fragments")

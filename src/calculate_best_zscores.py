@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# script that calculates the average distance between the beads in each modeling with different Z-scores, and correlates it to the raw data. The Z-scores of the modeling that correlates best with raw data will be used to do the final modeling.
+
 import os
 import sys, re
 import numpy as np
@@ -151,19 +153,19 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
 config = ConfigParser.SafeConfigParser()
 try:
     config.read(ini_file)
-    prefix = config.get("ModelingValues", "prefix")
-    maxD = int(config.get("ModelingValues", "max_dist"))
-    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
-    data_dir = config.get("ModelingValues", "data_dir")
-    file_names = config.get("ModelingValues", "file_names")
+    prefix = config.get("Modeling", "prefix")
+    maxD = int(config.get("Modeling", "max_dist"))
+    fragments_in_each_bead = float(config.get("Modeling", "fragments_in_each_bead"))
+    data_dir = config.get("Modeling", "data_dir")
+    file_names = config.get("Modeling", "file_names")
     file_names = re.sub('[\n\s\t]','',file_names)
     file_names = file_names.split(",")
     files = [data_dir+f for f in file_names]
-    working_dir = config.get("ModelingValues", "working_dir")
-    number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
-    from_zscore = float(config.get("Pre-ModelingValues", "from_zscore"))
-    to_zscore = float(config.get("Pre-ModelingValues", "to_zscore"))
-    zscore_bins = float(config.get("Pre-ModelingValues", "zscore_bins"))
+    working_dir = config.get("Modeling", "working_dir")
+    number_of_models = int(config.get("Pre-Modeling", "number_of_models"))
+    from_zscore = float(config.get("Pre-Modeling", "from_zscore"))
+    to_zscore = float(config.get("Pre-Modeling", "to_zscore"))
+    zscore_bins = float(config.get("Pre-Modeling", "zscore_bins"))
 except:
     print "\nError reading the configuration file.\n"
     e = sys.exc_info()[1]
@@ -190,8 +192,8 @@ with open (results_path,"w") as output_results:
     output_results.write("Max: {}".format(max(all_scores)))   
     #print min(all_scores)
 try:
-    config.set("ModelingValues", "max_zscore",str(best_uZ))
-    config.set("ModelingValues", "min_zscore",str(best_lZ))
+    config.set("Modeling", "max_zscore",str(best_uZ))
+    config.set("Modeling", "min_zscore",str(best_lZ))
     with open(ini_file,"w+") as configfile:
         config.write(configfile)
 except:

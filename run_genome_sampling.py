@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
+# script to run modeling in different batches, so we can run models in parallel
 import sys
 import os
 import re
 import ConfigParser
 import subprocess
-
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 3:  
@@ -21,13 +21,13 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    number_of_models = int(config.get("ModelingValues", "number_of_models"))
-    max_dist = int(config.get("ModelingValues", "max_dist"))
-    max_z = float(config.get("ModelingValues", "max_zscore"))
-    min_z = float(config.get("ModelingValues", "min_zscore"))
-    number_of_cpus = int(config.get("ModelingValues", "number_of_cpus"))
+    number_of_models = int(config.get("Modeling", "number_of_models"))
+    max_dist = int(config.get("Modeling", "max_dist"))
+    max_z = float(config.get("Modeling", "max_zscore"))
+    min_z = float(config.get("Modeling", "min_zscore"))
+    number_of_cpus = int(config.get("Modeling", "number_of_cpus"))
     number_of_models = number_of_models / number_of_cpus
-    prefix = config.get("ModelingValues", "prefix")
+    prefix = config.get("Modeling", "prefix")
 except:
     print "\nError reading the configuration file.\n"
     e = sys.exc_info()[1]

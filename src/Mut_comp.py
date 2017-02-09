@@ -35,29 +35,29 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    prefix = config.get("ModelingValues", "prefix")
-    storage_dir = config.get("ModelingValues", "working_dir")
+    prefix = config.get("Modeling", "prefix")
+    storage_dir = config.get("Modeling", "working_dir")
     storage_dir = storage_dir + "data/" + prefix + "/"
-    WINDOW = float(config.get("ModelingValues", "fragments_in_each_bead"))
-    NFRAGMENTS = int(config.get("ModelingValues", "number_of_fragments"))
+    WINDOW = float(config.get("Modeling", "fragments_in_each_bead"))
+    NFRAGMENTS = int(config.get("Modeling", "number_of_fragments"))
     number_of_spheres = int(NFRAGMENTS/WINDOW)
     #number_of_spheres = number_of_spheres - 1
 
-    viewpoints = config.get("TADs", "show_fragments_in_vhic")
+    viewpoints = config.get("VHiC", "show_fragments_in_vhic")
     viewpoints = re.sub('[\n\s\t]','',viewpoints)
     viewpoints = viewpoints.split(",")
     viewpoints = [ int(i) for i in viewpoints]
     viewpoints = [int(i/WINDOW) for i in viewpoints]
     n_viewpoints = len(viewpoints)
 
-    gene_names = config.get("TADs", "name_of_fragments")
+    gene_names = config.get("VHiC", "name_of_fragments")
     gene_names = re.sub('[\n\s\t]','',gene_names)
     gene_names = gene_names.split(",")
 
-    color = config.get("TADs", "color_of_fragments")
+    color = config.get("VHiC", "color_of_fragments")
     color = re.sub('[\n\s\t]','',color)
     color = color.split(",")
-    number_of_cpu = int(config.get("ModelingValues", "number_of_cpus"))
+    number_of_cpu = int(config.get("Modeling", "number_of_cpus"))
 
 except:
     print "\nError reading the configuration file.\n"
@@ -68,7 +68,7 @@ except:
 config2 = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    prefix2 = config.get("ModelingValues", "prefix")
+    prefix2 = config.get("Modeling", "prefix")
 
 except:
     print "\nError reading the configuration file.\n"

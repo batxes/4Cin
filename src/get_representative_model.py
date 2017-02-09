@@ -43,11 +43,11 @@ config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
 
-    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
-    number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+    fragments_in_each_bead = float(config.get("Modeling", "fragments_in_each_bead"))
+    number_of_fragments = int(config.get("Modeling", "number_of_fragments"))
     number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
     
-    viewpoint_fragments = config.get("ModelingValues", "viewpoint_fragments")
+    viewpoint_fragments = config.get("Modeling", "viewpoint_fragments")
     viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
     viewpoint_fragments = viewpoint_fragments.split(",")
     viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
@@ -165,9 +165,9 @@ for model in all_models:
 
 print "\nModel closest to average (Representative):"
 # print sum_of_distances.index(min(sum_of_distances))
-print pdbFiles[sum_of_distances.index(min(sum_of_distances))]
+print pdbFiles[sum_of_distances.index(min(sum_of_distances))][:-2]+"y"
 print "Most different model to average:"
-print pdbFiles[sum_of_distances.index(max(sum_of_distances))]
+print pdbFiles[sum_of_distances.index(max(sum_of_distances))][:-2]+"y"
 #sum_of_distances.remove(max(sum_of_distances))
 #print "Second MAX:"
 #print pdbFiles[sum_of_distances.index(max(sum_of_distances))]

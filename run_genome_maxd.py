@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# Script that runs small rounds of modeling with different Max distances
+
 import sys
 import os
 import re
@@ -20,10 +22,10 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
-    from_dist = int(config.get("Pre-ModelingValues", "from_dist"))
-    to_dist = int(config.get("Pre-ModelingValues", "to_dist"))
-    dist_bins = int(config.get("Pre-ModelingValues", "dist_bins"))
+    number_of_models = int(config.get("Pre-Modeling", "number_of_models"))
+    from_dist = int(config.get("Pre-Modeling", "from_dist"))
+    to_dist = int(config.get("Pre-Modeling", "to_dist"))
+    dist_bins = int(config.get("Pre-Modeling", "dist_bins"))
 except:
     print "\nError reading the configuration file.\n"
     e = sys.exc_info()[1]
