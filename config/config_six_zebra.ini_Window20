@@ -1,0 +1,118 @@
+[Pre-ModelingValues]
+
+#min_dist and max_dist determine the range to search for the optimum max distance for the modeling in Angstroms
+min_dist = 5000
+max_dist = 12000
+
+#dist_bins is the jump in each iteration between min_dist and max_dist
+dist_bins = 1000
+
+#number_of_models to do for the empirical adjustment of the max_distance and the z scores
+number_of_models = 50
+
+#min_z and max_z determine the range to search for the optimum z-score for the modeling.
+min_z = 0.1
+max_z = 1.2
+
+#z_bins is the jump in each iteration for the z-score
+z_bins = 0.1
+
+[ModelingValues]        
+prefix = Six_zebra_models
+#fill this variables when they are known after the pre-modeling phase
+max_dist = 9000
+max_z = 0.1
+min_z = -0.2
+number_of_cpu = 20 
+#number of models in each job
+number_of_models = 2500
+
+#verbose: 1=no text; 3=text
+verbose = 1 
+WINDOW = 20
+#files should be absolute paths with no spaces
+files = /home/ibai/4c2vhic/data/six/six23/ztm9sf3,
+        /home/ibai/4c2vhic/data/six/six23/zsix2arep,
+        /home/ibai/4c2vhic/data/six/six23/zsix3a,
+        /home/ibai/4c2vhic/data/six/six23/zslac3a,
+        /home/ibai/4c2vhic/data/six/six23/zprepl
+
+viewpoints = 148,840,893,1575,1706
+genes = 840,893
+NFRAGMENTS = 1867
+#number of models in each job
+
+model_color=
+#working directory. Don't forget the last backslah
+working_dir = /home/ibai/4c2vhic/
+ignore_beads = NO
+#ignore_beads = 27,28,29,30,31,32,33,34,35,36,37,38,39
+
+[AnalysisValues]
+subset = 200
+#std dev: freedom that is given to a restraint so it is considered as fulfilled restraint 
+std_dev = 1250
+#cut off percentage: Max percentage of not fulfilled restraints
+cut_off_percentage = 15
+
+[Clustering]                                                                                                                                                                           
+kmeans = 2
+
+
+[TADs]
+viewpoints = 148,215,228,265,355,666,771,840,884,893,911,989,1022,1065,1146,1165,1265,1342,1366,1575,1706
+gene_names = ztm9sf3,a,b,c,d,e,f,zsix2arep,g,zsix3a,h,i,j,k,l,m,n,o,p,zslac3a,zprepl
+color = 5,10,10,10,10,10,10,5,10,5,10,10,10,10,10,10,10,10,10,5,5
+
+#number of cpu to use. Allocate that amount on the HPC
+number_of_cpu = 20 
+maximum_hic_value = 6000
+
+[Painting]
+#bam/bed
+bam_or_bed = bam
+
+#bed DNAmethylation
+#file_path = /home/ibai/4c2vhic/data/six/six23/GSM1662780_MethylC-Seq_dr_24hpf.allC.txt
+#bam atac-seq data.
+file_path = /home/ibai/4c2vhic/data/six/six23/zebra_24h_comb.rmdup.atac-seq.bam 
+#bam file, H3k4m3.
+#file_path = /home/ibai/4c2vhic/data/six/six23/H3K4me3_24hpf_a.bam 
+
+color_from = #ff0000
+color_to= #00ff00
+
+#http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM1662780
+
+[EvoComp]
+#gene_names = ztm9sf3,zsix2arep,zsix3a,zslac3a,zprepl
+#viewpoints = 148,840,893,1575,1706
+
+#Six_zebra vs six_mouse
+WINDOW = 20
+WINDOW2 = 1
+gene_names = a,b,c,d,e,f,zsix2arep,zsix3a,h,i,j,k,l,m,n,o,p,zslac3a,zprepl
+viewpoints = 215,228,265,355,666,771,840,893,911,989,1022,1065,1146,1165,1265,1342,1366,1575,1706
+
+#215-216
+#228-229
+
+#viewpoints = 327,355,666,666,771,884,903,911,915,916,925,982,982,989,995,1005,1009,1022,1065,1088,1122,1131,1146,1165,1265,1271,1342,1366
+#2nd viewpoint between 355 and 356
+#5th between 770,771,772
+#8th 910,911,912
+#14th 989,990
+#15th 994,995,996
+#17th 1008,1009,1010
+#24th 1165,1166
+#28th 1365,1366,1367
+viewpoints2 = 61,60,59,56,46,42,39,36,35,31,29,27,26,24,23,20,19,8,6
+#viewpoints2 = 56,56,46,46,42,36,35,35,35,35,35,31,31,31,31,31,29,29,27,27,26,26,26,24,23,23,20,19
+storage_dir = /home/ibai/4c2vhic/data/Six/
+
+
+#number of cpu to use. Allocate that amount on the HPC
+number_of_cpu = 6  
+maximum_hic_value = 0.8
+
+
