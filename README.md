@@ -4,10 +4,10 @@ This is a suite of scripts that lets you generate 3D models of the chromatin of 
 Used in Acemel RD, Tena JJ, Irastorza-Azcarate I, Marletaz F, Gomez-Marin C, de la Calle-Mustienes E, Bertrand S, Diaz SG, Aldea D, Aury JM et al.: A single three-dimensional chromatin compartment in amphioxus indicates a stepwise evolution of vertebrate Hox bimodal regulation. Nat Genet 2016, 48: 336-341. (http://www.nature.com/ng/journal/v48/n3/full/ng.3497.html)
 
 # Overview (still in progress)
-![alt tag](pipeline_simple.png)
+![alt tag](figures/pipeline_simple.png)
 
 GenomePainting
-![alt tag](genomePainting)
+![alt tag](figures/genomePainting)
 
 
 ### Dependencies
