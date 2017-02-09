@@ -136,6 +136,7 @@ f.close()
 
 
 fig = plt.figure()
+plt.title("Virtual Hi-C comparison.")
 ax = plt.subplot(1,1,1)
 z = np.array(matrix3)
 
