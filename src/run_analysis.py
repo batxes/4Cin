@@ -30,27 +30,27 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    verbose = config.get("ModelingValues", "verbose")
-    prefix = config.get("ModelingValues", "prefix")
-    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
-    uZ = float(config.get("ModelingValues", "max_zscore"))
-    lZ = float(config.get("ModelingValues", "min_zscore"))
-    y2 = int(config.get("ModelingValues", "max_dist"))
-    data_dir = config.get("ModelingValues", "data_dir")
-    file_names = config.get("ModelingValues", "file_names")
+    verbose = config.get("Modeling", "verbose")
+    prefix = config.get("Modeling", "prefix")
+    fragments_in_each_bead = float(config.get("Modeling", "fragments_in_each_bead"))
+    uZ = float(config.get("Modeling", "max_zscore"))
+    lZ = float(config.get("Modeling", "min_zscore"))
+    y2 = int(config.get("Modeling", "max_dist"))
+    data_dir = config.get("Modeling", "data_dir")
+    file_names = config.get("Modeling", "file_names")
     file_names = re.sub('[\n\s\t]','',file_names)
     file_names = file_names.split(",")
     files = [data_dir+f for f in file_names]
-    viewpoint_fragments = config.get("ModelingValues", "viewpoint_fragments")
+    viewpoint_fragments = config.get("Modeling", "viewpoint_fragments")
     viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
     viewpoint_fragments = viewpoint_fragments.split(",")
     viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
     viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
-    number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+    number_of_fragments = int(config.get("Modeling", "number_of_fragments"))
     number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
-    working_dir = config.get("ModelingValues", "working_dir")
-    number_of_models = int(config.get("ModelingValues", "number_of_models"))
-    number_of_cpus = int(config.get("ModelingValues", "number_of_cpus"))
+    working_dir = config.get("Modeling", "working_dir")
+    number_of_models = int(config.get("Modeling", "number_of_models"))
+    number_of_cpus = int(config.get("Modeling", "number_of_cpus"))
     number_of_models = number_of_models / number_of_cpus
     jump = number_of_models
 except:
@@ -193,4 +193,4 @@ with open(working_dir+"data/"+prefix+"_superposition.py","w") as f:
 
 print "Superposition of {} models created in {}data/{}\n".format(subset,working_dir,prefix)
 
-print "Now run 'python src/run_clustering.py {} {} 2'".format(ini_file,subset)
+print "Now run 'python src/run_clustering.py {} {} 2' (default values)".format(ini_file,subset)

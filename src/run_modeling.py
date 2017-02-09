@@ -42,28 +42,28 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    prefix = config.get("ModelingValues", "prefix")
-    working_dir = config.get("ModelingValues", "working_dir")
-    verbose = config.get("ModelingValues", "verbose")
-    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
-    data_dir = config.get("ModelingValues", "data_dir")
-    file_names = config.get("ModelingValues", "file_names")
+    prefix = config.get("Modeling", "prefix")
+    working_dir = config.get("Modeling", "working_dir")
+    verbose = config.get("Modeling", "verbose")
+    fragments_in_each_bead = float(config.get("Modeling", "fragments_in_each_bead"))
+    data_dir = config.get("Modeling", "data_dir")
+    file_names = config.get("Modeling", "file_names")
     file_names = re.sub('[\n\s\t]','',file_names)
     file_names = file_names.split(",")
     files = [data_dir+f for f in file_names]
-    viewpoint_fragments = config.get("ModelingValues", "viewpoint_fragments")
+    viewpoint_fragments = config.get("Modeling", "viewpoint_fragments")
     viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
     viewpoint_fragments = viewpoint_fragments.split(",")
     viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
     viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
-    are_genes = config.get("ModelingValues", "are_genes")
+    are_genes = config.get("Modeling", "are_genes")
     are_genes = re.sub('[\n\s\t]','',are_genes)
     are_genes = are_genes.split(",")
     are_genes = [ int(i) for i in are_genes]
     are_genes = [int(i/fragments_in_each_bead) for i in are_genes]
-    number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+    number_of_fragments = int(config.get("Modeling", "number_of_fragments"))
     number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
-    ignore_beads = config.get("ModelingValues", "ignore_beads")
+    ignore_beads = config.get("Modeling", "ignore_beads")
     if ignore_beads != "NO":
         ignore_beads = re.sub('[\n\s\t]','',ignore_beads)
         ignore_beads = ignore_beads.split(",")
@@ -71,11 +71,11 @@ try:
     else:
         ignore_beads = [] #empty
     if big_sampling == "True":
-        number_of_models = int(config.get("ModelingValues", "number_of_models"))
-        number_of_cpus = int(config.get("ModelingValues", "number_of_cpus"))
+        number_of_models = int(config.get("Modeling", "number_of_models"))
+        number_of_cpus = int(config.get("Modeling", "number_of_cpus"))
         number_of_models = number_of_models / number_of_cpus
     elif big_sampling == "False":
-        number_of_models = int(config.get("Pre-ModelingValues", "number_of_models"))
+        number_of_models = int(config.get("Pre-Modeling", "number_of_models"))
     else:
         print "is_big_sampling variable has to be True or False. Exiting..."
         sys.exit()

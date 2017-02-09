@@ -22,7 +22,7 @@ def fileCheck(f):
 #MAIN
 ####
 if len(sys.argv) < 2:
-    print "Usage: prepare_data.py 4c-seq_files."
+    print "Usage: prepare_data.py 4c-seq_files. Files need to be in this format: \nchromosome start_fragment end_fragment score"
     sys.exit()
 
 frag_dict = {}

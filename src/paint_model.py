@@ -30,24 +30,24 @@ storage_dir = "/".join(storage_dir)
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    prefix = config.get("ModelingValues", "prefix")
+    prefix = config.get("Modeling", "prefix")
     
-    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
-    data_dir = config.get("ModelingValues", "data_dir")
-    working_dir = config.get("ModelingValues", "working_dir")
-    file_names = config.get("ModelingValues", "file_names")
+    fragments_in_each_bead = float(config.get("Modeling", "fragments_in_each_bead"))
+    data_dir = config.get("Modeling", "data_dir")
+    working_dir = config.get("Modeling", "working_dir")
+    file_names = config.get("Modeling", "file_names")
     file_names = re.sub('[\n\s\t]','',file_names)
     file_names = file_names.split(",")
     files = [data_dir+f for f in file_names]
 
     
-    viewpoint_fragments = config.get("ModelingValues", "viewpoint_fragments")
+    viewpoint_fragments = config.get("Modeling", "viewpoint_fragments")
     viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
     viewpoint_fragments = viewpoint_fragments.split(",")
     viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
     viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
     
-    number_of_fragments_ALL = int(config.get("ModelingValues", "number_of_fragments"))
+    number_of_fragments_ALL = int(config.get("Modeling", "number_of_fragments"))
     number_of_fragments = int(number_of_fragments_ALL/fragments_in_each_bead)
 
     painting_path = config.get("Painting","file_path")

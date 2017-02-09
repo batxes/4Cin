@@ -39,18 +39,18 @@ if len(sys.argv) > 3:  #if we pass the arguments (in the cluster)
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-    working_dir = config.get("ModelingValues", "working_dir")
+    working_dir = config.get("Modeling", "working_dir")
     
-    prefix = config.get("ModelingValues", "prefix")
-    fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
-    min_z = float(config.get("ModelingValues", "min_zscore"))
-    max_z = float(config.get("ModelingValues", "max_zscore"))
-    max_dist = int(config.get("ModelingValues", "max_dist"))
+    prefix = config.get("Modeling", "prefix")
+    fragments_in_each_bead = float(config.get("Modeling", "fragments_in_each_bead"))
+    min_z = float(config.get("Modeling", "min_zscore"))
+    max_z = float(config.get("Modeling", "max_zscore"))
+    max_dist = int(config.get("Modeling", "max_dist"))
     root = "{}data/{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,max_z,min_z,max_dist)
-    number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+    number_of_fragments = int(config.get("Modeling", "number_of_fragments"))
     number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
 
-    number_of_cpu = int(config.get("ModelingValues", "number_of_cpus"))
+    number_of_cpu = int(config.get("Modeling", "number_of_cpus"))
     
 except:
     print "\nError reading the configuration file.\n"
@@ -282,7 +282,7 @@ for i in cluster_number:
 n_clusters = len(set(dendogra_colors))-1
 print "\n{} clusters were found in the clustering process. They can be checked here: {}{}_heatmap.png".format(n_clusters,root,prefix)
 if k_mean != n_clusters:
-    print "Number of clusters found and k means value set are different. Consider redoing the clustering with different k means value or getting a different subset of models in the analysis process."
+    print "Number of clusters found and k means value set are different. Consider redoing the clustering with 4 as kmeans value ('python {} {} {} {}') or getting a different subset of models in the analysis process.".format(sys.argv[0],sys.argv[1],sys.argv[2],n_clusters)
 else:
     lines_in_file = 0
     for m in cluster_number:
