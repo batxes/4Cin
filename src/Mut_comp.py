@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 #This script is able to compare 2 matrixes and give the output in a heatmap style. Substraction of both matrixes is done.
+#Lines  108-118 were created for the Shh inversion explicitly. Take out when publishing all
+
 
 ## CREATE THE CMD TO USE IN CHIMERA
 import re
@@ -14,49 +16,59 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import ConfigParser
 
+
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 4: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file, matrix_distance1 and matrix_distance2 are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 5: #Or all parameters, or no parameters 
+    print "Not enough parameters. Config file 1, config file 2,  vhic 1 and vhic 2 are required."
+    print " -config_files 1 and 2: Config files of the regions you want to compare. Check config_template.ini for an example"
+    print " -Virtual Hi-C Matrices 1 and 2: vhic's related to config file 1 and 2. Files are generated after calculate_vhic.py. "
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
-    root = sys.argv[2]
-    root2 = sys.argv[3]
+    ini_file2 = sys.argv[2]
+    root = sys.argv[3]
+    root2 = sys.argv[4]
+
 
 
 #read the config file
 config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
-
     prefix = config.get("ModelingValues", "prefix")
-    storage_dir = config.get("MutComp", "storage_dir")
-    verbose = int(config.get("ModelingValues", "verbose"))
-    WINDOW = float(config.get("MutComp", "WINDOW"))
-    NFRAGMENTS = int(config.get("ModelingValues", "NFRAGMENTS"))
+    storage_dir = config.get("ModelingValues", "working_dir")
+    storage_dir = storage_dir + "data/" + prefix + "/"
+    WINDOW = float(config.get("ModelingValues", "fragments_in_each_bead"))
+    NFRAGMENTS = int(config.get("ModelingValues", "number_of_fragments"))
     number_of_spheres = int(NFRAGMENTS/WINDOW)
-    number_of_spheres = number_of_spheres - 1
+    #number_of_spheres = number_of_spheres - 1
 
-    viewpoints = config.get("MutComp", "viewpoints")
+    viewpoints = config.get("TADs", "show_fragments_in_vhic")
     viewpoints = re.sub('[\n\s\t]','',viewpoints)
     viewpoints = viewpoints.split(",")
     viewpoints = [ int(i) for i in viewpoints]
     viewpoints = [int(i/WINDOW) for i in viewpoints]
     n_viewpoints = len(viewpoints)
-    #max_distance = int(config.get("MutComp", "max_dist"))
-    #max_distance2 = int(config.get("MutComp", "max_dist2"))
 
-
-    gene_names = config.get("MutComp", "names")
+    gene_names = config.get("TADs", "name_of_fragments")
     gene_names = re.sub('[\n\s\t]','',gene_names)
     gene_names = gene_names.split(",")
 
-    color = config.get("TADs", "color")
+    color = config.get("TADs", "color_of_fragments")
     color = re.sub('[\n\s\t]','',color)
     color = color.split(",")
-    color = [ int(i) for i in color]
-    number_of_cpu = int(config.get("TADs", "number_of_cpu"))
-    #maximum_hic_value= float(config.get("EvoComp", "maximum_hic_value"))
+    number_of_cpu = int(config.get("ModelingValues", "number_of_cpus"))
+
+except:
+    print "\nError reading the configuration file.\n"
+    e = sys.exc_info()[1]
+    print e
+    sys.exit()
+#read the config file2
+config2 = ConfigParser.ConfigParser()
+try:
+    config.read(ini_file)
+    prefix2 = config.get("ModelingValues", "prefix")
 
 except:
     print "\nError reading the configuration file.\n"
@@ -64,7 +76,7 @@ except:
     print e
     sys.exit()
 
-root3 = "{}{}Mutant_comparison".format(storage_dir,prefix)
+root3 = "{}{}_vs_{}_mutcomp".format(storage_dir,prefix,prefix2)
 matrix1 = np.zeros((number_of_spheres,number_of_spheres))
 max_distance = 0
 with open(root, 'r') as f1:
@@ -95,6 +107,7 @@ with open(root2, 'r') as f2:
 
 #we modify positions of inverted genome
 # beads 35 to 63 will be now 63 to 35
+print "We are Inverting bins 35-64 of one matrix. Shh experiment."
 guide = range(number_of_spheres)
 print guide
 guide[35:64] = guide[63:34:-1]
@@ -103,14 +116,10 @@ aux_matrix = np.zeros((number_of_spheres,number_of_spheres))
 for line in range(number_of_spheres):
     for col in range(number_of_spheres):
         aux_matrix[line][col] = matrix2[guide[line]][guide[col]]
-
-
 matrix2 = aux_matrix
-#matrix2[35:63,35:63] = matrix2[63:35:-1,63:35:-1] 
 
 # compare both matrixes and create another one with differences
-
-f= open(root3, 'w')
+f= open(root3+"txt", 'w')
 matrix3 = np.zeros((number_of_spheres,number_of_spheres))
 diff_list = []
 for line in range(number_of_spheres):
@@ -172,10 +181,10 @@ plt.axis([0,z.shape[1],0,z.shape[0]])
 fig.set_facecolor('white')
 #plt.show()
 
-pp = PdfPages('{}_HiC.pdf'.format(root3))
+pp = PdfPages('{}.pdf'.format(root3))
 pp.savefig(fig)
 pp.close()
-print '{}_HiC.pdf writen'.format(prefix)
+print '{} vs {} Mutant vHi-C comparison written in {}.pdf'.format(prefix,prefix2,root3)
 
 #Distance between #1 marker 1  and #10 marker 1 : 2203.213
             

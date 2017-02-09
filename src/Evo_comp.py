@@ -26,8 +26,6 @@ if number_of_arguments != 5: #Or all parameters, or no parameters
     print "Not enough parameters. Config file 1, config file 2,  vhic 1 and vhic 2 are required."
     print " -config_files 1 and 2: Config files of the regions you want to compare. Check config_template.ini for an example"
     print " -Virtual Hi-C Matrices 1 and 2: vhic's related to config file 1 and 2. Files are generated after calculate_vhic.py. "
-
-
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     ini_file = sys.argv[1]
