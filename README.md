@@ -19,88 +19,108 @@ scipy
 
 
 ### Fast Usage (run this commands)
-0 - # Modify config.ini paths
 
-1 - python run_genome_maxd.py config.ini /bin/bash
+Fast Note: Models can be than locally or with queue systems like Slurm or SGE
+Fast Note: After each script, a little message will appear indicating which is the next step
 
-2 - python src/calculate_best_maxd.py config.ini
+0 - Generate your config.ini file. See example: config_template.ini
+1 - python src/prepare_data.py 4C_files
+2 - python run_genome_maxd.py config.ini local
+3 - python src/calculate_best_maxd.py config.ini
+4 - python run_genome_zscores.py config.ini local
+5 - python src/calculate_best_zscores.py config.ini True
+6 - python run_genome_sampling.py config.ini local
+7 - python src/run_analysis.py config.ini subset std_dev threshold
+8 - python src/run_clustering.py config.ini subset kmeans
+9 - python src/calculate_vhic.py config.ini matrix.txt True
 
-2.5 - # Set the max distance in config.ini [ModelingValues]
-
-3 - python run_genome_zscores.py config.ini /bin/bash
-
-4 - python src/calculate_best_zscores.py config.ini
-
-4.5 - # Set the max_z and min_z undert [ModelingValues] in config.ini
-
-5 - python run_genome_sampling.py /bin/bash
-
-5.5 - # 3D models are ready
-
-6 - python src/run_analysis.py config.ini
-
-7 - 
+[Optionals]
+10 - python src/get_representative_model.py config.ini matrix.txt
+11 - python src/paint_model.py config.ini model.py
+12 - python src/calculate_boundaries.py vhic.txt tad_size
+13 - python src/Evo_comp.py config.ini config2.ini vhic.txt vhic2.txt
+14 - python src/Mut_comp.py config.ini config2.ini vhic.txt vhic2.txt
+15 - python src/data_manager.py config.ini
 
 ### Explained Usage
-0 - Set the configuration file. Example is given in config.ini. [PREPARE THE CONFIG fILE]
 
-0.5 - Input data can be checked calling data_manager.py. Shows 3 plots for each 4C file, showing read counts, Z scores and the conversion into distance restraints that would be used in the modeling.
-      Example: python src/data_manager.py config.ini [0.2 -0.4 8000]  
+Note: Models can be than locally or with queue systems like Slurm or SGE
+Note: After each script, a little message will appear indicating which is the next step
 
-1 - Run "run_genome_maxd.py" to get models with different max distances.
-    Example: python run_genome_maxd.py config.ini /bin/bash 
+0 - Generate your configuration file. Example is given in config_template.ini.
 
-2 - Run "Calculate_best_maxd.py" to get the optimum max distance. Get the max distance that has the most similar genome length to your data. We assume that the nucleotide length is of 0.1 nm ( reference here )
+1 - run "prepare_data.py" to homogenize the 4C files. All 4C files need to have the same number of fragments and the same length.
+    Example: python src/prepare_data.py 4C_files
+
+2 - Run "run_genome_maxd.py" to do models with different max distances.
+    Example: python run_genome_maxd.py config.ini local|qsub|sbatch 
+
+3 - Run "Calculate_best_maxd.py" to get the optimum max distance. Get the max distance that has the most similar genome length to your data. We assume the canonical nucleotide length is of 0.1 nm (ref1, ref2)
     Example: python src/calculate_best_maxd.py config.ini
 
-3 - Set the optimum max distance in the config file (under [ModelingValues]) and run "run_genome_zscores.py"
-    Example: python run_genome_zscores.py config.ini /bin/bash
+4 - Run "run_genome_zscores.py" to do models with different upper bound and lower bound Z-scores.
+    Example: python run_genome_zscores.py config.ini local|qsub|sbatch
 
-4 - Run "calculate_best_zscores.py" to get the optimum zscores. set last argument to True to see the validation plots
+5 - Run "calculate_best_zscores.py" to get the optimum upper and lower bound zscores. set last argument to True to see the validation plots.
     Example: python src/calculate_best_zscores.py config.ini True
 
-5 - With the max distance and the upper and lower z-scores, modeling can start. Run "run_genome_sampling.py" setting the previous variables in the config file (under [ModelingValues]).
-    Example: python run_genome_sampling.py
+6 - With the max distance and the upper and lower z-scores, modeling can start. Run "run_genome_sampling.py".
+    Example: python run_genome_sampling.py config.ini local|qsub|sbatch
+    
+    [3D Models are generated]
 
-6 - run "src/run_analysis.py" to get a subset of all the models. The best models ordered by the IMP scoring function are gathered and also makes a superposition of all those models. The models are very likely to be mirror image of other models, getting two populations of models.
-    Take into account that we need to tweak the std_dev and the cut_of_percentage under [AnalysisValues]. In my essays, I have seen that getting a 10-15% of the population and setting a 15% restraints fulfillment works well. 
-    Example: python src/run_analysis.py config.ini 
+7 - run "src/run_analysis.py" to get a subset of all the models. The best models ordered by the IMP scoring function are gathered and also makes a superposition of all those models. The models are very likely to be mirror image of other models, getting two populations of models.
+    Take into account that we need to tweak the std_dev and the cut_of_percentage to gather models. In my essays, I have seen that setting the std_dev at a 10-20% of maximum distance and the threshold in 15% works well normally. I set 200 models out of 50000 as subset, 1000 for std_dev and 15 for threshold
+    Example: python src/run_analysis.py config.ini 200 1000 15
 
-7 - run "run_clustering.py" to get populations of best models depending on the similarity of the RMSD.
-    K value needs to be set in the config file under [Clustering] to get that amount of populations. Also generates a superposition of each of the populations. If we get 2 populations that are mirror image of each other, we can be sure that the modeling went correctly.
-    Example: python src/run_clustering.py config.ini
+8 - run "run_clustering.py" to get populations of best models depending on the similarity of the RMSD.
+    It generates a superposition of each of the populations. If we get 2 populations that are mirror image of each other, we can be sure that the modeling went correctly. Set the subset from above and 2 as kmeans value.
+    Example: python src/run_clustering.py config.ini 200 2
 
-8 - run "calculate_vhic.py" to generate the virtual Hi-C of one of the populations of the final models. We will set different values in the config file under [TADs] like:
-    -viewpoints: to plot circles of genes or other interesting fragments in the virtual Hi-C
-    -gene_names: the name of the previous viewpoints.
-    -color: will set different colors to the viewpoints. The numbers follow the matplotlib palette.
-    -number_of_cpu: for parallelization
+9 - run "calculate_vhic.py" to generate the virtual Hi-C of one of the populations of the final models. We will set different values in the config file under [VHiC] like:
+    -show_fragments_in_vhic: to plot circles of genes or other interesting fragments in the virtual Hi-C
+    -name_of_fragments: the name of the previous fragments.
+    -color_of_fragments: will set different colors to the viewpoints. Matplotlib palette.
     -maximum_hic_values: will smooth or "burn" the virtual Hi-C heatmap.
 
-    We will set also the config file, the matrix file of one of the populations (normally the biggest one) and True if it is the first time we calculate the matrix. If we already calculated and we just one to add viewpoints, change color of them or set a different maximum_hic_value, we will set to False
-    Example: python src/calculate_vhic.py config.ini /home/user/4c2vhic/data/MyModels/MyModels_final_output/matrix397.txt True
+    We will set also the config file, the RMSD matrix file from the clustering of one of the populations and "True" if it is the first time we calculate the matrix. If we already calculated and we just one to add viewpoints, change color of them or set a different maximum_hic_value, we will set to False
+    Example: python src/calculate_vhic.py config.ini matrix.txt True
     
-9 - run "Final_genome_models.py"
-    Takes as argument the matrix of one of the solutions from GenomeClustering.py. It will tell us which model is the one closest to the average. The beads of the models will be concatenated and all models will be matched. If we have many it will be slow, so we can modify the superposition.cmd file that we will launched using chimera. "chimera superposition.cmd" 
-    Example: python src/Fina_genome_models.py /home/user/4c2vhic/data/MyModels/MyModels_final_output/matrix39
-    7.txt config_ini
+      [Virtual Hi-C is generated]
+     
+Optional Steps:
+    
+10 - run "get_representative_model.py"
+    Takes as argument the config file and the matrix of one of the solutions from GenomeClustering.py. It will tell us which model is the one closest and furthest to the average. It will also generate a superposition of the models of that cluster, that will be able to run in UCSF chimera. 
+    Example: python src/get_representative_model.py config.ini matrix_cluster1.txt
 
-10 - run "GenomePainting.py"
-    It will map epigenetic marks in a model of our choice. We will set in the config file under [Painting] if it is a bam or a bed file, the path of the epigenetic mark, and the color gradient in Hex format.
-    Example: python src/GenomePainting.py /home/user/4c2vhic/data/MyModels/MyModels_final_output/model10.py config_ini
+11 - run "paint_model.py"
+    It will map epigenetic marks in a model of our choice. We will set the path of the bed or bam file and the colormap (matplotlib) in the config file under [Painting]. 
+    Example: python src/paint_model.py config_ini /home/user/4c2vhic/data/MyModels/MyModels_final_output/model10.py 
 
-11 - run "Evo_comp.py" Evolutive comparison
-    Given two distance_matrices generated with TADs_multi.py of different loci or organisms and the position of Genes/enhancers (beads), it crates a hi-c like matrix with the relative positions of both locus. We will need to set the config file variables under [EvoComp]. Similar to the [TADs] parameters, we will need to set the viewpoints and the window variable for each of the loci.
-    Example: python src/Evo_comp.py config.ini /home/user/4c2vhic/data/MyModels/MyModels_final_output/distances_of_my_models /home/user/4c2vhic/OtherModels/OtherModels_final_output/distance_of_other_models
-
-12 - di_calculation.py
+12 - run "calculate_boundaries.py"
     Given the distance matrix and the the number of beads a TAD has in your virtual HI-C, it plots the directionality index bar plot.
-    python di_calculation.py distance_six_zebra 20
+    python src/calculate_boundaries.py vhic.txt tad_size
+
+13 - run "Evo_comp.py". Evolutive comparion.
+    Given two config files and two vhic's generated with calculate_vhic.py of different loci or organisms and the position of Genes/enhancers (beads), it crates a hi-c like matrix with the relative positions of both loci. We will need to set the config file variables under [EvoComp]. Similar to the [VHiC] parameters, we will need to set the viewpoints and the window variable for each of the loci.
+    Example: python src/Evo_comp.py config.ini config2.ini vhic1.txt vhic2.txt
+    
+14 - run "Mut_comp.py". Mutation comparison.
+      The same as Evo_comp.py, but this time the same locus is compared. Useful to study structural genomic variations like inversion, truncation, deletions... Fragments set in the [VHiC] section of config file 1 will be used for the comparison.
+      Example: python src/Mut_comp.py config.ini config2.ini vhic.txt vhic2.txt
+
+15 - Input data can be checked calling data_manager.py. Shows 3 plots for each 4C file, showing read counts, Z scores and the conversion into distance restraints that would be used in the modeling.
+      Example: python src/data_manager.py config.ini [0.2 -0.4 8000]  
 
 ### Additional scripts
 Getting 4C data like from Hi-C
 
 python data/get_data.py  -> generates 4C like files from the Hi-C file
+
+calculate_vhic_from_realdata.py
+convert_HiC_data.py
+HiC_comp.py
 
 ### Notes
 
@@ -134,6 +154,9 @@ python data/get_data.py  -> generates 4C like files from the Hi-C file
 
     genome Painting make it better, no color_to color from only these:
     http://matplotlib.org/examples/color/colormaps_reference.html
+    
+ref1. Tjong H, Gong K, Chen L, Alber F. Physical tethering and volume exclusion determine higher-order ge- nome organization in budding yeast. Genome Res. 2012; 22: 1295–1305. doi: 10.1101/gr.129437.111 PMID: 22619363
+ref2. Bystricky K, Heun P, Gehlen L, Langowski J, Gasser SM. Long-range compaction and flexibility of inter- phase chromatin in budding yeast analyzed by high-resolution imaging techniques. Proc Natl Acad Sci U S A. 2004; 101: 16495–16500. PMID: 15545610
 
 
 ###### writeee
