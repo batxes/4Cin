@@ -11,15 +11,26 @@ Many other marks can be painted
 
 
 # Dependencies
+
+Note: Tested only in Linux, of course.
+
 python 2.7
-
-chimera (Download from https://www.cgl.ucsf.edu/chimera/download.html)
-
-IMP 2.5, 2.4 (newer versions crash) (Download from http://integrativemodeling.org/old-versions.html)
 
 matplotlib
 
 scipy
+
+numpy
+
+UCSF Chimera (Download from https://www.cgl.ucsf.edu/chimera/download.html)
+
+IMP 2.5, 2.4 (newer versions crash) (Download from http://integrativemodeling.org/old-versions.html)
+
+pysam (for paint_model.py)
+
+Go to Installing dependencies to install them.
+
+
 
 
 # Fast Usage (run this commands)
@@ -98,8 +109,8 @@ Note: After each script, a little message will appear indicating which is the ne
     [3D Models are generated]
 
 7 - run "src/run_analysis.py" to get a subset of all the models. The best models ordered by the IMP scoring function are gathered and also makes a superposition of all those models. The models are very likely to be mirror image of other models, getting two populations of models.
-
-    Take into account that we need to tweak the std_dev and the cut_of_percentage to gather models. In my essays, I have seen that setting the std_dev at a 10-20% of maximum distance and the threshold in 15% works well normally. I set 200 models out of 50000 as subset, 1000 for std_dev and 15 for threshold
+   
+Take into account that we need to tweak the std_dev and the cut_of_percentage to gather models. In my essays, I have seen that setting the std_dev at a 10-20% of maximum distance and the threshold in 15% works well normally. I set 200 models out of 50000 as subset, 1000 for std_dev and 15 for threshold
     
     Example: python src/run_analysis.py config.ini 200 1000 15
 
@@ -118,7 +129,7 @@ Note: After each script, a little message will appear indicating which is the ne
     -maximum_hic_values: will smooth or "burn" the virtual Hi-C heatmap.
     
 
-    We will set also the config file, the RMSD matrix file from the clustering of one of the populations and "True" if it is the first time we calculate the matrix. If we already calculated and we just one to add viewpoints, change color of them or set a different maximum_hic_value, we will set to False
+We will set also the config file, the RMSD matrix file from the clustering of one of the populations and "True" if it is the first time we calculate the matrix. If we already calculated and we just one to add viewpoints, change color of them or set a different maximum_hic_value, we will set to False
     
     Example: python src/calculate_vhic.py config.ini matrix.txt True
     
@@ -145,11 +156,85 @@ Optional Steps:
     
 14 - run "Mut_comp.py". Mutation comparison. The same as Evo_comp.py, but this time the same locus is compared. Useful to study structural genomic variations like inversion, truncation, deletions... Fragments set in the [VHiC] section of config file 1 will be used for the comparison.
 
-      Example: python src/Mut_comp.py config.ini config2.ini vhic.txt vhic2.txt
+    Example: python src/Mut_comp.py config.ini config2.ini vhic.txt vhic2.txt
 
 15 - Input data can be checked calling data_manager.py. Shows 3 plots for each 4C file, showing read counts, Z scores and the conversion into distance restraints that would be used in the modeling.
 
-      Example: python src/data_manager.py config.ini [0.2 -0.4 8000]  
+    Example: python src/data_manager.py config.ini [0.2 -0.4 8000]  
+
+### Installing dependencies
+
+Matplotlib, scipy and numpy:
+
+apt-get install python-matplotlib
+
+apt-get install python-scipy
+
+apt-get install python-numpy
+
+To install Chimera:
+make it executable: chmod +x chimera-installer.bin
+run it
+make link: ln -s CHIMERA/bin/chimera /usr/local/bin/chimera 
+if problems visit: https://www.cgl.ucsf.edu/chimera/data/downloads/1.11.2/linux.html
+
+Install IMP from source:
+
+sudo apt-get install cmake
+
+sudo apt-get install libboost1.49-all-dev
+
+sudo apt-get install libhdf5-dev
+
+sudo apt-get install swig
+
+sudo apt-get install libcgal-dev
+
+sudo apt-get install python-dev
+
+Note: For Ubuntu 13.10 libboost1.53-all-dev should be installed instead. 
+      For Ubuntu 14.04 libboost1.54-all-dev should be installed instead.
+
+Download the IMP tarball file from http://salilab.org/imp/ and uncompress it:
+
+wget https://integrativemodeling.org/2.5.0/download/imp-2.5.0.tar.gz -O imp-2.5.0.tar.gz
+
+tar xzvf imp-2.5.0.tar.gz
+
+Create a directory for the IMP instalation.
+
+mkdir IMP
+
+Move into the IMP directory and compile the code (Note: the -j option stands for the number of CPUs you want to assign to the compiler; the higher the faster).
+
+cd IMP
+
+cmake ../imp-2.5.0 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
+
+make -j4
+
+Once the compilation has finished, open the file setup_environment.sh in your IMP directory and copy the first lines into your ~/.bashrc file (if this file in not present in your home directory, create it). These lines should look like:
+
+LD_LIBRARY_PATH="/SOMETHING/imp-2.5.0/lib:/SOMETHING/imp-2.5.0/lib:/SOMETHING/imp-2.5.0/src/dependency/RMF/:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH
+
+PYTHONPATH="/SOMETHING/imp-2.5.0/lib:/SOMETHING/imp-2.5.0/lib:/SOMETHING/imp-2.5.0/src/dependency/RMF/:$PYTHONPATH"
+export PYTHONPATH
+
+Note
+
+Important note: Do not copy the lines above, copy them from setup_environment.sh, where SOMETHING is replaced by your real path to IMP. 
+
+Installation process of IMP taken from: https://3dgenomes.github.io/TADbit/install.html#imp-3d-modeling
+
+Install pysam (only for paint_model.py)
+pip install pysam. 
+
+If does not work:
+    git clone git@github.com/pysam-developers/pysam
+    python setup.py build
+    python setup.py install (libcurl4-gnutls-dev )
+    !if u get an error saying regcompA was not found, rename regex.h from the boost library (in my case /usr/local/include/regex.h) to something else before building. The change it back!
 
 ### Additional scripts
 Getting 4C data like from Hi-C
@@ -165,35 +250,29 @@ HiC_comp.py
 - If you want to concatenate the beads with a tube, after openning the model in UCSF-Chimera, write this in its command line: "shape tube #X-Y radius Z bandlength 10000" (X and Y being the first and last beads, Z being the thickness of tube in Angstroms.)
 
 - All the data will be stored under a directory with the same name as the prefix set in the config file
-- the python scripts that are not in the src/ directory are scripts that I used for my projects. If you want to use them with another queue system or change the bins between each iteration, feel free to modify or create your own.
+
 - bam files need to be sorted and indexed before using. Example: samtools sort mouse_h3k4me3_ES_bingren_rep1.bam mouse_h3k4me3_ES_bingren_rep1.bai 
 
 # FAQ
-    write down that chimera needs to be a "ln -s" and give permissions to whole python2.7 inside chimera/bin also
 
-    if "AttributeError: 'Model' object has no attribute 'this'"
+I have UCSF Chimera installed but it does not work.
+    Create a link to chimera with "ln -s" and give permissions to whole python2.7 inside chimera/bin
+
+
+"AttributeError: 'Model' object has no attribute 'this'"
     install Swig 3.0.7. For this perhaps u need to install sudo apt-get install libpcre3 libpcre3-dev
-    remember that the bash scripts are also done by me, they can change it if they want. Right now I don't know how to take from the config file the data and use it in the bash script
-
-    pip install pysam. If does not work, git clone 
-    and then 
-
-    python setup.py build
-    python setup.py install (libcurl4-gnutls-dev )
-    !if u get an error saying regcompA was not found, rename regex.h from the boost library (in my case /usr/local/include/regex.h) to something else before building. The change it back!
-
-    in GebnomePainting, add "py bed tools" to read data
-
-    ~~
-
+  
+matplotlib colors are here:
     pip install colour
     : https://pypi.python.org/pypi/colour
 
+GenomePainting does not work.
+    Check the file generated coloring.cmd and fix the path. Chimera does not like if the first line is something like "open ../myModel.py". Change to something like /home/user/myModel.py.
 
-    genome Painting make it better, no color_to color from only these:
-    http://matplotlib.org/examples/color/colormaps_reference.html
-    
+### references
+
 ref1. Tjong H, Gong K, Chen L, Alber F. Physical tethering and volume exclusion determine higher-order ge- nome organization in budding yeast. Genome Res. 2012; 22: 1295–1305. doi: 10.1101/gr.129437.111 PMID: 22619363
+
 ref2. Bystricky K, Heun P, Gehlen L, Langowski J, Gasser SM. Long-range compaction and flexibility of inter- phase chromatin in budding yeast analyzed by high-resolution imaging techniques. Proc Natl Acad Sci U S A. 2004; 101: 16495–16500. PMID: 15545610
 
 
@@ -205,5 +284,4 @@ ref2. Bystricky K, Heun P, Gehlen L, Langowski J, Gasser SM. Long-range compacti
     then take chr2 and chr13 separately and apply prepare_data.py
     then concatenate them and double the value of the aberrant 2+13 chromosome
 
-    VIEWPOINT CAN BE 0! SO we have to do -1 to the line in the file
 
