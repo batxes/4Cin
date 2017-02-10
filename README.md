@@ -12,34 +12,53 @@ Many other marks can be painted
 
 ### Dependencies
 python 2.7
+
 chimera (Download from https://www.cgl.ucsf.edu/chimera/download.html)
+
 IMP 2.5, 2.4 (newer versions crash) (Download from http://integrativemodeling.org/old-versions.html)
+
 matplotlib
+
 scipy
 
 
 ### Fast Usage (run this commands)
 
 Fast Note: Models can be than locally or with queue systems like Slurm or SGE
+
 Fast Note: After each script, a little message will appear indicating which is the next step
 
 0 - Generate your config.ini file. See example: config_template.ini
+
 1 - python src/prepare_data.py 4C_files
+
 2 - python run_genome_maxd.py config.ini local
+
 3 - python src/calculate_best_maxd.py config.ini
+
 4 - python run_genome_zscores.py config.ini local
+
 5 - python src/calculate_best_zscores.py config.ini True
+
 6 - python run_genome_sampling.py config.ini local
+
 7 - python src/run_analysis.py config.ini subset std_dev threshold
+
 8 - python src/run_clustering.py config.ini subset kmeans
+
 9 - python src/calculate_vhic.py config.ini matrix.txt True
 
 [Optionals]
 10 - python src/get_representative_model.py config.ini matrix.txt
+
 11 - python src/paint_model.py config.ini model.py
+
 12 - python src/calculate_boundaries.py vhic.txt tad_size
+
 13 - python src/Evo_comp.py config.ini config2.ini vhic.txt vhic2.txt
+
 14 - python src/Mut_comp.py config.ini config2.ini vhic.txt vhic2.txt
+
 15 - python src/data_manager.py config.ini
 
 ### Explained Usage
