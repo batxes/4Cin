@@ -1,39 +1,32 @@
-# 4c2vhic
+<snippet>
+<content><![CDATA[
+# ${1:4c2vhic
+
 This is a suite of scripts that lets you generate 3D models of the chromatin of your favourite locus, using 4C data as the only input. It is able to create Hi-C like contact maps of these 3D models and analyze the region further. 
 
 Used in Acemel RD, Tena JJ, Irastorza-Azcarate I, Marletaz F, Gomez-Marin C, de la Calle-Mustienes E, Bertrand S, Diaz SG, Aldea D, Aury JM et al.: A single three-dimensional chromatin compartment in amphioxus indicates a stepwise evolution of vertebrate Hox bimodal regulation. Nat Genet 2016, 48: 336-341. (http://www.nature.com/ng/journal/v48/n3/full/ng.3497.html)
 
-# Overview 
+## Overview 
 ![alt tag](figures/github_pipe.png)
 
 Many other marks can be painted
 ![alt tag](figures/genomePainting)
 
-
-# Dependencies
+## Dependencies
 
 Note: Tested only in Linux, of course.
 
 python 2.7
-
 matplotlib
-
 scipy
-
 numpy
-
 UCSF Chimera (Download from https://www.cgl.ucsf.edu/chimera/download.html)
-
 IMP 2.5, 2.4 (newer versions crash) (Download from http://integrativemodeling.org/old-versions.html)
-
 pysam (for paint_model.py)
 
 Go to Installing dependencies to install them.
 
-
-
-
-# Fast Usage (run this commands)
+## Fast Usage (run this commands)
 
 Fast Note: Models can be than locally or with queue systems like Slurm or SGE
 
@@ -284,4 +277,6 @@ ref2. Bystricky K, Heun P, Gehlen L, Langowski J, Gasser SM. Long-range compacti
     then take chr2 and chr13 separately and apply prepare_data.py
     then concatenate them and double the value of the aberrant 2+13 chromosome
 
-
+]]></content>
+  <tabTrigger>readme</tabTrigger>
+</snippet>
