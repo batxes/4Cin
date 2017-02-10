@@ -1,6 +1,5 @@
-<snippet>
-<content><![CDATA[
-# ${1:4c2vhic
+
+# 4c2vhic
 
 This is a suite of scripts that lets you generate 3D models of the chromatin of your favourite locus, using 4C data as the only input. It is able to create Hi-C like contact maps of these 3D models and analyze the region further. 
 
@@ -17,20 +16,30 @@ Many other marks can be painted
 Note: Tested only in Linux, of course.
 
 python 2.7
+
 matplotlib
+
 scipy
+
 numpy
+
 UCSF Chimera (Download from https://www.cgl.ucsf.edu/chimera/download.html)
+
 IMP 2.5, 2.4 (newer versions crash) (Download from http://integrativemodeling.org/old-versions.html)
+
 pysam (for paint_model.py)
 
+
 Go to Installing dependencies to install them.
+
 
 ## Fast Usage (run this commands)
 
 Fast Note: Models can be than locally or with queue systems like Slurm or SGE
 
 Fast Note: After each script, a little message will appear indicating which is the next step
+
+
 
 0 - Generate your config.ini file. See example: config_template.ini
 
@@ -51,6 +60,7 @@ Fast Note: After each script, a little message will appear indicating which is t
 8 - python src/run_clustering.py config.ini subset kmeans
 
 9 - python src/calculate_vhic.py config.ini matrix.txt True
+
 
 
 [Optionals]
@@ -277,6 +287,4 @@ ref2. Bystricky K, Heun P, Gehlen L, Langowski J, Gasser SM. Long-range compacti
     then take chr2 and chr13 separately and apply prepare_data.py
     then concatenate them and double the value of the aberrant 2+13 chromosome
 
-]]></content>
-  <tabTrigger>readme</tabTrigger>
-</snippet>
+
