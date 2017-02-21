@@ -1,12 +1,21 @@
 [Pre-Modeling]
-locus_size = 1.126114
-from_dist = 5000
-to_dist = 14000
+
+#min_dist and max_dist determine the range to search for the optimum max distance for the modeling in Angstroms
+min_dist = 5000
+max_dist = 14000
+
+#dist_bins is the jump in each iteration between min_dist and max_dist
 dist_bins = 1000
-from_zscore = 0.1
-to_zscore = 1.2
-zscore_bins = 0.1
+
+#number_of_models to do for the empirical adjustment of the max_distance and the z scores
 number_of_models = 50
+
+#min_z and max_z determine the range to search for the optimum z-score for the modeling.
+min_z = 0.1
+max_z = 1.2
+
+#z_bins is the jump in each iteration for the z-score
+z_bins = 0.1
 
 [Modeling]        
 prefix = Six_zebra_models
@@ -36,22 +45,29 @@ ignore_beads = NO
 [VHiC]
 show_fragments_in_vhic = 148,215,228,265,355,666,771,840,884,893,911,989,1022,1065,1146,1165,1265,1342,1366,1575,1706
 name_of_fragments = ztm9sf3,a,b,c,d,e,f,zsix2arep,g,zsix3a,h,i,j,k,l,m,n,o,p,zprepl,zslac3a
+color = 5,10,10,10,10,10,10,5,10,5,10,10,10,10,10,10,10,10,10,5,5
 color_of_fragments = red,yellow,yellow,yellow,yellow,yellow,yellow,red,yellow,red,yellow,yellow,yellow,yellow,yellow,yellow,yellow,yellow,yellow,red,red
+
 maximum_hic_value = 11000
 
 [Painting]
+
 #bed DNAmethylation
 #file_path = /home/ibai/4c2vhic/data/six/six23/GSM1662780_MethylC-Seq_dr_24hpf.allC.txt
 #bam atac-seq data.
 file_path = /home/ibai/4c2vhic/data/six/six23/zebra_24h_comb.rmdup.atac-seq.bam 
 #bam file, H3k4m3.
 #file_path = /home/ibai/4c2vhic/data/six/six23/H3K4me3_24hpf_a.bam 
+
 colormap = Reds
+
 #http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM1662780
 
 [EvoComp]
 name_of_fragments = a,b,c,d,e,f,zsix2arep,zsix3a,h,i,j,k,l,m,n,o,p,zslac3a,zprepl
 fragments_to_comp = 215,228,265,355,666,771,840,893,911,989,1022,1065,1146,1165,1265,1342,1366,1575,1706
+gene_names2 = a,b,c,d,e,f,zsix2arep,zsix3a,h,i,j,k,l,m,n,o,p,zslac3a,zprepl
+viewpoints2 = 61,60,59,56,46,42,39,36,35,31,29,27,26,24,23,20,19,8,6
 maximum_hic_value = 1
 
 

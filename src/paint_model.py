@@ -6,7 +6,6 @@ import ConfigParser
 import pysam
 
 import numpy as np
-from colour import Color
 import heapq
 import matplotlib
 import matplotlib.cm  as cm

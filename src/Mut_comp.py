@@ -36,6 +36,7 @@ config = ConfigParser.ConfigParser()
 try:
     config.read(ini_file)
     prefix = config.get("Modeling", "prefix")
+    distance = int(config.get("Modeling", "max_dist"))
     storage_dir = config.get("Modeling", "working_dir")
     storage_dir = storage_dir + "data/" + prefix + "/"
     WINDOW = float(config.get("Modeling", "fragments_in_each_bead"))
@@ -67,8 +68,9 @@ except:
 #read the config file2
 config2 = ConfigParser.ConfigParser()
 try:
-    config.read(ini_file)
-    prefix2 = config.get("Modeling", "prefix")
+    config2.read(ini_file)
+    prefix2 = config2.get("Modeling", "prefix")
+    distance2 = int(config2.get("Modeling", "max_dist"))
 
 except:
     print "\nError reading the configuration file.\n"
@@ -77,6 +79,7 @@ except:
     sys.exit()
 
 root3 = "{}{}_vs_{}_mutcomp".format(storage_dir,prefix,prefix2)
+root4 = "{}{}_vs_{}_mutcomp_raw".format(storage_dir,prefix,prefix2)
 matrix1 = np.zeros((number_of_spheres,number_of_spheres))
 max_distance = 0
 with open(root, 'r') as f1:
@@ -110,7 +113,7 @@ with open(root2, 'r') as f2:
 print "We are Inverting bins 35-64 of one matrix. Shh experiment."
 guide = range(number_of_spheres)
 print guide
-guide[35:64] = guide[63:34:-1]
+#guide[35:64] = guide[63:34:-1]
 print guide
 aux_matrix = np.zeros((number_of_spheres,number_of_spheres))
 for line in range(number_of_spheres):
@@ -134,16 +137,18 @@ for line in range(number_of_spheres):
 
 f.close()
 
+#  Populate a matrix with both matrices, just for the plotting, un triangle matrix1, the other matrix2
+matrix_final = np.zeros((number_of_spheres,number_of_spheres))
+for i in range(number_of_spheres):
+    for j in range(number_of_spheres):
+        matrix_final[i][j] = matrix1[i][j]/distance
+        matrix_final[j][i] = matrix2[i][j]/distance2
+
 
 fig = plt.figure()
-plt.title("Virtual Hi-C comparison.")
+plt.title("Virtual Hi-C comparison between mutants.")
 ax = plt.subplot(1,1,1)
 z = np.array(matrix3)
-
-
-#vmax = np.max(diff_list)
-#vmin = np.min(diff_list)
-
 
 from matplotlib.colors import LinearSegmentedColormap
 vmax = 1.0
@@ -185,7 +190,33 @@ fig.set_facecolor('white')
 pp = PdfPages('{}.pdf'.format(root3))
 pp.savefig(fig)
 pp.close()
-print '{} vs {} Mutant vHi-C comparison written in {}.pdf'.format(prefix,prefix2,root3)
+print '{} vs {} Mutant vHi-C similarity comparison written in {}.pdf'.format(prefix,prefix2,root3)
+
+#Now generate the raw comparison figure
+fig = plt.figure()
+plt.title("Virtual Hi-C comparison between mutants.")
+ax = plt.subplot(1,1,1)
+z = np.array(matrix_final)
+c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=0.85, vmin=0)
+plt.colorbar()
+viewpoints = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
+plt.scatter(viewpoints,viewpoints, s=20, c=color,cmap=plt.cm.autumn)
+ax.set_yticks(viewpoints)
+ax.set_xticks(viewpoints)
+ax.set_xticklabels(gene_names, minor=False)
+ax.set_yticklabels(gene_names, minor=False)
+plt.tick_params(axis='both', which='major', labelsize=8)
+plt.xticks(rotation=90)
+
+plt.axis([0,z.shape[1],0,z.shape[0]])
+
+fig.set_facecolor('white')
+#plt.show()
+
+pp = PdfPages('{}.pdf'.format(root4))
+pp.savefig(fig)
+pp.close()
+print '{} vs {} Mutant vHi-C raw comparison written in {}.pdf'.format(prefix,prefix2,root4)
 
 #Distance between #1 marker 1  and #10 marker 1 : 2203.213
             

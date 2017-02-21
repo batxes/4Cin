@@ -66,20 +66,20 @@ except:
 #read the config file2
 config2 = ConfigParser.ConfigParser()
 try:
-    config.read(ini_file2)
+    config2.read(ini_file2)
     
-    prefix2 = config.get("Modeling", "prefix")
-    WINDOW2 = float(config.get("Modeling", "fragments_in_each_bead"))
+    prefix2 = config2.get("Modeling", "prefix")
+    WINDOW2 = float(config2.get("Modeling", "fragments_in_each_bead"))
     
-    viewpoints2 = config.get("EvoComp", "fragments_to_comp")
+    viewpoints2 = config2.get("EvoComp", "fragments_to_comp")
     viewpoints2 = re.sub('[\n\s\t]','',viewpoints2)
     viewpoints2 = viewpoints2.split(",")
     viewpoints2 = [ int(i) for i in viewpoints2]
     viewpoints2 = [int(i/WINDOW2) for i in viewpoints2]
-    max_distance2 = int(config.get("Modeling", "max_dist"))
+    max_distance2 = int(config2.get("Modeling", "max_dist"))
     
     
-    gene_names2 = config.get("EvoComp", "name_of_fragments")
+    gene_names2 = config2.get("EvoComp", "name_of_fragments")
     gene_names2 = re.sub('[\n\s\t]','',gene_names2)
     gene_names2 = gene_names2.split(",")
     
@@ -198,9 +198,10 @@ vmax = 1.0
 
 #mut_comp
 #cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.34 / vmax, 'blue'),(0.35 / vmax, 'white',(0.5 / vmax, 'white')),(0.65 / vmax, 'white'),(0.66 / vmax, 'red'),(1 / vmax, 'red')])
+cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.4 / vmax, 'white'),(0.6 / vmax, 'white'),(1 / vmax, 'red')])
 
 #white_black
-cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'black'),(0.5 / vmax, 'white'),(1 / vmax, 'black')])
+#cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'black'),(0.5 / vmax, 'white'),(1 / vmax, 'black')])
 
 
 fig = plt.figure()
