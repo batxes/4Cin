@@ -18,7 +18,8 @@ import IMP.container
 import RMF
 import numpy as np
 import ConfigParser
-from data_manager import fileCheck, sizeReader,  calculateNWindowedDistances
+from data_manager import fileCheck, sizeReader,  calculateNWindowedDistances, calculate_fragment_number
+
 
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 7:  
@@ -47,14 +48,19 @@ try:
     verbose = config.get("Modeling", "verbose")
     fragments_in_each_bead = float(config.get("Modeling", "fragments_in_each_bead"))
     data_dir = config.get("Modeling", "data_dir")
+    if data_dir[-1] != "/":
+        data_dir = data_dir+"/"
     file_names = config.get("Modeling", "file_names")
     file_names = re.sub('[\n\s\t]','',file_names)
     file_names = file_names.split(",")
     files = [data_dir+f for f in file_names]
-    viewpoint_fragments = config.get("Modeling", "viewpoint_fragments")
-    viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
-    viewpoint_fragments = viewpoint_fragments.split(",")
-    viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
+    viewpoint_positions = config.get("Modeling", "viewpoint_positions")
+    viewpoint_positions = re.sub('[\n\s\t]','',viewpoint_positions)
+    viewpoint_positions = viewpoint_positions.split(",")
+    viewpoint_positions = [ int(i) for i in viewpoint_positions]
+    print viewpoint_positions
+    viewpoint_fragments = calculate_fragment_number(viewpoint_positions,files[0])
+    print viewpoint_fragments
     viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
     are_genes = config.get("Modeling", "are_genes")
     are_genes = re.sub('[\n\s\t]','',are_genes)

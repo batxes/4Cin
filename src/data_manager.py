@@ -30,6 +30,28 @@ def fileCheck(f):
         print "\nError: File "+ f +" does not appear to exist.\n"
         sys.exit()
 
+# function: calculate fragment numer
+#
+# Gets the fragment number (line of the 4C file) corresponding to the coordinates passed
+def calculate_fragment_number(positions,guide_file):
+    start_frag_list = []
+    fragment_numbers = []
+    read_file = fileCheck(guide_file)
+    for line in read_file:
+        values = line.split()
+        if len(values) != 4:
+            continue
+        start_frag_list.append(int(values[1]))
+    for position in positions:
+        line = 0
+        for start in start_frag_list:
+            if start < position:
+                line += 1
+            else:
+                fragment_numbers.append(line) #take the one before, first line of file is 0 instead of 1
+                break
+    return fragment_numbers
+
 # function: Value Reader by windows
 #
 # reads the file and extracts the values every N lines
