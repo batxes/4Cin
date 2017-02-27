@@ -5,39 +5,36 @@
 import sys
 import os
 import re
+import getopt
 import ConfigParser
 import subprocess
 from multiprocessing import Process, Lock, Pool, current_process
+import argparse
 
 
 def worker(instructions):
     p = subprocess.Popen(instructions)
     p.wait()
 
-number_of_cpu = 2
+parser = argparse.ArgumentParser(
+description=''' Pre Modeling process. Will set the best MAX distance fore the modeling and the best Z scores.''',
+epilog= """ Simple usage: python run_genome_maxd.py --config config_template.ini.""")
+parser.add_argument("--cpu",type=int, default=1, action="store", dest="number_of_cpu",help='number of CPUs that will be used in this script')
+parser.add_argument("--nmodels",type=int, default=50, action="store", dest="number_of_models",help='number of models that will be generated in the pre-modeling phase')
+parser.add_argument("--from_dist",type=int, default=5000, action="store", dest="from_dist",help='minimum max-distance that will be used in the pre-modeling phase')
+parser.add_argument("--to_dist",type=int, default=12000, action="store", dest="to_dist",help='maximum max-distance that will be used in the pre-modeling phase')
+parser.add_argument("--dist_bins",type=int, default=1000, action="store", dest="dist_bins",help='size of jump between from_dist and to_dist')
+parser.add_argument("config", action="store",help='Config file with all the data for the modeling')
+args = parser.parse_args()
+
+number_of_cpu = args.number_of_cpu
+ini_file = args.config
+number_of_models = args.number_of_models
+from_dist = args.from_dist
+to_dist = args.to_dist
+dist_bins = args.dist_bins
+
 p = Pool(number_of_cpu)
-
-number_of_arguments = len(sys.argv)
-if number_of_arguments != 2:  
-    print "Not enought parameters. Config_file and run_mode are required."
-    print " -Config_file: config.ini."
-    sys.exit()
-if len(sys.argv) > 0:  #if we pass the arguments (in the cluster)
-    ini_file = sys.argv[1]
-
-#read the config file
-config = ConfigParser.ConfigParser()
-try:
-    config.read(ini_file)
-    number_of_models = int(config.get("Pre-Modeling", "number_of_models"))
-    from_dist = int(config.get("Pre-Modeling", "from_dist"))
-    to_dist = int(config.get("Pre-Modeling", "to_dist"))
-    dist_bins = int(config.get("Pre-Modeling", "dist_bins"))
-except:
-    print "\nError reading the configuration file.\n"
-    e = sys.exc_info()[1]
-    print e
-    sys.exit()
 
 execute = []
 for dist in range(from_dist,to_dist+dist_bins,dist_bins):
