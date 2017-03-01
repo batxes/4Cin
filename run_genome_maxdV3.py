@@ -23,6 +23,11 @@ import IMP.rmf
 import IMP.container
 import RMF
 import numpy as np
+from collections import defaultdict
+import operator
+import shutil
+from os import listdir
+from os.path import isfile, join
 
 plot = True
 try:
@@ -728,6 +733,141 @@ def calculate_best_zscores():
     
 	return best_uZ,best_lZ
 
+def run_analysis(std_dev,cut_off_percentage):
+	
+	jump = total_number_of_models / number_of_cpus
+	std_dev = std_dev
+	cut_off_percentage = cut_off_percentage
+	root = "{}data/{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+	score_file = "{}/score.txt".format(root)
+
+
+	pyfiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.endswith(".py") ]
+	number_of_models = len(pyfiles)
+	try:
+		os.remove(root+"score.txt")
+	except OSError:
+		pass
+	scorefiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.startswith("score") ]
+	number_of_score_files = len(scorefiles)
+
+	models = defaultdict(list) # dict: each model ahs a list of 2 values
+
+	# first we create a unified score.txt
+	with open (score_file,"w") as f:
+		counter = 0
+		for i in range(number_of_score_files):
+			with open (root+"score"+str(counter)+".txt", "r") as f2:
+				for line in f2:
+					f.write(line)
+			counter = counter + jump
+			
+	# create the dictionary and populate it
+	with open (score_file, "r") as f:
+		counter = 0
+		for line in f:
+			counter += 1
+			model = []
+			values = re.split("\t", line)
+			number = int(values[0])
+			score = float(values[1])
+			model.append(score)
+			models[number] = model
+			if counter == number_of_models:
+				break
+
+	# models = models[:number_of_models]    #take aonly the first ones 
+			
+	reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, max_distance,files)
+
+
+	print "getting best {} models".format(subset)
+	analized_models = 0
+	ok_models = 0
+	for i in range(number_of_models):
+		distances_in_model = []
+		with open (root+prefix+str(i)+".txt","r") as f:
+			for line in f:
+				value = re.split("\t",line)
+				distances_in_model.append(value)
+	#         print distances_in_model
+		#EVALUATION
+	 
+	 
+		not_fulfilled = 0
+		total = 0
+		for k in range(len(files)):
+
+			values = reads_values[k] 
+			for j in range(number_of_fragments):
+				if j != viewpoint_fragments[k]:
+					
+					real_d = distances_in_model[k][j]
+					 
+					should_be_d = values[j] 
+					if should_be_d != 0:
+						total += 1
+						if (should_be_d + std_dev < float(real_d)  or should_be_d - std_dev > float(real_d)):
+							not_fulfilled += 1
+				#             print "restraint "+str(j)+"not fulfilled"
+							
+							verboseprint ("Restraint " +str(j)+"-"+str(viewpoint_fragments[k])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-float(real_d)))
+		#print str(i)+"-> Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(total),"%",str(not_fulfilled*100/(total))     
+		fulfil_percentage = not_fulfilled*100/total
+		verboseprint( "not_fulfilled -> {} out of {} restraints: {}% of all restraints are not fulfilled in this model.".format(not_fulfilled,total,fulfil_percentage))
+		if fulfil_percentage <= cut_off_percentage:
+			models[i].append(not_fulfilled)
+			ok_models += 1
+		else:
+			try:
+				del models[i]
+			except:
+				print "Not enough models for the analysis. Try changing the parameters in the config file for 'std_dev' or 'cut_off_percentage'."
+		analized_models += 1
+		verboseprint ("Percentage of models that fulfill the threshold: {}%".format(100*ok_models/analized_models))
+		verboseprint ("{}/{}".format(ok_models,analized_models))
+		#print "{} -> number of models in subset {}".format(i,len(models))  
+		#after poplating all and takign out the models out of the cout off, take the subset of models
+
+
+
+	#order the dictionary by score
+	sorted_models = sorted(models.items(), key=operator.itemgetter(1))
+	print "Number of models below cutoff: {}".format(len(sorted_models))
+
+	# store them in a folder
+	storage_folder = working_dir+"data/"+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance)+"/" #the dir where the data will be saved
+	print "copying best {} models to {} ...".format(subset,storage_folder)
+	if not os.path.exists(storage_folder): os.makedirs(storage_folder)   
+
+	try: 
+		models_subset = sorted_models [:subset]
+		for k in range(subset):
+			i = models_subset[k][0]
+			shutil.copyfile("{}{}{}.py".format(root,prefix,i), "{}{}{}.py".format(storage_folder,prefix,i) )
+			shutil.copyfile("{}{}{}.txt".format(root,prefix,i), "{}{}{}.txt".format(storage_folder,prefix,i) )
+	except:
+		print "\n !!!! Can not get {} models. Seek less models or relax the std_dev and cut_off_percentage.\n ".format(subset)
+		return False,std_dev,cut_off_percentage
+
+
+
+	# create the file to open in chimera
+	# superposition of the best models
+	with open(working_dir+"data/"+prefix+"_superposition.py","w") as f:
+		f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
+		f.write("rc(\"open {}{}.py\")\n".format(prefix,models_subset[0][0]))
+		for k in range(1,subset):
+			i = models_subset[k][0]
+	#         print("rc(\"open {}{}.py\")\n".format(prefix,i))
+	#         print("rc(\"match #{}-{} #0-{}\")\n".format((k+1)*number_of_fragments,(k+1)*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
+			f.write("rc(\"open {}{}.py\")\n".format(prefix,i))
+			f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_fragments,k*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
+
+	print "Superposition of {} models created in {}data/{}\n".format(subset,working_dir,prefix)
+
+
+	return True,std_dev,cut_off_percentage
 
 ########################################## MAIN ##########################################
 
@@ -749,6 +889,9 @@ parser.add_argument("--zscore_bins",type=float, default=0.1, action="store", des
 parser.add_argument("--verbose", action="store_true", dest="verbose",help='Verbose True for more information while executing the script')
 parser.add_argument("data_dir", action="store",help='location of the 4C data. primers.txt needs tobe in there also')
 parser.add_argument("--working_dir", action="store",default=working_dir, dest="working_dir",help='location where the models will be generated')
+parser.add_argument("--subset",type=int, action="store",default=200, dest="subset",help='Number of best models out of the Modeling process')
+parser.add_argument("--std_dev", type=int,action="store",default=0, dest="std_dev",help='Standard deviation of the distances between beads, to be considered fulfilled')
+parser.add_argument("--cut_off_percentage",type=int, action="store",default=15, dest="cut_off_percentage",help='Percetange of fulfilled distances in each model to be a good model')
 parser.add_argument("prefix", action="store",help='Name of the models')
 parser.add_argument("--fragments_in_each_bead", default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
 
@@ -772,6 +915,9 @@ fragments_in_each_bead = args.fragments_in_each_bead
 max_distance = 0 #updated in calculate_best_maxd()
 uZ = 0 #updated in calculate_best_zscores
 lZ = 0 #updated in calculate_best_zscores
+subset = args.subset
+std_dev = args.std_dev
+cut_off_percentage = args.cut_off_percentage
 
 ignore_beads = "NO"
 if ignore_beads != "NO":
@@ -880,5 +1026,26 @@ p.map(modeling,execute)
 execute = []
 print "Modeling finished"
 
+#Analysis of models
+print "Analysis started"
+if std_dev == 0:
+	std_dev = max_distance / 10  
 
-
+increase_dev_or_cutoff = 0
+while True:
+	print "Running Analysis with:"
+	print "Std_dev: {}".format(std_dev)
+	print "cut_off_percentage: {}".format(cut_off_percentage)
+	fulfilled, std_dev, cut_off_percentage = run_analysis(std_dev,cut_off_percentage)
+	if fulfilled:
+		break
+	else:
+		if increase_dev_or_cutoff == 0:
+			std_dev = std_dev + max_distance*0.02 #increase std_def
+			increase_dev_or_cutoff = 1
+		else:
+			cut_off_percentage = cut_off_percentage+2 #increase #cut_off
+			increase_dev_or_cutoff = 0			
+print "Final analysis thresholds: "
+print "Std_dev: {}".format(std_dev)
+print "cut_off_percentage: {}".format(cut_off_percentage)
