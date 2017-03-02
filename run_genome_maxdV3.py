@@ -29,7 +29,7 @@ import shutil
 from os import listdir, remove
 from os.path import isfile, join
 
-from itertools import combinations,izip
+from itertools import combinations,izip, chain
 import scipy.cluster.hierarchy as sch
 from numpy import vstack,array
 from numpy.random import rand
@@ -39,6 +39,7 @@ try:
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_pdf import PdfPages
     print "pyplot imported."
 except:
 	plot = False
@@ -68,6 +69,10 @@ def worker(instructions):
 def chimera_worker(chimera_file):
     distance_output = subprocess.check_output(["chimera", "--nogui", chimera_file[0]])
     return distance_output,chimera_file[1],chimera_file[2],current_process().name
+    
+def chimera_worker_vhic(chimera_file):
+    distance_output = subprocess.check_output(["chimera", "--nogui", chimera_file])
+    return distance_output
 
 def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
 	
@@ -1109,7 +1114,161 @@ def run_clustering(models_subset):
                 lines_in_file = num_lines
 
 
-    return n_clusters
+    return n_clusters, biggest_matrix
+
+def calculate_vhic(biggest_matrix,calculate_the_matrix):
+	root = "{}data/{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+	matrix_path = "{}matrix{}.txt".format(root,biggest_matrix)
+	distance_file = "get_genome_distance_{}".format(prefix)
+	path = "{}vhic_{}.txt".format(root,prefix)
+	start_time = time.time()
+	if calculate_the_matrix:
+		models = []
+			## we get a file that (cmd) that we are gonna use it in chimera. It will write all distances in the model
+		with open("{}".format(matrix_path), "r") as mtx:
+			for line in mtx:
+				models = re.split("\t", line)
+				break
+		models = models[1:-1]
+		counter = 0
+		matrix = np.zeros((number_of_fragments,number_of_fragments,len(models)))
+		p = Pool(number_of_cpus)
+
+		for model in models:
+			print "{} - {}".format(counter,model)
+			chimera_files = []
+			combi = combinations(range(0,number_of_fragments),2)
+			instruction_list = []
+			for pair in combi:
+				instruction_list.append("rc(\"distance #"+str(pair[0])+" #"+str(pair[1])+"\")\n")
+			for cpu in range(number_of_cpus):
+				instru_start = (cpu) * (len(instruction_list)/number_of_cpus) 
+				if cpu == number_of_cpus-1:
+					instru_end =  len(instruction_list)
+				else:
+					instru_end =  (cpu+1) * (len(instruction_list)/number_of_cpus) 
+					
+				dis_file = distance_file+"cpu"+str(cpu)+".py"
+				with open (dis_file,'w') as output:
+					output.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
+					output.write("rc(\"open {}\")\n".format(model))
+					for instru in instruction_list[instru_start:instru_end]:
+						output.write(instru)
+					chimera_files.append(dis_file)
+
+				
+			print "Calculating in chimera..."       
+			distance_output = p.map(chimera_worker_vhic,chimera_files)
+
+			
+
+			final_distance_output = []
+			for cha in range(len(distance_output)):   
+				final_distance_output = chain(final_distance_output,distance_output[cha])
+			string = ""
+			lista = []
+			
+			for line2 in final_distance_output:
+				string = string + line2
+				if line2 == "\n":
+					lista.append(string)
+					string = ""
+				 
+			#Distance between #209:1@ and #210:1@: 512.326
+			for line2 in lista:
+				distance = re.search(r'#(\d*).*#(\d*).*:\s?(\d*\.\d*)',line2)  
+				if (distance):
+					matrix[int(distance.group(1))][int(distance.group(2))][counter] = float(distance.group(3))
+					matrix[int(distance.group(2))][int(distance.group(1))][counter] = float(distance.group(3))
+			 
+			counter += 1        
+			print "{} seconds needed.".format(time.time() - start_time)
+
+
+
+		f= open(path, 'w') #store the data in file
+		matrix_mean = np.zeros((number_of_fragments,number_of_fragments))
+		for line in range(number_of_fragments):
+			for column in range(number_of_fragments):
+				mean_value = np.mean(matrix[line][column])
+	#         print "[{}][{}] = {}".format(line,column,mean_value)
+				matrix_mean[line][column] = mean_value
+	#         matrix_mean[column][line] = mean_value
+				f.write(str(line)+","+str(column)+","+str(mean_value))   
+				f.write("\n")
+		f.close()
+		print "\nThe virtual Hi-C data is in {}.".format(path)
+		for chi_file in chimera_files:
+			os.remove(chi_file)
+			os.remove(chi_file+"c")
+	else:
+		with open(path, 'r') as std_in:
+			matrix_mean = np.zeros((number_of_fragments,number_of_fragments))
+			for line in std_in:
+				values = line.split(",")
+				matrix_mean[int(values[0])][int(values[1])] = float(values[2])
+
+
+	print "Generating virtual Hi-C plot..."     
+	#matrix_mean = matrix_mean[15:-15,15:-15]
+	#show_fragments_in_vhic = [x-15 for x in show_fragments_in_vhic]
+	show_fragments_in_vhic_shifted = [c+0.5 for c in show_fragments_in_vhic] #to match the name_of_fragments in the matrix Since the ticks don't match with the heatmap.
+	fig = plt.figure()
+	plt.title("Virtual Hi-C")
+	ax = plt.subplot(1,1,1)
+	z = np.array(matrix_mean)
+
+
+
+	c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=maximum_hic_value, vmin=0)
+	ax.set_frame_on(False)
+	plt.colorbar()
+
+
+	#to set the show_fragments_in_vhic
+	#color = [10,5,5,10,10,10,10,10] -> depending on quantity of genes
+	plt.scatter(show_fragments_in_vhic_shifted, show_fragments_in_vhic_shifted, s=20, c=color,cmap=plt.cm.autumn)
+
+
+
+	ax.set_yticks(show_fragments_in_vhic_shifted)
+	ax.set_xticks(show_fragments_in_vhic_shifted)
+	ax.set_xticklabels(name_of_fragments, minor=False)
+	ax.set_yticklabels(name_of_fragments, minor=False)
+	plt.tick_params(axis='both', which='major', labelsize=8)
+	plt.xticks(rotation=90)
+
+	plt.axis([0,z.shape[1],0,z.shape[0]])
+
+	fig.set_facecolor('white')
+	#plt.show()
+
+	pp = PdfPages('{}{}_vHiC.pdf'.format(root,prefix))
+	pp.savefig(fig)
+	pp.close()
+	print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
+	#Distance between #1 marker 1  and #10 marker 1 : 2203.213
+	print """\nWhat do you want to do now?:
+
+	-If the virtual Hi-C is too red or white, modify the maximum_hic_value in section [VHiC] in the config file and run:
+		'python {} {} {} False'
+
+	-To get the representative model and superposition of best models:
+		'python src/get_representative_model.py {} {}'
+
+	-To paint a model with epigenetic marks (bam/bed file required):
+		'python src/paint_model.py {} your_model.py '
+
+	-To call the TAD boundaries, run:
+		'python src/calculate_boundaries.py {} tad_size'
+
+	-To compare conserved regions between 2 virtual Hi-Cs (Different species or homolog regions), run:
+		'python src/Evo_comp.py {} config_file2 {} vhic2'
+		
+	-To compare this virtual Hi-C to another one of the same region (Mutants), run:
+		'python src/Mut_comp {} config_file2 {} vhic2'
+
+	"""  
 
 ########################################## MAIN ##########################################
 
@@ -1141,10 +1300,12 @@ parser.add_argument("--cut_off_percentage",type=int, action="store",default=15, 
 parser.add_argument("prefix", action="store",help='Name of the models')
 parser.add_argument("--fragments_in_each_bead", default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
 parser.add_argument("--k_value",type=int, action="store",default=2, dest="k_mean",help='Number of cluster to expect in the clustering.')
-parser.add_argument("--jump_steps",type=int, action="store",nargs=3,default=[0,0,0], dest="jump_steps",help='List of 1|0 that indicate to jump (1) or not jump (0) a step or not. Steps: Pre-Modeling, Modeling, Analysis & Clustering')
+parser.add_argument("--jump_steps",type=int, action="store",nargs=4,default=[0,0,0,0], dest="jump_steps",help='List of 1|0 that indicate to jump (1) or not jump (0) a step or not. Steps: Pre-Modeling, Modeling, Analysis & Clustering')
 parser.add_argument("--uZ",type=float, action="store",dest="uZ", help='Upper bound Z score (mandatory if jumping pre-modeling steps)')
 parser.add_argument("--lZ", type=float, action="store",dest="lZ", help='Lower bound Z score (mandatory if jumping pre-modeling steps)')
 parser.add_argument("--max_distance", type=int, action="store",dest="max_distance", help='Maximum distance (mandatory if jumping pre-modeling steps)')
+parser.add_argument("--matrix_number", type=int, action="store",dest="biggest_matrix", help='number of the biggest matrix after the clustering, in case we want to only generate the virtual Hi-C')
+
 
 
 
@@ -1173,6 +1334,13 @@ cut_off_percentage = args.cut_off_percentage
 uZ = args.uZ
 lZ = args.lZ
 max_distance = args.max_distance
+biggest_matrix = 0
+try:
+	if jump_steps[2]:
+		biggest_matrix = args.biggest_matrix
+except:
+	print "We need the biggest_matrix flag"
+	sys.exit()
 
 ignore_beads = "NO"
 if ignore_beads != "NO":
@@ -1238,6 +1406,15 @@ are_genes = viewpoint_fragments
 
 # now get number of beads
 number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
+
+#vhic variables
+show_fragments_in_vhic = [700,925,3593,5422,5836,6398]
+name_of_fragments = ["Rbm33", "Shh", "BREAK1", "Zrs", "Nom1", "BREAK2"]
+color_of_fragments = ["yellow","yellow","red","yellow","yellow","red"]
+color = color_of_fragments
+maximum_hic_value = 4000
+show_fragments_in_vhic = [int(i/fragments_in_each_bead) for i in show_fragments_in_vhic]
+
 
 p = Pool(number_of_cpus)
 
@@ -1311,8 +1488,19 @@ if not jump_steps[2]:
     sys.exit()
     print "Running clustering..."
     n_clusters = 0
-    n_clusters = run_clustering(models_subset)
+    n_clusters,biggest_matrix = run_clustering(models_subset)
     if n_clusters != k_mean:
         print "Redoing the clustering expecting {} clusters.".format(n_clusters)
-        run_clustering(models_subset)
+        n_clusters,biggest_matrix = run_clustering(models_subset)
     print "Clustering finished"
+
+if not jump_steps[3]:
+	#vhic calculation
+	print "Generating Virtual Hi-C"
+	calculate_vhic(biggest_matrix,True)
+	print "Virtual Hi-C generated"
+else:
+	print "RePainting Virtual Hi-C"
+	calculate_vhic(biggest_matrix,False)
+	print "Virtual Hi-C RePainted"
+	
