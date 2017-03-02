@@ -26,17 +26,23 @@ import numpy as np
 from collections import defaultdict
 import operator
 import shutil
-from os import listdir
+from os import listdir, remove
 from os.path import isfile, join
+
+from itertools import combinations,izip
+import scipy.cluster.hierarchy as sch
+from numpy import vstack,array
+from numpy.random import rand
 
 plot = True
 try:
-	import matplotlib
-	matplotlib.use('Agg')
-	import matplotlib.pylab as plt
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    print "pyplot imported."
 except:
 	plot = False
-	print "\nPylab not installed. Skipping Zscore figures.\n"
+	print "\nPyplot not installed. Skipping Zscore figures.\n"
 	e = sys.exc_info()[1]
 	print e
 	
@@ -59,7 +65,9 @@ def worker(instructions):
     p = subprocess.Popen(instructions)
     p.wait()
 
-
+def chimera_worker(chimera_file):
+    distance_output = subprocess.check_output(["chimera", "--nogui", chimera_file[0]])
+    return distance_output,chimera_file[1],chimera_file[2],current_process().name
 
 def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
 	
@@ -734,36 +742,38 @@ def calculate_best_zscores():
 	return best_uZ,best_lZ
 
 def run_analysis(std_dev,cut_off_percentage):
-	
-	jump = total_number_of_models / number_of_cpus
-	std_dev = std_dev
-	cut_off_percentage = cut_off_percentage
-	root = "{}data/{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
-	score_file = "{}/score.txt".format(root)
+
+    models_subset = []
+    jump = total_number_of_models / number_of_cpus
+    std_dev = std_dev
+    cut_off_percentage = cut_off_percentage
+    root = "{}data/{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+    score_file = "{}/score.txt".format(root)
 
 
-	pyfiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.endswith(".py") ]
-	number_of_models = len(pyfiles)
-	try:
+    pyfiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.endswith(".py") ]
+    number_of_models = len(pyfiles)
+    try:
 		os.remove(root+"score.txt")
-	except OSError:
+    except OSError:
 		pass
-	scorefiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.startswith("score") ]
-	number_of_score_files = len(scorefiles)
+    scorefiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.startswith("score") ]
+    number_of_score_files = len(scorefiles)
 
-	models = defaultdict(list) # dict: each model ahs a list of 2 values
+    models = defaultdict(list) # dict: each model ahs a list of 2 values
 
 	# first we create a unified score.txt
-	with open (score_file,"w") as f:
+    with open (score_file,"w") as f:
 		counter = 0
 		for i in range(number_of_score_files):
 			with open (root+"score"+str(counter)+".txt", "r") as f2:
 				for line in f2:
 					f.write(line)
 			counter = counter + jump
-			
-	# create the dictionary and populate it
-	with open (score_file, "r") as f:
+					
+    # create the dictionary and populate it
+    with open (score_file, "r") as f:
+		
 		counter = 0
 		for line in f:
 			counter += 1
@@ -778,51 +788,51 @@ def run_analysis(std_dev,cut_off_percentage):
 
 	# models = models[:number_of_models]    #take aonly the first ones 
 			
-	reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, max_distance,files)
+    reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, max_distance,files)
 
 
-	print "getting best {} models".format(subset)
-	analized_models = 0
-	ok_models = 0
-	for i in range(number_of_models):
-		distances_in_model = []
-		with open (root+prefix+str(i)+".txt","r") as f:
-			for line in f:
-				value = re.split("\t",line)
-				distances_in_model.append(value)
-	#         print distances_in_model
-		#EVALUATION
-	 
-	 
-		not_fulfilled = 0
-		total = 0
-		for k in range(len(files)):
+    print "getting best {} models".format(subset)
+    analized_models = 0
+    ok_models = 0
+    for i in range(number_of_models):
+        distances_in_model = []
+        with open (root+prefix+str(i)+".txt","r") as f:
+            for line in f:
+                value = re.split("\t",line)
+                distances_in_model.append(value)
+    #         print distances_in_model
+        #EVALUATION
+     
+     
+        not_fulfilled = 0
+        total = 0
+        for k in range(len(files)):
 
-			values = reads_values[k] 
-			for j in range(number_of_fragments):
-				if j != viewpoint_fragments[k]:
-					
-					real_d = distances_in_model[k][j]
-					 
-					should_be_d = values[j] 
-					if should_be_d != 0:
-						total += 1
-						if (should_be_d + std_dev < float(real_d)  or should_be_d - std_dev > float(real_d)):
-							not_fulfilled += 1
-				#             print "restraint "+str(j)+"not fulfilled"
-							
-							verboseprint ("Restraint " +str(j)+"-"+str(viewpoint_fragments[k])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-float(real_d)))
-		#print str(i)+"-> Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(total),"%",str(not_fulfilled*100/(total))     
-		fulfil_percentage = not_fulfilled*100/total
-		verboseprint( "not_fulfilled -> {} out of {} restraints: {}% of all restraints are not fulfilled in this model.".format(not_fulfilled,total,fulfil_percentage))
-		if fulfil_percentage <= cut_off_percentage:
-			models[i].append(not_fulfilled)
-			ok_models += 1
-		else:
-			try:
-				del models[i]
-			except:
-				print "Not enough models for the analysis. Try changing the parameters in the config file for 'std_dev' or 'cut_off_percentage'."
+            values = reads_values[k] 
+            for j in range(number_of_fragments):
+                if j != viewpoint_fragments[k]:
+                    
+                    real_d = distances_in_model[k][j]
+                     
+                    should_be_d = values[j] 
+                    if should_be_d != 0:
+                        total += 1
+                        if (should_be_d + std_dev < float(real_d)  or should_be_d - std_dev > float(real_d)):
+                            not_fulfilled += 1
+                #             print "restraint "+str(j)+"not fulfilled"
+                            
+                            verboseprint ("Restraint " +str(j)+"-"+str(viewpoint_fragments[k])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-float(real_d)))
+        #print str(i)+"-> Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(total),"%",str(not_fulfilled*100/(total))     
+        fulfil_percentage = not_fulfilled*100/total
+        verboseprint( "not_fulfilled -> {} out of {} restraints: {}% of all restraints are not fulfilled in this model.".format(not_fulfilled,total,fulfil_percentage))
+        if fulfil_percentage <= cut_off_percentage:
+            models[i].append(not_fulfilled)
+            ok_models += 1
+        else:
+            try:
+                del models[i]
+            except:
+                pass
 		analized_models += 1
 		verboseprint ("Percentage of models that fulfill the threshold: {}%".format(100*ok_models/analized_models))
 		verboseprint ("{}/{}".format(ok_models,analized_models))
@@ -832,32 +842,29 @@ def run_analysis(std_dev,cut_off_percentage):
 
 
 	#order the dictionary by score
-	sorted_models = sorted(models.items(), key=operator.itemgetter(1))
-	print "Number of models below cutoff: {}".format(len(sorted_models))
+    sorted_models = sorted(models.items(), key=operator.itemgetter(1))
+    print "Number of models below cutoff: {}".format(len(sorted_models))
 
-	# store them in a folder
-	storage_folder = working_dir+"data/"+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance)+"/" #the dir where the data will be saved
-	print "copying best {} models to {} ...".format(subset,storage_folder)
-	if not os.path.exists(storage_folder): os.makedirs(storage_folder)   
-
-	try: 
-		models_subset = sorted_models [:subset]
-		for k in range(subset):
-			i = models_subset[k][0]
-			shutil.copyfile("{}{}{}.py".format(root,prefix,i), "{}{}{}.py".format(storage_folder,prefix,i) )
-			shutil.copyfile("{}{}{}.txt".format(root,prefix,i), "{}{}{}.txt".format(storage_folder,prefix,i) )
-	except:
-		print "\n !!!! Can not get {} models. Seek less models or relax the std_dev and cut_off_percentage.\n ".format(subset)
-		return False,std_dev,cut_off_percentage
-
-
-
+    # store them in a folder
+    storage_folder = working_dir+"data/"+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance)+"/" #the dir where the data will be saved
+    if not os.path.exists(storage_folder): 
+        os.makedirs(storage_folder)
+    try: 
+        models_subset = sorted_models [:subset]
+        for k in range(subset):
+            i = models_subset[k][0]
+            shutil.copyfile("{}{}{}.py".format(root,prefix,i), "{}{}{}.py".format(storage_folder,prefix,i) )
+            shutil.copyfile("{}{}{}.txt".format(root,prefix,i), "{}{}{}.txt".format(storage_folder,prefix,i) )
+        print "copied best {} models to {}.".format(subset,storage_folder)
+    except:
+        print "\n ! Can not get {} models. Relaxing the std_dev and cut_off_percentage.\n ".format(subset)
+        return False,std_dev,cut_off_percentage,models_subset
 	# create the file to open in chimera
 	# superposition of the best models
-	with open(working_dir+"data/"+prefix+"_superposition.py","w") as f:
-		f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
-		f.write("rc(\"open {}{}.py\")\n".format(prefix,models_subset[0][0]))
-		for k in range(1,subset):
+    with open(working_dir+"data/"+prefix+"_superposition.py","w") as f:
+        f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
+        f.write("rc(\"open {}{}.py\")\n".format(prefix,models_subset[0][0]))
+        for k in range(1,subset):
 			i = models_subset[k][0]
 	#         print("rc(\"open {}{}.py\")\n".format(prefix,i))
 	#         print("rc(\"match #{}-{} #0-{}\")\n".format((k+1)*number_of_fragments,(k+1)*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
@@ -867,12 +874,251 @@ def run_analysis(std_dev,cut_off_percentage):
 	print "Superposition of {} models created in {}data/{}\n".format(subset,working_dir,prefix)
 
 
-	return True,std_dev,cut_off_percentage
+	return True,std_dev,cut_off_percentage,models_subset
+
+def run_clustering(models_subset):
+    number_of_beads = number_of_fragments
+    root = "{}data/{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)	
+    matrix = np.zeros((subset,subset))
+    only_python_files = []
+
+    for model_number in models_subset:
+        only_python_files.append(root+prefix+str(model_number[0])+".py")
+    #for pyfile in listdir(root):
+    #    if pyfile.endswith(".py"):
+    #        only_python_files.append(pyfile)
+	#only_python_files = only_python_files[:subset]
+    if len(only_python_files) != subset:
+        print "There are no {} models in {}. \nOnly {} models were found in the directory.".format(subset,root,len(only_python_files))
+        sys.exit()
+
+	# generate a chimera file with match. Chimera when matched, it calculates the RMSD 
+    number_of_beads = number_of_beads -1
+
+	# combi = combinations(range(len(only_python_files)),2)
+    combi = combinations(range(subset),2)
+    instructions = []
+    print "Generating instructions..."
+    number_of_files = 0
+    for pair in combi:
+        instruction_files = []
+        number_of_files += 1
+        counter_line = pair[0]
+        counter_column = pair[1]
+        chimera_file = "{}_calculate_rmsd{}_{}.py".format(prefix,counter_line,counter_column)
+        rmsd_file = open (chimera_file, "w")
+        rmsd_file.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
+        rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_line]))
+        rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_column]))
+        rmsd_file.write("rc(\"match #{}-{} #{}-{}\")\n".format((number_of_beads+1),(number_of_beads+1)+number_of_beads ,0,number_of_beads))
+        rmsd_file.close()
+        instruction_files.append(chimera_file)
+        instruction_files.append(counter_line)
+        instruction_files.append(counter_column)
+        instructions.append(instruction_files)
+    print "Populating matrix.txt ..."
+    for core in range(0,number_of_files,number_of_cpus):
+        if len(instructions) - core < number_of_cpus:
+            execute = instructions[core:len(instructions)-core]
+        else:
+            execute = instructions[core:core+number_of_cpus] 
+        # WE NEED TO EXECUTE THIS DEPENDING ON CPU SIZE
+        rmsd_output = p.map(chimera_worker,execute)
+        #print rmsd_output
+        for i in range(len(execute)):
+            #print "Writing [{}][{}]".format(rmsd_output[i][1],rmsd_output[i][2])
+            string = ""
+            lista = []
+            for line2 in rmsd_output[i][0]:
+                string = string + line2
+                if line2 == "\n":
+                    lista.append(string)
+                    string = ""
+            #RMSD between 103 atom pairs is 4404.816 angstroms
+            for line2 in lista:
+                exp = re.search(r"(\d+\.\d+) angstroms",line2)
+                if (exp):
+                    value = exp.group(1)
+                    matrix[rmsd_output[i][1]][rmsd_output[i][2]] = value
+                    matrix[rmsd_output[i][2]][rmsd_output[i][1]] = value    
+                    value = 0
+        #delete files while we execute them
+        for i in range(len(execute)):
+            remove(execute[i][0])
+            remove(execute[i][0]+"c")
+        if core!= 0:
+            sys.stdout.write("\r{}%".format( core*100/number_of_files))
+            sys.stdout.flush()
+    #write matrix       
+    matrixtxt = open("{}matrix.txt".format(root), "w")      
+    matrixtxt.write("\t")
+    for p_file in only_python_files:
+        matrixtxt.write(p_file)
+        matrixtxt.write("\t")
+    matrixtxt.write("\n")
+    counter_line = 0
+    for line in only_python_files:
+        counter_column = 0
+        matrixtxt.write(line)
+        matrixtxt.write("\t")
+        for column in only_python_files:
+            matrixtxt.write(str(matrix[counter_line][counter_column])+"\t")  
+            counter_column += 1
+        counter_line += 1
+        matrixtxt.write("\n") 
+    matrixtxt.close()
+    print "\n\nmatrix.txt written! in {}".format(root)
+    print "This is the whole RMSD matrix (all models vs all models)"
+    #matrix2 = np.zeros((subset,subset))
+
+    #models = []
+    #line_ = 0
+    #with open ("{}matrix.txt".format(root), "r") as f:
+    #    for line in f:
+    #        if line_ == 0:
+    #            models = line.split("\t")
+    #            models = models[1:-1]
+    #            line_ += 1
+    #        else:
+    #            column_ = 0
+    #            values = line.split("\t")
+    #            values = values[1:-1]
+    #            for value in values:
+    #                matrix2[line_-1][column_] = value
+    #                column_ += 1
+    #            line_ += 1
+
+
+    D = matrix
+
+    # Compute and plot first dendrogram.
+    fig = plt.figure(figsize=(8,8))
+    ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
+    Y = sch.linkage(D, method='average')
+    Z1 = sch.dendrogram(Y, orientation='right')
+    ax1.set_xticks([])
+    ax1.set_yticks([])
+
+    # # Compute and plot second dendrogram.
+    ax2 = fig.add_axes([0.3,0.71,0.6,0.2])
+    Y = sch.linkage(D, method='average')
+    Z2 = sch.dendrogram(Y,orientation='top')
+
+    ax2.set_xticks([])
+    ax2.set_yticks([])
+
+    # Plot distance matrix.
+    axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
+    plt.xlabel("RMSD matrix in Angstroms.")
+    idx1 = Z1['leaves']
+    dendogra_colors = Z1['color_list']
+    idx2 = Z2['leaves']
+    D = D[idx1,:]
+    D = D[:,idx2]
+    im = axmatrix.matshow(D, aspect='auto', origin='lower', cmap=plt.cm.YlGnBu)
+    axmatrix.set_xticks([])
+    axmatrix.set_yticks([])
+
+    # Plot colorbar.
+    axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
+    plt.colorbar(im, cax=axcolor)
+    #fig.show()
+    try:
+        fig.savefig('{}{}_heatmap.png'.format(root,prefix))
+    except:
+        pass
+
+    # Code to retrieve the clusters
+    n = subset
+    cluster_number = []
+    cluster_dict = dict()
+    solutions = [] #gather the clustering proccesses when we have the same number as kmeans 
+    for i in range(subset-2): #descend branches until the bottom
+        new_cluster_id = n+i
+        old_cluster_id_0 = Y[i, 0]
+        old_cluster_id_1 = Y[i, 1]
+        combined_ids = list()
+        if old_cluster_id_0 in cluster_dict:
+            combined_ids += cluster_dict[old_cluster_id_0]
+            del cluster_dict[old_cluster_id_0]
+        else:
+            combined_ids += [old_cluster_id_0]
+        if old_cluster_id_1 in cluster_dict:
+            combined_ids += cluster_dict[old_cluster_id_1]
+            del cluster_dict[old_cluster_id_1]
+        else:
+            combined_ids += [old_cluster_id_1]
+        cluster_dict[new_cluster_id] = combined_ids
+        if len(cluster_dict) == k_mean:
+            aux_dict = dict(cluster_dict)
+            solutions.append(aux_dict)
+    cluster_dict_def = solutions[-1]    
+    #get only the last clustering, since it is the one with all models
+    for i in cluster_dict_def:
+        cluster_number.append(i)
+            
+    number_of_beads = number_of_beads +1 
+    # Write the matrix data in different files, k_mean times
+    for i in cluster_number:
+        matrixtxt = open("{}matrix{}.txt".format(root,i), "w")      
+        matrixtxt.write("\t")
+        cluster_values = [int(j) for j in cluster_dict_def[i]]
+        cluster_models = [only_python_files[k] for k in cluster_values]
+        for p_file in cluster_models:
+            matrixtxt.write(p_file)
+            matrixtxt.write("\t")
+        matrixtxt.write("\n")
+        counter_line = 0
+        for line in cluster_models:
+            counter_column = 0
+            matrixtxt.write(line)
+            matrixtxt.write("\t")
+            for column in cluster_models:
+                matrixtxt.write(str(matrix[counter_line][counter_column])+"\t")  
+                counter_column += 1
+            counter_line += 1
+            matrixtxt.write("\n") 
+        matrixtxt.close()
+        print "\n------"
+        print "\nmatrix{}.txt written! in {}".format(i,root)
+        print "This is one of the clusters. These models are more similar between them."
+            
+            
+        # create the file to open in chimera
+        # superposition of the best models
+        print "Creating superposition of this cluster..."
+        with open(working_dir+"data/"+prefix+"/"+prefix+"_superposition_"+str(i)+".py","w") as f:
+            f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
+            f.write("rc(\"open {}\")\n".format(cluster_models[0]))
+            for k in range(1,len(cluster_models)):
+                imodel = cluster_models[k]
+                f.write("rc(\"open {}\")\n".format(imodel))
+                f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_beads,k*number_of_beads+number_of_beads-1,number_of_beads-1))
+
+        print "created in {}data/{}/{}_superposition".format(working_dir,prefix,prefix)
+    n_clusters = len(set(dendogra_colors))-1
+    print "\n{} clusters were found in the clustering process. They can be checked here: {}{}_heatmap.png".format(n_clusters,root,prefix)
+    if k_mean != n_clusters:
+        print "Number of clusters found and k means value set are different." 
+    else:
+        lines_in_file = 0
+        for m in cluster_number:
+            num_lines = sum(1 for line in open('{}matrix{}.txt'.format(root,m)))
+            if num_lines > lines_in_file:
+                biggest_matrix = m
+                lines_in_file = num_lines
+
+
+    return n_clusters
 
 ########################################## MAIN ##########################################
 
 working_dir = (os.path.realpath(__file__)).split("/")[:-1]
 working_dir = "/".join(working_dir)+"/"
+
+max_distance = 0 #updated in calculate_best_maxd()
+uZ = 0 #updated in calculate_best_zscores
+lZ = 0 #updated in calculate_best_zscores
 
 parser = argparse.ArgumentParser(
 description=''' Modeling process.''',
@@ -894,6 +1140,13 @@ parser.add_argument("--std_dev", type=int,action="store",default=0, dest="std_de
 parser.add_argument("--cut_off_percentage",type=int, action="store",default=15, dest="cut_off_percentage",help='Percetange of fulfilled distances in each model to be a good model')
 parser.add_argument("prefix", action="store",help='Name of the models')
 parser.add_argument("--fragments_in_each_bead", default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
+parser.add_argument("--k_value",type=int, action="store",default=2, dest="k_mean",help='Number of cluster to expect in the clustering.')
+parser.add_argument("--jump_steps",type=int, action="store",nargs=3,default=[0,0,0], dest="jump_steps",help='List of 1|0 that indicate to jump (1) or not jump (0) a step or not. Steps: Pre-Modeling, Modeling, Analysis & Clustering')
+parser.add_argument("--uZ",type=float, action="store",dest="uZ", help='Upper bound Z score (mandatory if jumping pre-modeling steps)')
+parser.add_argument("--lZ", type=float, action="store",dest="lZ", help='Lower bound Z score (mandatory if jumping pre-modeling steps)')
+parser.add_argument("--max_distance", type=int, action="store",dest="max_distance", help='Maximum distance (mandatory if jumping pre-modeling steps)')
+
+
 
 args = parser.parse_args()
 print args	
@@ -912,12 +1165,14 @@ data_dir = args.data_dir
 working_dir = args.working_dir
 prefix = args.prefix
 fragments_in_each_bead = args.fragments_in_each_bead
-max_distance = 0 #updated in calculate_best_maxd()
-uZ = 0 #updated in calculate_best_zscores
-lZ = 0 #updated in calculate_best_zscores
+k_mean = args.k_mean
+jump_steps = args.jump_steps
 subset = args.subset
 std_dev = args.std_dev
 cut_off_percentage = args.cut_off_percentage
+uZ = args.uZ
+lZ = args.lZ
+max_distance = args.max_distance
 
 ignore_beads = "NO"
 if ignore_beads != "NO":
@@ -988,64 +1243,76 @@ p = Pool(number_of_cpus)
 
 execute = []
 
-#pre-modeling maxD
-print "Pre-modeling Started"
-for dist in range(from_dist,to_dist+dist_bins,dist_bins):
-	instructions = (0.1 ,-0.1, dist,0 ,False)
-	execute.append(instructions)
-p.map(modeling,execute)
-execute = []
+if not jump_steps[0]:
+    #pre-modeling maxD
+    print "Pre-modeling Started"
+    for dist in range(from_dist,to_dist+dist_bins,dist_bins):
+        instructions = (0.1 ,-0.1, dist,0 ,False)
+        execute.append(instructions)
+    p.map(modeling,execute)
+    execute = []
 
+    #max distance calculation
+    print "Now calculate maxD"
+    max_distance = calculate_best_maxd()
+    print "maxD calculated"
 
-#max distance calculation
-print "Now calculate maxD"
-max_distance = calculate_best_maxd()
-print "maxD calculated"
+    #pre-modeling Zscores
+    for zmax in np.arange(from_zscore,to_zscore+zscore_bins,zscore_bins):
+        for zmin in np.arange(-from_zscore, -to_zscore-zscore_bins, -zscore_bins):
+            instructions = (zmax, zmin, max_distance, 0 ,False)
+            execute.append(instructions)
+    p.map(modeling,execute)
+    execute = []
+    print "Pre-modeling finished"
 
-#pre-modeling Zscores
-for zmax in np.arange(from_zscore,to_zscore+zscore_bins,zscore_bins):
-	for zmin in np.arange(-from_zscore, -to_zscore-zscore_bins, -zscore_bins):
-		instructions = (zmax, zmin, max_distance, 0 ,False)
-		execute.append(instructions)
-p.map(modeling,execute)
-execute = []
-print "Pre-modeling finished"
+    #z_scores calculation
+    print "Now calculate best uz and lz"
+    uZ, lZ = calculate_best_zscores()
+    print "uz and lz calculated"
 
-#z_scores calculation
-print "Now calculate best uz and lz"
-uZ, lZ = calculate_best_zscores()
-print "uz and lz calculated"
+if not jump_steps[1]:
+    #Modeling Zscores
+    print "Modeling started"
+    number_of_models = total_number_of_models/number_of_cpus
+    for cpu in range(number_of_cpus):
+        instructions = ( uZ,lZ, max_distance, cpu*number_of_models ,True)
+        execute.append(instructions)
+    p.map(modeling,execute)
+    execute = []
+    print "Modeling finished"
 
-#Modeling Zscores
-print "Modeling started"
-number_of_models = total_number_of_models/number_of_cpus
-for cpu in range(number_of_cpus):
-	instructions = ( uZ,lZ, max_distance, cpu*number_of_models ,True)
-	execute.append(instructions)
-p.map(modeling,execute)
-execute = []
-print "Modeling finished"
+if not jump_steps[2]:
+    #Analysis of models
+    print "Analysis started"
+    if std_dev == 0:
+        std_dev = max_distance / 10  
 
-#Analysis of models
-print "Analysis started"
-if std_dev == 0:
-	std_dev = max_distance / 10  
+    increase_dev_or_cutoff = 0
+    while True:
+        print "Running Analysis with:"
+        print "Std_dev: {}".format(std_dev)
+        print "cut_off_percentage: {}".format(cut_off_percentage)
+        fulfilled, std_dev, cut_off_percentage, models_subset = run_analysis(std_dev,cut_off_percentage)
+        if fulfilled:
+            break
+        else:
+            if increase_dev_or_cutoff == 0:
+                std_dev = std_dev + max_distance*0.02 #increase std_def
+                increase_dev_or_cutoff = 1
+            else:
+                cut_off_percentage = cut_off_percentage+2 #increase #cut_off
+                increase_dev_or_cutoff = 0			
+    print "Final analysis thresholds: "
+    print "Std_dev: {}".format(std_dev)
+    print "cut_off_percentage: {}".format(cut_off_percentage)
 
-increase_dev_or_cutoff = 0
-while True:
-	print "Running Analysis with:"
-	print "Std_dev: {}".format(std_dev)
-	print "cut_off_percentage: {}".format(cut_off_percentage)
-	fulfilled, std_dev, cut_off_percentage = run_analysis(std_dev,cut_off_percentage)
-	if fulfilled:
-		break
-	else:
-		if increase_dev_or_cutoff == 0:
-			std_dev = std_dev + max_distance*0.02 #increase std_def
-			increase_dev_or_cutoff = 1
-		else:
-			cut_off_percentage = cut_off_percentage+2 #increase #cut_off
-			increase_dev_or_cutoff = 0			
-print "Final analysis thresholds: "
-print "Std_dev: {}".format(std_dev)
-print "cut_off_percentage: {}".format(cut_off_percentage)
+    #cluster models
+    sys.exit()
+    print "Running clustering..."
+    n_clusters = 0
+    n_clusters = run_clustering(models_subset)
+    if n_clusters != k_mean:
+        print "Redoing the clustering expecting {} clusters.".format(n_clusters)
+        run_clustering(models_subset)
+    print "Clustering finished"
