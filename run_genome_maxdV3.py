@@ -9,19 +9,22 @@ import subprocess
 from multiprocessing import Process, Lock, Pool, current_process
 import argparse
 import warnings
-warnings.filterwarnings('ignore')
+with warnings.catch_warnings():
+	warnings.filterwarnings("ignore",category=DeprecationWarning)
+	import IMP.kernel
+	import IMP.algebra
+	import IMP.core
+	import IMP.display
+	import IMP.base
+	import IMP.atom
+	import IMP.rmf
+	import IMP.container
+	import RMF
+#warnings.filterwarnings("ignore")
 import time
 from math import fabs
 from random import randint
-import IMP.kernel
-import IMP.algebra
-import IMP.core
-import IMP.display
-import IMP.base
-import IMP.atom
-import IMP.rmf
-import IMP.container
-import RMF
+
 import numpy as np
 from collections import defaultdict
 import operator
@@ -33,6 +36,8 @@ from itertools import combinations,izip, chain
 import scipy.cluster.hierarchy as sch
 from numpy import vstack,array
 from numpy.random import rand
+
+
 
 plot = True
 try:
@@ -182,7 +187,7 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
 					radius_sum = radius_sum + reads_size[(i*int(fragments_in_each_bead))+j]
 				radius = radius_scale * radius_sum #sphere radius proportional to fragments
 				fragment_bp_quantity.append(radius_sum)
-				verboseprint ("Fragment number:{} size:{} radius:{}".format(i,radius_sum,radius))
+				#verboseprint ("Fragment number:{} size:{} radius:{}".format(i,radius_sum,radius))
 				#decorator with sphere  
 				#Creating very far away particles (10000) could alter the final result of the beads that are not restrained
 				d = IMP.core.XYZR.setup_particle(p, IMP.algebra.Sphere3D(IMP.algebra.Vector3D(randint(0,int(y2)), randint(0,int(y2)), randint(0,int(y2))), radius)) 
@@ -243,10 +248,8 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
 			counter = 0
 			if (RESTRAINTS[0]):
 				
-				verboseprint ("LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOL")
 
 				p1 = genome[viewpoint_fragments[j]]
-				verboseprint ("LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOL")
 				for i in range(n_fragments):
 					counter += 1
 					if i != viewpoint_fragments[j]:
@@ -380,30 +383,30 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
 		
 		IMP.base.set_log_level(IMP.base.SILENT)
 		
-		verboseprint( "Number of restraints: %i" % (len(restraints)))
+		#verboseprint( "Number of restraints: %i" % (len(restraints)))
 		
 		#first score
 		scores.append(m.evaluate(False))
-		verboseprint ("Start score: {}".format(scores[-1]))
-		verboseprint ("\nStarts the optimization... ")
+		#verboseprint ("Start score: {}".format(scores[-1]))
+		#verboseprint ("\nStarts the optimization... ")
 
 		#First hightemp iterations, do not stop the optimization
-		verboseprint ("High temp iterations")
+		#verboseprint ("High temp iterations")
 		for i in range(0,hightemp):
 			temperature = alpha * (1.1 * NROUNDS - i) / NROUNDS
 			mc.set_kt(temperature)
 			scores.append(mc.optimize(STEPS))
-			verboseprint ("{} {} temp:{}".format(i, scores[-1],mc.get_kt()))
+			# verboseprint ("{} {} temp:{}".format(i, scores[-1],mc.get_kt()))
 		
 		needed_time = time.time() - start_time
 		lownrj = scores[-1]
-		verboseprint ("Time for High temp iterations {}".format(needed_time))
-		verboseprint ("Low temp iterations")
+		# verboseprint ("Time for High temp iterations {}".format(needed_time))
+		# verboseprint ("Low temp iterations")
 		for i in range(hightemp,NROUNDS): 
 			temperature = alpha * (1.1 * NROUNDS - i) / NROUNDS
 			mc.set_kt(temperature)
 			scores.append(mc.optimize(STEPS))
-			verboseprint ("{} {} temp:{}".format(i, scores[-1],mc.get_kt()))
+			# verboseprint ("{} {} temp:{}".format(i, scores[-1],mc.get_kt()))
 			# Calculate the score variation and check if the optimization
 			# can be stopped or not
 			if lownrj > 0:
@@ -442,22 +445,12 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
 			for r in restraints[n:n2]:
 				suma4 = suma4 + r.evaluate(False)
 	#         print n-n2, " connectivity HLB restraints: ",suma4
-		verboseprint ("Total: ".format(suma1+suma2+suma3+suma4))
-		verboseprint ("------------------------\n")
-		verboseprint ("Number of restraints: %i" % (len(restraints)))
-	#     if cg.set_stop_on_good_score(True):
-	#         print "\n\ntermino con: "+str(i)
-	#         break;
-	#     if scoring_function.get_had_good_score():
-	#         configuration_set.save()
-	#     return configuration_set
-		
-		
-		# print "\n\n############"
-		# for r in restraints:
-		#     print r.get_name(), r.evaluate(False)
+		#verboseprint ("Total: ".format(suma1+suma2+suma3+suma4))
+		#verboseprint ("------------------------\n")
+		#verboseprint ("Number of restraints: %i" % (len(restraints)))
+
 		needed_time = time.time() - start_time
-		verboseprint ("Time for Low temp iterations".format(needed_time))
+		#verboseprint ("Time for Low temp iterations".format(needed_time))
 		
 		
 		if (sampling):
@@ -524,7 +517,7 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
 		verboseprint ("Mean exv for distance {} is: {}".format(y2,np.mean(exv_values))) 
 		verboseprint ("Mean hub for distance {} is: {}".format(y2,np.mean(hub_values)))  
 		verboseprint ("\nModel number {} finished.".format(sample))
-	print "Modeling from {} to {} with variables {} {} {} finished".format(starting_point,starting_point+number_of_models,uZ,lZ,y2)
+	verboseprint ("Modeling from {} to {} with variables {} {} {} finished".format(starting_point,starting_point+number_of_models,uZ,lZ,y2))
 	 
 def calculate_best_maxd():
 		############# code that evaluates all the models with different distances and gives you which distance is the optimum
@@ -548,7 +541,6 @@ def calculate_best_maxd():
 
 	maxd_list = []
 	size_list = []
-	print "Calculating optimal max_dist parameter for the modeling...\n"
 	with open (results_path,"w") as output_results:
 		for maxd in np.arange(from_dist,to_dist+1,dist_bins):
 			root = "{}data/{}/{}_output_0.1_-0.1_{}/".format(working_dir,prefix,prefix,maxd)
@@ -584,20 +576,19 @@ def calculate_best_maxd():
 			output_results.write("With max distance {}: {}A Equivalent to a genome of {} Mbp\n".format(maxd,size,size/0.0846/1000000)) #in Mbp
 			maxd_list.append(maxd)
 			size_list.append(size/0.0846/1000000)
-			print "With max distance {}: {}A Equivalent to a genome of {} Mbp".format(maxd,size,size/0.0846/1000000)
+			verboseprint ("With max distance {}: {}A Equivalent to a genome of {} Mbp".format(maxd,size,size/0.0846/1000000))
 	if os.path.isfile(aux_file):
 		os.remove(aux_file)
 		os.remove(aux_file+"c")
 
-	print "Results writen in: {}".format(results_path)
+	print "Log writen in: {}".format(results_path)
 
 	####calculate best maxd
-
-	best_value = min(size_list, key=lambda x:abs(x-locus_size))
+	locus_size_mbp = locus_size/1000000
+	best_value = min(size_list, key=lambda x:abs(x-locus_size_mbp))
 	best_maxd = maxd_list[size_list.index(best_value)]
- 
-	print "\nBest max distance for the modeling is: {}".format(best_maxd)
-	return best_maxd
+
+ 	return best_maxd
 
 def calculate_heatdifference(path, n_files_inside,files,plot):        
 
@@ -711,7 +702,7 @@ def calculate_heatdifference(path, n_files_inside,files,plot):
     #            value = value + difference            
     #print "Value for "+path+" is: "+str(value)
     spearman_value = spearmanr(array1,array2)[0]
-    print "Spearman correlation for {}: {}".format(path,str(spearman_value))
+    verboseprint("Spearman correlation for {}: {}".format(path,str(spearman_value)))
 
     #print "Spearman: "+str(spearmanr(heatmap_data_modified,mean_all_data))
 
@@ -740,7 +731,6 @@ def calculate_best_zscores():
 		output_results.write("Max: {}".format(max(all_scores)))   
 		#print min(all_scores)
 
-	print "Best uZ: {}, Best lZ: {}".format(best_uZ,best_lZ)
 	if plot:
 		print "\nFigures comparing raw data vs modeling were created in {}data/{}/".format(working_dir,prefix)
     
@@ -894,7 +884,7 @@ def run_clustering(models_subset):
     #        only_python_files.append(pyfile)
 	#only_python_files = only_python_files[:subset]
     if len(only_python_files) != subset:
-        print "There are no {} models in {}. \nOnly {} models were found in the directory.".format(subset,root,len(only_python_files))
+        print "There are no {} models in {}. \nOnly {} models were found in the directory. Redo the analysis.".format(subset,root,len(only_python_files))
         sys.exit()
 
 	# generate a chimera file with match. Chimera when matched, it calculates the RMSD 
@@ -1227,7 +1217,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
 
 	#to set the show_fragments_in_vhic
 	#color = [10,5,5,10,10,10,10,10] -> depending on quantity of genes
-	plt.scatter(show_fragments_in_vhic_shifted, show_fragments_in_vhic_shifted, s=20, c=color,cmap=plt.cm.autumn)
+	plt.scatter(show_fragments_in_vhic_shifted, show_fragments_in_vhic_shifted, s=20, c=color_of_fragments,cmap=plt.cm.autumn)
 
 
 
@@ -1242,7 +1232,11 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
 
 	fig.set_facecolor('white')
 	#plt.show()
-
+	
+	print name_of_fragments
+	print color_of_fragments
+	print show_fragments_in_vhic
+	
 	pp = PdfPages('{}{}_vHiC.pdf'.format(root,prefix))
 	pp.savefig(fig)
 	pp.close()
@@ -1280,8 +1274,8 @@ uZ = 0 #updated in calculate_best_zscores
 lZ = 0 #updated in calculate_best_zscores
 
 parser = argparse.ArgumentParser(
-description=''' Modeling process.''',
-epilog= """ Simple usage: python run_genome_maxd.py .""")
+description='''Program that generates 3D models and a virtual Hi-C of your favourite region.''',
+epilog= """Apart from the 4C data, a primers.txt file is needed in that folder, which has 4C file name and position of the gene. Optionaly, a primers_vhic.txt file can be also created to paint interesting positions in the virtual Hi-C. File needs to be like this: gene_name chrN:position color. Color writen as yellow, red, green or other colors.""")
 parser.add_argument("--cpu",type=int, default=1, action="store", dest="number_of_cpus",help='number of CPUs that will be used in this script')
 parser.add_argument("--preNmodels",type=int, default=50, action="store", dest="pre_number_of_models",help='number of models that will be generated in the pre-modeling phase')
 parser.add_argument("--Nmodels",type=int, default=50000, action="store", dest="number_of_models",help='number of models that will be generated in the modeling phase')
@@ -1298,13 +1292,15 @@ parser.add_argument("--subset",type=int, action="store",default=200, dest="subse
 parser.add_argument("--std_dev", type=int,action="store",default=0, dest="std_dev",help='Standard deviation of the distances between beads, to be considered fulfilled')
 parser.add_argument("--cut_off_percentage",type=int, action="store",default=15, dest="cut_off_percentage",help='Percetange of fulfilled distances in each model to be a good model')
 parser.add_argument("prefix", action="store",help='Name of the models')
-parser.add_argument("--fragments_in_each_bead", default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
+parser.add_argument("--fragments_in_each_bead", type= int, default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
 parser.add_argument("--k_value",type=int, action="store",default=2, dest="k_mean",help='Number of cluster to expect in the clustering.')
 parser.add_argument("--jump_steps",type=int, action="store",nargs=4,default=[0,0,0,0], dest="jump_steps",help='List of 1|0 that indicate to jump (1) or not jump (0) a step or not. Steps: Pre-Modeling, Modeling, Analysis & Clustering')
-parser.add_argument("--uZ",type=float, action="store",dest="uZ", help='Upper bound Z score (mandatory if jumping pre-modeling steps)')
-parser.add_argument("--lZ", type=float, action="store",dest="lZ", help='Lower bound Z score (mandatory if jumping pre-modeling steps)')
-parser.add_argument("--max_distance", type=int, action="store",dest="max_distance", help='Maximum distance (mandatory if jumping pre-modeling steps)')
+parser.add_argument("--ignore_beads",type=int, action="store",nargs="+",default=[], dest="ignore_beads",help='Beads that are not gonna have distance restraints.')
+parser.add_argument("--uZ",type=float, action="store",dest="uZ", help='Upper bound Z score (Only needed if jumping pre-modeling steps)')
+parser.add_argument("--lZ", type=float, action="store",dest="lZ", help='Lower bound Z score (Only needed if jumping pre-modeling steps)')
+parser.add_argument("--max_distance", type=int, action="store",dest="max_distance", help='Maximum distance (Only needed if jumping pre-modeling steps)')
 parser.add_argument("--matrix_number", type=int, action="store",dest="biggest_matrix", help='number of the biggest matrix after the clustering, in case we want to only generate the virtual Hi-C')
+parser.add_argument("--maximum_hic_value", type=int, action="store",dest="maximum_hic_value", default = 0,help='The virtual Hi-C gradient color will be from 0 to maximum_hic_value.')
 
 
 
@@ -1331,26 +1327,32 @@ jump_steps = args.jump_steps
 subset = args.subset
 std_dev = args.std_dev
 cut_off_percentage = args.cut_off_percentage
-uZ = args.uZ
-lZ = args.lZ
-max_distance = args.max_distance
+
+
+maximum_hic_value = args.maximum_hic_value
+ignore_beads = args.ignore_beads
 biggest_matrix = 0
+
 try:
-	if jump_steps[2]:
+	if jump_steps[2] and not jump_steps[3]:
 		biggest_matrix = args.biggest_matrix
+		if biggest_matrix == None:
+			raise Exception()
 except:
-	print "We need the biggest_matrix flag"
+	print "Since you are jumping the analysis and clustering step, --matrix_number flag is needed" ################################# SHOW WHAT MATRICES THERE ARE IN THE DIRECTORY TO CHOOSE FROM
+	sys.exit()
+	
+try:
+	if jump_steps[0] :
+		max_distance = args.max_distance
+		uZ = args.uZ
+		lZ = args.lZ
+		if uZ == None or lZ == None or max_distance == None:
+			raise Exception()
+except:
+	print "Since you are jumping the pre-modeling step, --max_distance, --uZ and --lZ flags are needed" ################################# SHOW THAT THOSE Uz AND LZ AND MAXDIS are wrong because the folder does not exist
 	sys.exit()
 
-ignore_beads = "NO"
-if ignore_beads != "NO":
-	ignore_beads = re.sub('[\n\s\t]','',ignore_beads)
-	ignore_beads = ignore_beads.split(",")
-	ignore_beads = [ int(i) for i in ignore_beads]
-else:
-	ignore_beads = [] #empty
-	
-	
 if verbose:
 	def verboseprint(text):
 		print text;
@@ -1371,9 +1373,9 @@ for line in primers_file:
 		break
 print "This is what primers.txt has: "
 for k,v in primers.iteritems():
-	print "Viewpoint:{}  position:{}".format(k,v)
-for k,v in primers.iteritems():
+	print "Viewpoint:{}\tposition:{}".format(k,v)
 	viewpoint_positions.append(v)
+	
 file_names = primers.keys()
 files = [data_dir+f for f in file_names]
 
@@ -1388,7 +1390,7 @@ for line in a_4c_file:
 	values = line.split()
 	if len(values) != 4:
 		continue
-	if start_frag != 0:
+	if start_frag == 0:
 		start_frag = int(values[1])
 	end_frag = int(values[2])
 	number_of_fragments += 1
@@ -1407,57 +1409,88 @@ are_genes = viewpoint_fragments
 # now get number of beads
 number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
 
-#vhic variables
-show_fragments_in_vhic = [700,925,3593,5422,5836,6398]
-name_of_fragments = ["Rbm33", "Shh", "BREAK1", "Zrs", "Nom1", "BREAK2"]
-color_of_fragments = ["yellow","yellow","red","yellow","yellow","red"]
-color = color_of_fragments
-maximum_hic_value = 4000
+
+
+#opening vhic primers
+color_of_fragments = []
+vhic_primers = {}
+try:
+	vhic_primers_file = open (data_dir+"primers_vhic.txt", 'r')
+	for line in vhic_primers_file:
+		m = re.search('([^\s\t]+).*chr\w+:(\d+)\s+(\w+)', line)
+		try:
+			vhic_primers[m.group(1)] = int(m.group(2))
+			color_of_fragments.append(m.group(3))
+		except:
+			break
+except IOError:
+	print "\nError: File "+ f +" does not appear to exist. Using primers.txt to paint positions in the virtual Hi-C\n"
+	vhic_primers_file = fileCheck(data_dir+"primers.txt")
+	for line in vhic_primers_file:
+		m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+		try:
+			vhic_primers[m.group(1)] = int(m.group(2))
+			color_of_fragments.append("yellow")
+		except:
+			break
+print "This are the virtual Hi-C positions: "
+show_fragments_in_vhic = []
+counter = 0
+for k,v in vhic_primers.iteritems():
+
+	print "VHi-C name:{}\tposition:{}\tcolor:{}".format(k,v,color_of_fragments[counter])
+	counter += 1
+	show_fragments_in_vhic.append(v)
+name_of_fragments = vhic_primers.keys()
 show_fragments_in_vhic = [int(i/fragments_in_each_bead) for i in show_fragments_in_vhic]
 
+print name_of_fragments
+print color_of_fragments
+print show_fragments_in_vhic
 
 p = Pool(number_of_cpus)
 
 execute = []
 
 if not jump_steps[0]:
-    #pre-modeling maxD
-    print "Pre-modeling Started"
-    for dist in range(from_dist,to_dist+dist_bins,dist_bins):
-        instructions = (0.1 ,-0.1, dist,0 ,False)
-        execute.append(instructions)
-    p.map(modeling,execute)
-    execute = []
+	#pre-modeling maxD
+	print "Doing the pre-modeling..."
+	print "Modeling with variable max_distance ranging {}:{}".format(from_dist,to_dist)
+	for dist in range(from_dist,to_dist+dist_bins,dist_bins):
+		instructions = (0.1 ,-0.1, dist,0 ,False)
+		execute.append(instructions)
+	p.map(modeling,execute)
+	execute = []
 
-    #max distance calculation
-    print "Now calculate maxD"
-    max_distance = calculate_best_maxd()
-    print "maxD calculated"
+	#max distance calculation
+	print "Calculating optimal max_dist parameter for the modeling...\n"
+	max_distance = calculate_best_maxd()
+	print "maxD calculated: Optimal max_distance value is: {}".format(max_distance)
 
-    #pre-modeling Zscores
-    for zmax in np.arange(from_zscore,to_zscore+zscore_bins,zscore_bins):
-        for zmin in np.arange(-from_zscore, -to_zscore-zscore_bins, -zscore_bins):
-            instructions = (zmax, zmin, max_distance, 0 ,False)
-            execute.append(instructions)
-    p.map(modeling,execute)
-    execute = []
-    print "Pre-modeling finished"
+	#pre-modeling Zscores
+	print "Modeling with variables uZ and lZ ranging {}:{} and -{}:-{}".format(from_zscore,to_zscore,from_zscore,to_zscore)
+	for zmax in np.arange(from_zscore,to_zscore+zscore_bins,zscore_bins):
+		for zmin in np.arange(-from_zscore, -to_zscore-zscore_bins, -zscore_bins):
+			instructions = (zmax, zmin, max_distance, 0 ,False)
+			execute.append(instructions)
+	p.map(modeling,execute)
+	execute = []
 
-    #z_scores calculation
-    print "Now calculate best uz and lz"
-    uZ, lZ = calculate_best_zscores()
-    print "uz and lz calculated"
-
+	#z_scores calculation
+	print "Now calculating best uz and lz"
+	uZ, lZ = calculate_best_zscores()
+	print "uZ and lZ calculated: Optimal values are {} and {}.".format(uZ,lZ)
+	print "Pre-modeling finished"
 if not jump_steps[1]:
-    #Modeling Zscores
-    print "Modeling started"
-    number_of_models = total_number_of_models/number_of_cpus
-    for cpu in range(number_of_cpus):
-        instructions = ( uZ,lZ, max_distance, cpu*number_of_models ,True)
-        execute.append(instructions)
-    p.map(modeling,execute)
-    execute = []
-    print "Modeling finished"
+	#Modeling Zscores
+	print "Modeling started, modeling {} models...".format(total_number_of_models)
+	number_of_models = total_number_of_models/number_of_cpus
+	for cpu in range(number_of_cpus):
+		instructions = ( uZ,lZ, max_distance, cpu*number_of_models ,True)
+		execute.append(instructions)
+	p.map(modeling,execute)
+	execute = []
+	print "Modeling finished"
 
 if not jump_steps[2]:
     #Analysis of models
@@ -1475,7 +1508,7 @@ if not jump_steps[2]:
             break
         else:
             if increase_dev_or_cutoff == 0:
-                std_dev = std_dev + max_distance*0.02 #increase std_def
+                std_dev = std_dev + max_distance*0.01 #increase std_def
                 increase_dev_or_cutoff = 1
             else:
                 cut_off_percentage = cut_off_percentage+2 #increase #cut_off
@@ -1485,7 +1518,6 @@ if not jump_steps[2]:
     print "cut_off_percentage: {}".format(cut_off_percentage)
 
     #cluster models
-    sys.exit()
     print "Running clustering..."
     n_clusters = 0
     n_clusters,biggest_matrix = run_clustering(models_subset)
@@ -1494,12 +1526,15 @@ if not jump_steps[2]:
         n_clusters,biggest_matrix = run_clustering(models_subset)
     print "Clustering finished"
 
+if maximum_hic_value == 0: #set a default value
+	maximum_hic_value = max_distance*0.8
+
 if not jump_steps[3]:
 	#vhic calculation
 	print "Generating Virtual Hi-C"
 	calculate_vhic(biggest_matrix,True)
 	print "Virtual Hi-C generated"
-else:
+elif jump_steps[0] and jump_steps[1] and jump_steps[2]: #if we want to jump all
 	print "RePainting Virtual Hi-C"
 	calculate_vhic(biggest_matrix,False)
 	print "Virtual Hi-C RePainted"
