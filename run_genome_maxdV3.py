@@ -2,7 +2,7 @@
 
 # Script that runs small rounds of modeling with different Max distances
 
-import sys, os, re, inspect
+import sys, os, re, inspect, glob
 import getopt
 import ConfigParser
 import subprocess
@@ -45,10 +45,9 @@ try:
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     from matplotlib.backends.backend_pdf import PdfPages
-    print "pyplot imported."
 except:
 	plot = False
-	print "\nPyplot not installed. Skipping Zscore figures.\n"
+	print "\nPyplot is needed for the figures.\n"
 	e = sys.exc_info()[1]
 	print e
 	
@@ -1242,27 +1241,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
 	pp.close()
 	print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
 	#Distance between #1 marker 1  and #10 marker 1 : 2203.213
-	print """\nWhat do you want to do now?:
 
-	-If the virtual Hi-C is too red or white, modify the maximum_hic_value in section [VHiC] in the config file and run:
-		'python {} {} {} False'
-
-	-To get the representative model and superposition of best models:
-		'python src/get_representative_model.py {} {}'
-
-	-To paint a model with epigenetic marks (bam/bed file required):
-		'python src/paint_model.py {} your_model.py '
-
-	-To call the TAD boundaries, run:
-		'python src/calculate_boundaries.py {} tad_size'
-
-	-To compare conserved regions between 2 virtual Hi-Cs (Different species or homolog regions), run:
-		'python src/Evo_comp.py {} config_file2 {} vhic2'
-		
-	-To compare this virtual Hi-C to another one of the same region (Mutants), run:
-		'python src/Mut_comp {} config_file2 {} vhic2'
-
-	"""  
 
 ########################################## MAIN ##########################################
 
@@ -1302,11 +1281,8 @@ parser.add_argument("--max_distance", type=int, action="store",dest="max_distanc
 parser.add_argument("--matrix_number", type=int, action="store",dest="biggest_matrix", help='number of the biggest matrix after the clustering, in case we want to only generate the virtual Hi-C')
 parser.add_argument("--maximum_hic_value", type=int, action="store",dest="maximum_hic_value", default = 0,help='The virtual Hi-C gradient color will be from 0 to maximum_hic_value.')
 
-
-
-
 args = parser.parse_args()
-print args	
+#print args	
 
 number_of_cpus = args.number_of_cpus
 pre_number_of_models = args.pre_number_of_models
@@ -1327,21 +1303,10 @@ jump_steps = args.jump_steps
 subset = args.subset
 std_dev = args.std_dev
 cut_off_percentage = args.cut_off_percentage
-
-
 maximum_hic_value = args.maximum_hic_value
 ignore_beads = args.ignore_beads
 biggest_matrix = 0
 
-try:
-	if jump_steps[2] and not jump_steps[3]:
-		biggest_matrix = args.biggest_matrix
-		if biggest_matrix == None:
-			raise Exception()
-except:
-	print "Since you are jumping the analysis and clustering step, --matrix_number flag is needed" ################################# SHOW WHAT MATRICES THERE ARE IN THE DIRECTORY TO CHOOSE FROM
-	sys.exit()
-	
 try:
 	if jump_steps[0] :
 		max_distance = args.max_distance
@@ -1350,9 +1315,35 @@ try:
 		if uZ == None or lZ == None or max_distance == None:
 			raise Exception()
 except:
-	print "Since you are jumping the pre-modeling step, --max_distance, --uZ and --lZ flags are needed" ################################# SHOW THAT THOSE Uz AND LZ AND MAXDIS are wrong because the folder does not exist
+	print "Since you are jumping the pre-modeling step, --max_distance, --uZ and --lZ flags are needed" 
 	sys.exit()
 
+try:
+	if jump_steps[2] and not jump_steps[3]:
+		biggest_matrix = args.biggest_matrix
+		if biggest_matrix == None:
+			raise Exception()
+except:
+	print "Since you are jumping the analysis and clustering step, --matrix_number flag is needed" 
+	try:
+		search_dir = "{}data/{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+		commmand =  "ls {} | egrep matrix[0-9]+".format(search_dir)
+		matrix_files = subprocess.check_output(commmand,shell=True)
+		aux = []
+		for x in matrix_files:
+			aux.append(x)
+		aux = "".join(aux)
+		matrix_files = aux.split("\n")
+		matrix_numbers = [re.search("matrix(\d+)",x) for x in matrix_files[:-1]] 
+		print "These are the matrix numbers available: "
+		for x in matrix_numbers:
+			print x.group(1)
+			 
+	except:
+		e = sys.exc_info()[1]
+		pass
+	sys.exit()
+	
 if verbose:
 	def verboseprint(text):
 		print text;
@@ -1538,4 +1529,26 @@ elif jump_steps[0] and jump_steps[1] and jump_steps[2]: #if we want to jump all
 	print "RePainting Virtual Hi-C"
 	calculate_vhic(biggest_matrix,False)
 	print "Virtual Hi-C RePainted"
+	
+print """\nWhat do you want to do now?:
+
+-If the virtual Hi-C is too red or white, modify the maximum_hic_value in section [VHiC] in the config file and run:
+	'python {} {} {} False'
+
+-To get the representative model and superposition of best models:
+	'python src/get_representative_model.py {} {}'
+
+-To paint a model with epigenetic marks (bam/bed file required):
+	'python src/paint_model.py {} your_model.py '
+
+-To call the TAD boundaries, run:
+	'python src/calculate_boundaries.py {} tad_size'
+
+-To compare conserved regions between 2 virtual Hi-Cs (Different species or homolog regions), run:
+	'python src/Evo_comp.py {} config_file2 {} vhic2'
+	
+-To compare this virtual Hi-C to another one of the same region (Mutants), run:
+	'python src/Mut_comp {} config_file2 {} vhic2'
+
+"""  
 	
