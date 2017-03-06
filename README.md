@@ -28,21 +28,13 @@ Go to Installing dependencies to install them.
 
 
 ## Fast Usage (run this commands)
-Fast Note: Models can be than locally or with queue systems like Slurm or SGE
-
-Fast Note: After each script, a little message will appear indicating which is the next step
 
 ```
-0 - Generate your config.ini file. See example: config_template.ini
 1 - python src/prepare_data.py 4C_files
-2 - python run_genome_maxd.py config.ini local
-3 - python src/calculate_best_maxd.py config.ini
-4 - python run_genome_zscores.py config.ini local
-5 - python src/calculate_best_zscores.py config.ini True
-6 - python run_genome_sampling.py config.ini local
-7 - python src/run_analysis.py config.ini subset std_dev threshold
-8 - python src/run_clustering.py config.ini subset kmeans
-9 - python src/calculate_vhic.py config.ini matrix.txt True
+2 - Provide a primers.txt file with name of primers and position:
+    Six2 chr2:423234
+    Six3 chr2:426351
+3 - python modeling.py 4C_files_dir Name_of_your_locus
 ```
 
 [Optionals]
@@ -57,62 +49,23 @@ Fast Note: After each script, a little message will appear indicating which is t
 
 # Explained Usage
 
-Note: Models can be than locally or with queue systems like Slurm or SGE
-
-Note: After each script, a little message will appear indicating which is the next step
-
-0 - Generate your configuration file. Example is given in config_template.ini.
 
 1 - run "prepare_data.py" to homogenize the 4C files. All 4C files need to have the same number of fragments and the same length.
 
 >Example: python src/prepare_data.py 4C_files
 
-2 - Run "run_genome_maxd.py" to do models with different max distances.
+2 - Generate primers.txt file, with name of genes and position.
 
->Example: python run_genome_maxd.py config.ini local|qsub|sbatch 
+>Example:     
 
-3 - Run "Calculate_best_maxd.py" to get the optimum max distance. Get the max distance that has the most similar genome length to your data. We assume the canonical nucleotide length is of 0.1 nm (ref1, ref2)
+    Six2 chr2:423234
+    Six3 chr2:426351
 
->Example: python src/calculate_best_maxd.py config.ini
+3 - Do the modeling.
 
-4 - Run "run_genome_zscores.py" to do models with different upper bound and lower bound Z-scores.
+>Example: python modeling.py 4C_files_dir Name_of_your_locus
 
->Example: python run_genome_zscores.py config.ini local|qsub|sbatch
-
-5 - Run "calculate_best_zscores.py" to get the optimum upper and lower bound zscores. set last argument to True to see the validation plots.
-
->Example: python src/calculate_best_zscores.py config.ini True
-
-6 - With the max distance and the upper and lower z-scores, modeling can start. Run "run_genome_sampling.py".
-
->Example: python run_genome_sampling.py config.ini local|qsub|sbatch
     
-[3D Models are generated]
-
-7 - run "src/run_analysis.py" to get a subset of all the models. The best models ordered by the IMP scoring function are gathered and also makes a superposition of all those models. The models are very likely to be mirror image of other models, getting two populations of models.
-   
-Take into account that we need to tweak the std_dev and the cut_of_percentage to gather models. In my essays, I have seen that setting the std_dev at a 10-20% of maximum distance and the threshold in 15% works well normally. I set 200 models out of 50000 as subset, 1000 for std_dev and 15 for threshold
-    
->Example: python src/run_analysis.py config.ini 200 1000 15
-
-8 - run "run_clustering.py" to get populations of best models depending on the similarity of the RMSD. It generates a superposition of each of the populations. If we get 2 populations that are mirror image of each other, we can be sure that the modeling went correctly. Set the subset from above and 2 as kmeans value.
-
->Example: python src/run_clustering.py config.ini 200 2
-
-9 - run "calculate_vhic.py" to generate the virtual Hi-C of one of the populations of the final models. We will set different values in the config file under [VHiC] like:
-```
-    -show_fragments_in_vhic: to plot circles of genes or other interesting fragments in the virtual Hi-C
-    -name_of_fragments: the name of the previous fragments.
-    -color_of_fragments: will set different colors to the viewpoints. Matplotlib palette.
-    -maximum_hic_values: will smooth or "burn" the virtual Hi-C heatmap.
-```
-
-We will set also the config file, the RMSD matrix file from the clustering of one of the populations and "True" if it is the first time we calculate the matrix. If we already calculated and we just one to add viewpoints, change color of them or set a different maximum_hic_value, we will set to False
-    
->Example: python src/calculate_vhic.py config.ini matrix.txt True
-    
-[Virtual Hi-C is generated]
-     
      
 Optional Steps:
     
