@@ -135,12 +135,14 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         # We normalize the data depending on the number of reads.
         # We calculated beforehand the numbers of multiplication for the normalization
         reads = [read*factors[i] for read in reads ]           
-        # get the minimum read counts and swap them with the minimum of all values. We don't take into account no reads in a fragment
+        # get the minimum read counts and swap them with the minimum of all values. 
         min_read = max(reads) #initialization
         for j in reads:
             if j != 1.0 and j < min_read:
                 min_read = j
         reads = [min_read if x==1.0 else x for x in reads]
+        ## FOR THE SHH WORK
+        reads = [x-1 for x in reads]
         # this is the one we want to compare to
         HEATMAP_DATA.append(reads)
         # apply Log10 to data to normalize it
@@ -151,6 +153,7 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         mean = np.mean(reads_normalized)
         std_dev = np.std(reads_normalized)
         reads_normalized = [(read - mean)/std_dev for read in reads_normalized]
+
         # Skewness shows if data is skewed toward the right or left tail of the normal distributed z scores. 
         # Negative skewness shows large proportion of experimental noise. Positive  = population of large structural variability.
         # Kurtosis shows if the distribution is single peaked or not. High kt = many peaks, we need low KT to show a single peak
@@ -206,6 +209,7 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
             bar_list[viewpoint_fragments[i]].set_color('r')
             bar_list[viewpoint_fragments[i]].set_edgecolor('w')
             plt.xlim(0,len(HEATMAP_DATA[i]))  
+            plt.ylim(ymin = 0)
             plt.ylabel("Number of Reads")
             plt.xlabel(files[i])
             plt.tick_params(axis='both', which='major', labelsize=14)
@@ -258,20 +262,20 @@ if __name__ == "__main__":
     config = ConfigParser.ConfigParser()
     try:
         config.read(config_file)
-        prefix = config.get("ModelingValues", "prefix")
-        fragments_in_each_bead = float(config.get("ModelingValues", "fragments_in_each_bead"))
-        data_dir = config.get("ModelingValues", "data_dir")
-        file_names = config.get("ModelingValues", "file_names")
+        prefix = config.get("Modeling", "prefix")
+        fragments_in_each_bead = float(config.get("Modeling", "fragments_in_each_bead"))
+        data_dir = config.get("Modeling", "data_dir")
+        file_names = config.get("Modeling", "file_names")
         file_names = re.sub('[\n\s\t]','',file_names)
         file_names = file_names.split(",")    
         files = [data_dir+f for f in file_names]
 
-        viewpoint_fragments = config.get("ModelingValues", "viewpoint_fragments")
+        viewpoint_fragments = config.get("Modeling", "viewpoint_positions")
         viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
         viewpoint_fragments = viewpoint_fragments.split(",")
         viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
         viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
-        number_of_fragments = int(config.get("ModelingValues", "number_of_fragments"))
+        number_of_fragments = int(config.get("Modeling", "number_of_fragments"))
         number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
     except:
         print "\nError reading the configuration file.\n"

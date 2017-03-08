@@ -113,14 +113,13 @@ with open(root2, 'r') as f2:
 print "We are Inverting bins 35-64 of one matrix. Shh experiment."
 guide = range(number_of_spheres)
 print guide
-#guide[35:64] = guide[63:34:-1]
+guide[35:64] = guide[63:34:-1]
 print guide
 aux_matrix = np.zeros((number_of_spheres,number_of_spheres))
 for line in range(number_of_spheres):
     for col in range(number_of_spheres):
         aux_matrix[line][col] = matrix2[guide[line]][guide[col]]
 matrix2 = aux_matrix
-
 # compare both matrixes and create another one with differences
 f= open(root3+"txt", 'w')
 matrix3 = np.zeros((number_of_spheres,number_of_spheres))
@@ -129,12 +128,18 @@ for line in range(number_of_spheres):
     for column in range(number_of_spheres):   
         
         difference = ((matrix1[line][column])/max_distance - (matrix2[line][column])/max_distance2)
+
         #print "{}/{}\t-\t{}/{}\t=\t{}".format (matrix1[line][column],max_distance,matrix2[line][column],max_distance2,difference)
         diff_list.append(difference)
         matrix3[line][column] = difference
         f.write(str(line)+","+str(column)+","+str(difference))   
         f.write("\n")
 
+print matrix1[9][54]/distance
+print matrix1[9][54]
+print matrix2[9][54]/distance2
+print matrix2[9][54]
+print matrix3[9][54]
 f.close()
 
 #  Populate a matrix with both matrices, just for the plotting, un triangle matrix1, the other matrix2
@@ -143,6 +148,7 @@ for i in range(number_of_spheres):
     for j in range(number_of_spheres):
         matrix_final[i][j] = matrix1[i][j]/distance
         matrix_final[j][i] = matrix2[i][j]/distance2
+
 
 
 fig = plt.figure()
@@ -165,6 +171,9 @@ vmin = -1.0
 
 #RED BLUE gradient with less white
 cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.40 / vmax, 'white'),(0.41 / vmax, 'white',(0.5 / vmax, 'white')),(0.59 / vmax, 'white'),(0.60 / vmax, 'white'),(1 / vmax, 'red')])
+
+#RED BLUE gradient with almost no white
+cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.50 / vmax, 'white'),(1 / vmax, 'red')])
 
 c = plt.pcolor(z,cmap=cmap,vmax=vmax, vmin=vmin)
 ax.set_frame_on(False)
@@ -199,7 +208,7 @@ ax = plt.subplot(1,1,1)
 z = np.array(matrix_final)
 c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=0.85, vmin=0)
 plt.colorbar()
-viewpoints = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
+#viewpoints = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
 plt.scatter(viewpoints,viewpoints, s=20, c=color,cmap=plt.cm.autumn)
 ax.set_yticks(viewpoints)
 ax.set_xticks(viewpoints)

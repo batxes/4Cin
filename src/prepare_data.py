@@ -22,12 +22,11 @@ def fileCheck(f):
 #####
 #MAIN
 ####
-if len(sys.argv) < 3:
+if len(sys.argv) < 2:
     print "Usage: prepare_data.py config_file 4c-seq_files. Files need to be in this format: \nchromosome start_fragment end_fragment score"
     sys.exit()
 frag_dict = {}
-ini_file = sys.argv[1]
-for i in sys.argv[2:]:
+for i in sys.argv[1:]:
     fourc_file = fileCheck(i)
     for line in fourc_file:
         values = line.split()
@@ -39,9 +38,8 @@ for i in sys.argv[2:]:
         if not start_frag in frag_dict:
             frag_dict[start_frag] = end_frag
 ordered_dict = collections.OrderedDict(sorted(frag_dict.items()))	    
-
 ### now, take each file, and write a new one with the missing fragments
-for i in sys.argv[2:]:
+for i in sys.argv[1:]:
     line_offset = []
     offset = 0
     line_n = 0
@@ -72,7 +70,7 @@ for i in sys.argv[2:]:
             #if we run out of lines, we have to populate them until we have the same length as the biggest file
             output.write("{}\t{}\t{}\t0.0\n".format(chrom,k,v))
 
-
+sys.exit()
 # read 1 of the files and set in the config file the locus_size, data_dir and file_names
 fourc_file = fileCheck(sys.argv[2]+"_modified")
 start = 0

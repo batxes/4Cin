@@ -54,7 +54,7 @@ Go to Installing dependencies to install them.
 
 >Example: python src/prepare_data.py 4C_files
 
-2 - Generate primers.txt file, with name of genes and position.
+2 - Generate primers.txt file, with name of genes and position. Optional, primers_vhic.txt
 
 >Example:     
 

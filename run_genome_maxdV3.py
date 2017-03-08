@@ -79,57 +79,60 @@ def chimera_worker_vhic(chimera_file):
     return distance_output
 
 def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
-	
-	y2 = maxDis
-	if not big_sampling:
-		number_of_models = pre_number_of_models
-	else:
-		number_of_models = total_number_of_models/number_of_cpus
-	###################################### ###################################### 
-	###################################### ###################################### 
-	###################################### CHANGE DEPENDING ON MODELING VARIABLES
-	
-	rmf_video = False #If we wanna create a video of the IMP optimization
-	evaluation = False #If we wanna evaluate the restraints 
-	RESTRAINTS = [True,False,True,False] #4c counts, EV, HUB(connectivity), HLB(connectivity)
-	RESTRAINTS_QUANTITY = [0,0,0,0]
-	radius = 0
 
-	k = 1
-	if evaluation:
-		std_dev = y2*0.2 #300 A #for evaluation #set a percentage of max distance. 20%
-	#         std_dev = 1 #A 
-	if rmf_video:
-		frames = 5000
-		
-	#optimization variables
-	LSTEPS = 5
-	STEPS = 1
-	NROUNDS= 10000 #10000 default
+    y2 = maxDis
+    if not big_sampling:
+        number_of_models = pre_number_of_models
+    else:
+        number_of_models = total_number_of_models/number_of_cpus
+    ###################################### ###################################### 
+    ###################################### ###################################### 
+    ###################################### CHANGE DEPENDING ON MODELING VARIABLES
 
-	endLoopCount = 0
-	stopCount = 15
-	endLoopValue = 0.00001
-	hightemp = int (0.025 * NROUNDS )
-	alpha = 1.0 * number_of_fragments #the weight of the fragments
+    rmf_video = False #If we wanna create a video of the IMP optimization
+    evaluation = False #If we wanna evaluate the restraints 
+    RESTRAINTS = [True,False,True,False] #4c counts, EV, HUB(connectivity), HLB(connectivity)
+    RESTRAINTS_QUANTITY = [0,0,0,0]
+    radius = 0
 
+    k = 1
+    if evaluation:
+        std_dev = y2*0.2 #300 A #for evaluation #set a percentage of max distance. 20%
+    #         std_dev = 1 #A 
+    if rmf_video:
+        frames = 5000
+        
+    #optimization variables
+    LSTEPS = 5
+    STEPS = 1
+    NROUNDS= 10000 #10000 default
 
-	storage_folder = working_dir+"data/"+prefix+"/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2) #the dir where the data will be saved
+    endLoopCount = 0
+    stopCount = 15
+    endLoopValue = 0.00001
+    hightemp = int (0.025 * NROUNDS )
+    alpha = 1.0 * number_of_fragments #the weight of the fragments
 
-	sampling = True
-	score_file = storage_folder+"/score"+str(starting_point)+".txt"
+    if big_sampling:
+        storage_folder = working_dir+prefix+"/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2) #the dir where the data will be saved
+    else:
+        storage_folder = working_dir+prefix+"/"+"pre_modeling/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2) #the dir where the data will be saved
+        
 
-	if os.path.exists(score_file): os.remove(score_file) 
+    score_file = storage_folder+"/score"+str(starting_point)+".txt"
 
-	exv_values = []
-	hub_values = []
-																		# ZebraFish_output_1.0_-1.0_7000
-	if not os.path.exists(storage_folder): os.makedirs(storage_folder)
+    if os.path.exists(score_file): os.remove(score_file) 
+    print "LOOOOL"
+    
+    exv_values = []
+    hub_values = []
+                                                                        # ZebraFish_output_1.0_-1.0_7000
+    if not os.path.exists(storage_folder): os.makedirs(storage_folder)
 
-	#radius_scale = 0.1 
-	#radius_scale = 0.021695  #0.01 nm bp occupancy more or less.  #my value 0.04339. Davide = 0.005  #THIS ONE IS BAD
+    #radius_scale = 0.1 
+    #radius_scale = 0.021695  #0.01 nm bp occupancy more or less.  #my value 0.04339. Davide = 0.005  #THIS ONE IS BAD
 
-	radius_scale = 0.0423 #Radius of 1 bp in A. for the IrxB models. It's the canonical value for 30 nm chromatin
+    radius_scale = 0.0423 #Radius of 1 bp in A. for the IrxB models. It's the canonical value for 30 nm chromatin
 
 	# radius_scale = 0.00055 #depending my calculations
 	## nucleosome = 200 bp. 30nm fiber -> 6-7 nucleosomes = 11 nm. -> then 1bp = 0.00846nm.
@@ -145,14 +148,13 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
 
 
 	#to get the size of the fragments, we read any file
-	reads_size = sizeReader(fileCheck(files[0]))
+    reads_size = sizeReader(fileCheck(files[0]))
 
 	###################################### ###################################### 
 	###################################### ###################################### 
 	###################################### THE REAL DEAL!
-	start_time = time.time()
-
-	for sample in range(starting_point, starting_point+number_of_models):
+    start_time = time.time()
+    for sample in range(starting_point, starting_point+number_of_models):
 		
 		movers = []
 		n_restraints = []
@@ -452,10 +454,9 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
 		#verboseprint ("Time for Low temp iterations".format(needed_time))
 		
 		
-		if (sampling):
-			f1 = open (score_file,"a+")
-			f1.write(str(sample)+"\t"+str(scores[-1])+"\n")
-			f1.close()
+		f1 = open (score_file,"a+")
+		f1.write(str(sample)+"\t"+str(scores[-1])+"\n")
+		f1.close()
 		#EVALUATION
 		if (evaluation):
 		
@@ -502,7 +503,7 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
 			w.add_geometry(g)
 
 		verboseprint ("\nModel number {}".format(sample))
-		verboseprint ("Human Score: ".format(scores[-1]/1000000))
+		verboseprint ("Score: ".format(scores[-1]/1000000))
 		exv_value = suma2/1000000
 		exv_values.append(exv_value)
 		verboseprint ("EXV: {}".format(exv_value))
@@ -516,78 +517,80 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
 		verboseprint ("Mean exv for distance {} is: {}".format(y2,np.mean(exv_values))) 
 		verboseprint ("Mean hub for distance {} is: {}".format(y2,np.mean(hub_values)))  
 		verboseprint ("\nModel number {} finished.".format(sample))
-	verboseprint ("Modeling from {} to {} with variables {} {} {} finished".format(starting_point,starting_point+number_of_models,uZ,lZ,y2))
+    verboseprint ("Modeling from {} to {} with variables {} {} {} finished".format(starting_point,starting_point+number_of_models,uZ,lZ,y2))
 	 
 def calculate_best_maxd():
-		############# code that evaluates all the models with different distances and gives you which distance is the optimum
+        ############# code that evaluates all the models with different distances and gives you which distance is the optimum
 
 
-	#for each model (50 normally) we will get the length of the chromatin
+    #for each model (50 normally) we will get the length of the chromatin
 
-	
-	if not os.path.exists("{}data/{}".format(working_dir, prefix)):
-		try:
-			os.makedirs("{}data/{}".format(working_dir, prefix))
-		except:
-			print "\nError creating the data and {} directories.".format(prefix)
-			e = sys.exc_info()[1]
-			print e
-			sys.exit()
 
-	results_path = "{}data/{}/{}_best_maxd_results.txt".format(working_dir,prefix,prefix)
-	aux_file = "get_genome_length.py"
-	number_of_spheres = number_of_fragments - 1
+    if not os.path.exists("{}{}".format(working_dir, prefix)):
+        try:
+            os.makedirs("{}{}".format(working_dir, prefix))
+        except:
+            print "\nError creating {} directories.".format(prefix)
+            e = sys.exc_info()[1]
+            print e
+            sys.exit()
 
-	maxd_list = []
-	size_list = []
-	with open (results_path,"w") as output_results:
-		for maxd in np.arange(from_dist,to_dist+1,dist_bins):
-			root = "{}data/{}/{}_output_0.1_-0.1_{}/".format(working_dir,prefix,prefix,maxd)
-			all_distances = []
-			for i in range(pre_number_of_models):
-				###### we get the lengths of all models
-				with open (aux_file,'w') as output:
-					output.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
-					output.write("rc(\"open {}{}.py\")\n".format(prefix,i))
-					for j in range (number_of_spheres):
-						output.write("rc(\"distance #"+str(j)+" #"+str(j+1)+"\")\n")
-				distance_output = subprocess.check_output(["chimera", "--nogui", aux_file])
-				## reformat the output and read the distances
-				#Distance between #297:1@ and #298:1@: 1131.491
-				distance_sum = 0
-				string = ""
-				lista = []
-				for line2 in distance_output:
-					string = string + line2
-					if line2 == "\n":
-						lista.append(string)
-						string = ""
-				for line2 in lista:
-					distance = re.search(r'Distance between',line2)
-					if distance:
-						distance = float(line2.split(' ')[5])
-						distance_sum = distance_sum + distance
-				#print ("model {} distance = {}").format(i,distance_sum)
-				all_distances.append(distance_sum)
-			#print all_distances
-			size = np.mean(all_distances)
-			#print "{}: {}".format(root,size)
-			output_results.write("With max distance {}: {}A Equivalent to a genome of {} Mbp\n".format(maxd,size,size/0.0846/1000000)) #in Mbp
-			maxd_list.append(maxd)
-			size_list.append(size/0.0846/1000000)
-			verboseprint ("With max distance {}: {}A Equivalent to a genome of {} Mbp".format(maxd,size,size/0.0846/1000000))
-	if os.path.isfile(aux_file):
-		os.remove(aux_file)
-		os.remove(aux_file+"c")
+    results_path = "{}{}/pre_modeling/{}_best_maxd_results.txt".format(working_dir,prefix,prefix)
+    aux_file = "get_genome_length.py"
+    number_of_spheres = number_of_fragments - 1
 
-	print "Log writen in: {}".format(results_path)
+    maxd_list = []
+    size_list = []
+    with open (results_path,"w") as output_results:
+        for maxd in np.arange(from_dist,to_dist+1,dist_bins):
+            root = "{}{}/pre_modeling/{}_output_0.1_-0.1_{}/".format(working_dir,prefix,prefix,maxd)
+            all_distances = []
+            for i in range(pre_number_of_models):
+                ###### we get the lengths of all models
+                with open (aux_file,'w') as output:
+                    output.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
+                    output.write("rc(\"open {}{}.py\")\n".format(prefix,i))
+                    for j in range (number_of_spheres):
+                        output.write("rc(\"distance #"+str(j)+" #"+str(j+1)+"\")\n")
+                distance_output = subprocess.check_output(["chimera", "--nogui", aux_file])
+                ## reformat the output and read the distances
+                #Distance between #297:1@ and #298:1@: 1131.491
+                distance_sum = 0
+                string = ""
+                lista = []
+                for line2 in distance_output:
+                    string = string + line2
+                    if line2 == "\n":
+                        lista.append(string)
+                        string = ""
+                for line2 in lista:
+                    distance = re.search(r'Distance between',line2)
+                    if distance:
+                        distance = float(line2.split(' ')[5])
+                        distance_sum = distance_sum + distance
+                #print ("model {} distance = {}").format(i,distance_sum)
+                all_distances.append(distance_sum)
+            #print all_distances
+            size = np.mean(all_distances)
+            #print "{}: {}".format(root,size)
+            output_results.write("With max distance {}: {}A Equivalent to a genome of {} Mbp\n".format(maxd,size,size/0.0846/1000000)) #in Mbp
+            maxd_list.append(maxd)
+            size_list.append(size/0.0846/1000000)
+            verboseprint ("With max distance {}: {}A Equivalent to a genome of {} Mbp".format(maxd,size,size/0.0846/1000000))
+    if os.path.isfile(aux_file):
+        os.remove(aux_file)
+        os.remove(aux_file+"c")
+    print "Log writen in: {}".format(results_path)
 
-	####calculate best maxd
-	locus_size_mbp = locus_size/1000000
-	best_value = min(size_list, key=lambda x:abs(x-locus_size_mbp))
-	best_maxd = maxd_list[size_list.index(best_value)]
+    output_results.close()
+    ####calculate best maxd
+    locus_size_mbp = locus_size/1000000.0
+    print locus_size_mbp
+    print size_list
+    best_value = min(size_list, key=lambda x:abs(x-locus_size_mbp))
+    best_maxd = maxd_list[size_list.index(best_value)]
 
- 	return best_maxd
+    return best_maxd
 
 def calculate_heatdifference(path, n_files_inside,files,plot):        
 
@@ -709,7 +712,7 @@ def calculate_heatdifference(path, n_files_inside,files,plot):
 
 def calculate_best_zscores():
 
-	results_path = "{}data/{}/{}_heatmap_difference_results.txt".format(working_dir,prefix,prefix)
+	results_path = "{}{}/pre_modeling/{}_heatmap_difference_results.txt".format(working_dir,prefix,prefix)
 		   
 	with open (results_path,"w") as output_results:
 		all_scores = []
@@ -719,7 +722,7 @@ def calculate_best_zscores():
 		for uZ in np.arange(from_zscore,to_zscore+zscore_bins,zscore_bins):
 			for lZ in np.arange(-from_zscore, -to_zscore-zscore_bins, -zscore_bins):
 
-				score = calculate_heatdifference(working_dir+"data/"+prefix+"/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance),pre_number_of_models,files,plot)
+				score = calculate_heatdifference(working_dir+prefix+"/pre_modeling/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance),pre_number_of_models,files,plot)
 				output_results.write(str(uZ)+","+str(lZ)+","+str(max_distance)+"\t"+str(score)+"\n")
 				all_scores.append(score)
 				if score > best_score :
@@ -731,7 +734,7 @@ def calculate_best_zscores():
 		#print min(all_scores)
 
 	if plot:
-		print "\nFigures comparing raw data vs modeling were created in {}data/{}/".format(working_dir,prefix)
+		print "\nFigures comparing raw data vs modeling were created in {}{}/".format(working_dir,prefix)
     
 	return best_uZ,best_lZ
 
@@ -741,7 +744,7 @@ def run_analysis(std_dev,cut_off_percentage):
     jump = total_number_of_models / number_of_cpus
     std_dev = std_dev
     cut_off_percentage = cut_off_percentage
-    root = "{}data/{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+    root = "{}{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
     score_file = "{}/score.txt".format(root)
 
 
@@ -840,7 +843,7 @@ def run_analysis(std_dev,cut_off_percentage):
     print "Number of models below cutoff: {}".format(len(sorted_models))
 
     # store them in a folder
-    storage_folder = working_dir+"data/"+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance)+"/" #the dir where the data will be saved
+    storage_folder = working_dir+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance)+"/" #the dir where the data will be saved
     if not os.path.exists(storage_folder): 
         os.makedirs(storage_folder)
     try: 
@@ -855,7 +858,7 @@ def run_analysis(std_dev,cut_off_percentage):
         return False,std_dev,cut_off_percentage,models_subset
 	# create the file to open in chimera
 	# superposition of the best models
-    with open(working_dir+"data/"+prefix+"_superposition.py","w") as f:
+    with open(working_dir+prefix+"_superposition.py","w") as f:
         f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
         f.write("rc(\"open {}{}.py\")\n".format(prefix,models_subset[0][0]))
         for k in range(1,subset):
@@ -865,14 +868,14 @@ def run_analysis(std_dev,cut_off_percentage):
 			f.write("rc(\"open {}{}.py\")\n".format(prefix,i))
 			f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_fragments,k*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
 
-	print "Superposition of {} models created in {}data/{}\n".format(subset,working_dir,prefix)
+	print "Superposition of {} models created in {}{}\n".format(subset,working_dir,prefix)
 
 
 	return True,std_dev,cut_off_percentage,models_subset
 
 def run_clustering(models_subset):
     number_of_beads = number_of_fragments
-    root = "{}data/{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)	
+    root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)	
     matrix = np.zeros((subset,subset))
     only_python_files = []
 
@@ -1081,7 +1084,7 @@ def run_clustering(models_subset):
         # create the file to open in chimera
         # superposition of the best models
         print "Creating superposition of this cluster..."
-        with open(working_dir+"data/"+prefix+"/"+prefix+"_superposition_"+str(i)+".py","w") as f:
+        with open(working_dir+prefix+"/"+prefix+"_superposition_"+str(i)+".py","w") as f:
             f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
             f.write("rc(\"open {}\")\n".format(cluster_models[0]))
             for k in range(1,len(cluster_models)):
@@ -1089,7 +1092,7 @@ def run_clustering(models_subset):
                 f.write("rc(\"open {}\")\n".format(imodel))
                 f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_beads,k*number_of_beads+number_of_beads-1,number_of_beads-1))
 
-        print "created in {}data/{}/{}_superposition".format(working_dir,prefix,prefix)
+        print "created in {}{}/{}_superposition".format(working_dir,prefix,prefix)
     n_clusters = len(set(dendogra_colors))-1
     print "\n{} clusters were found in the clustering process. They can be checked here: {}{}_heatmap.png".format(n_clusters,root,prefix)
     if k_mean != n_clusters:
@@ -1106,7 +1109,7 @@ def run_clustering(models_subset):
     return n_clusters, biggest_matrix
 
 def calculate_vhic(biggest_matrix,calculate_the_matrix):
-	root = "{}data/{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+	root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
 	matrix_path = "{}matrix{}.txt".format(root,biggest_matrix)
 	distance_file = "get_genome_distance_{}".format(prefix)
 	path = "{}vhic_{}.txt".format(root,prefix)
@@ -1199,8 +1202,6 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
 
 
 	print "Generating virtual Hi-C plot..."     
-	#matrix_mean = matrix_mean[15:-15,15:-15]
-	#show_fragments_in_vhic = [x-15 for x in show_fragments_in_vhic]
 	show_fragments_in_vhic_shifted = [c+0.5 for c in show_fragments_in_vhic] #to match the name_of_fragments in the matrix Since the ticks don't match with the heatmap.
 	fig = plt.figure()
 	plt.title("Virtual Hi-C")
@@ -1215,33 +1216,22 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
 
 
 	#to set the show_fragments_in_vhic
-	#color = [10,5,5,10,10,10,10,10] -> depending on quantity of genes
 	plt.scatter(show_fragments_in_vhic_shifted, show_fragments_in_vhic_shifted, s=20, c=color_of_fragments,cmap=plt.cm.autumn)
-
-
-
 	ax.set_yticks(show_fragments_in_vhic_shifted)
-	ax.set_xticks(show_fragments_in_vhic_shifted)
-	ax.set_xticklabels(name_of_fragments, minor=False)
+	#ax.set_xticks(show_fragments_in_vhic_shifted)
+	#ax.set_xticklabels(name_of_fragments, minor=False)
 	ax.set_yticklabels(name_of_fragments, minor=False)
 	plt.tick_params(axis='both', which='major', labelsize=8)
-	plt.xticks(rotation=90)
+	#plt.xticks(rotation=90)
 
 	plt.axis([0,z.shape[1],0,z.shape[0]])
 
 	fig.set_facecolor('white')
-	#plt.show()
-	
-	print name_of_fragments
-	print color_of_fragments
-	print show_fragments_in_vhic
 	
 	pp = PdfPages('{}{}_vHiC.pdf'.format(root,prefix))
 	pp.savefig(fig)
 	pp.close()
 	print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
-	#Distance between #1 marker 1  and #10 marker 1 : 2203.213
-
 
 ########################################## MAIN ##########################################
 
@@ -1269,7 +1259,7 @@ parser.add_argument("data_dir", action="store",help='location of the 4C data. pr
 parser.add_argument("--working_dir", action="store",default=working_dir, dest="working_dir",help='location where the models will be generated')
 parser.add_argument("--subset",type=int, action="store",default=200, dest="subset",help='Number of best models out of the Modeling process')
 parser.add_argument("--std_dev", type=int,action="store",default=0, dest="std_dev",help='Standard deviation of the distances between beads, to be considered fulfilled')
-parser.add_argument("--cut_off_percentage",type=int, action="store",default=15, dest="cut_off_percentage",help='Percetange of fulfilled distances in each model to be a good model')
+parser.add_argument("--cut_off_percentage",type=int, action="store",default=10, dest="cut_off_percentage",help='Percetange of fulfilled distances in each model to be a good model')
 parser.add_argument("prefix", action="store",help='Name of the models')
 parser.add_argument("--fragments_in_each_bead", type= int, default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
 parser.add_argument("--k_value",type=int, action="store",default=2, dest="k_mean",help='Number of cluster to expect in the clustering.')
@@ -1326,7 +1316,7 @@ try:
 except:
 	print "Since you are jumping the analysis and clustering step, --matrix_number flag is needed" 
 	try:
-		search_dir = "{}data/{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+		search_dir = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
 		commmand =  "ls {} | egrep matrix[0-9]+".format(search_dir)
 		matrix_files = subprocess.check_output(commmand,shell=True)
 		aux = []
@@ -1415,7 +1405,7 @@ try:
 		except:
 			break
 except IOError:
-	print "\nError: File "+ f +" does not appear to exist. Using primers.txt to paint positions in the virtual Hi-C\n"
+	print "\nError: File "+ data_dir+ " primers_vhic.txt does not appear to exist. Using primers.txt to paint positions in the virtual Hi-C\n"
 	vhic_primers_file = fileCheck(data_dir+"primers.txt")
 	for line in vhic_primers_file:
 		m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
@@ -1433,18 +1423,21 @@ for k,v in vhic_primers.iteritems():
 	counter += 1
 	show_fragments_in_vhic.append(v)
 name_of_fragments = vhic_primers.keys()
+name_of_fragments = [x[:10] for x in name_of_fragments]
+
+show_fragments_in_vhic = calculate_fragment_number(show_fragments_in_vhic,files[0])
+
 show_fragments_in_vhic = [int(i/fragments_in_each_bead) for i in show_fragments_in_vhic]
 
-print name_of_fragments
-print color_of_fragments
-print show_fragments_in_vhic
-
 p = Pool(number_of_cpus)
-
 execute = []
 
+
+
+########################################  Pipeline
+
+######### pre-modeling 
 if not jump_steps[0]:
-	#pre-modeling maxD
 	print "Doing the pre-modeling..."
 	print "Modeling with variable max_distance ranging {}:{}".format(from_dist,to_dist)
 	for dist in range(from_dist,to_dist+dist_bins,dist_bins):
@@ -1452,13 +1445,10 @@ if not jump_steps[0]:
 		execute.append(instructions)
 	p.map(modeling,execute)
 	execute = []
-
-	#max distance calculation
+	######### max distance calculation
 	print "Calculating optimal max_dist parameter for the modeling...\n"
 	max_distance = calculate_best_maxd()
 	print "maxD calculated: Optimal max_distance value is: {}".format(max_distance)
-
-	#pre-modeling Zscores
 	print "Modeling with variables uZ and lZ ranging {}:{} and -{}:-{}".format(from_zscore,to_zscore,from_zscore,to_zscore)
 	for zmax in np.arange(from_zscore,to_zscore+zscore_bins,zscore_bins):
 		for zmin in np.arange(-from_zscore, -to_zscore-zscore_bins, -zscore_bins):
@@ -1466,14 +1456,15 @@ if not jump_steps[0]:
 			execute.append(instructions)
 	p.map(modeling,execute)
 	execute = []
-
-	#z_scores calculation
+	######### z_scores calculation
 	print "Now calculating best uz and lz"
 	uZ, lZ = calculate_best_zscores()
 	print "uZ and lZ calculated: Optimal values are {} and {}.".format(uZ,lZ)
 	print "Pre-modeling finished"
+	
+	
+######### Modeling 	
 if not jump_steps[1]:
-	#Modeling Zscores
 	print "Modeling started, modeling {} models...".format(total_number_of_models)
 	number_of_models = total_number_of_models/number_of_cpus
 	for cpu in range(number_of_cpus):
@@ -1483,12 +1474,13 @@ if not jump_steps[1]:
 	execute = []
 	print "Modeling finished"
 
+
+######### Analysis of models
+############################################# anterior score files should be deleted
 if not jump_steps[2]:
-    #Analysis of models
     print "Analysis started"
     if std_dev == 0:
-        std_dev = max_distance / 10  
-
+        std_dev = max_distance / 20  
     increase_dev_or_cutoff = 0
     while True:
         print "Running Analysis with:"
@@ -1507,8 +1499,7 @@ if not jump_steps[2]:
     print "Final analysis thresholds: "
     print "Std_dev: {}".format(std_dev)
     print "cut_off_percentage: {}".format(cut_off_percentage)
-
-    #cluster models
+    ######### cluster models
     print "Running clustering..."
     n_clusters = 0
     n_clusters,biggest_matrix = run_clustering(models_subset)
@@ -1516,12 +1507,12 @@ if not jump_steps[2]:
         print "Redoing the clustering expecting {} clusters.".format(n_clusters)
         n_clusters,biggest_matrix = run_clustering(models_subset)
     print "Clustering finished"
-
 if maximum_hic_value == 0: #set a default value
 	maximum_hic_value = max_distance*0.8
 
+
+######### vhic calculation
 if not jump_steps[3]:
-	#vhic calculation
 	print "Generating Virtual Hi-C"
 	calculate_vhic(biggest_matrix,True)
 	print "Virtual Hi-C generated"
