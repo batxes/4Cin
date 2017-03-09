@@ -123,23 +123,25 @@ matrix2 = aux_matrix
 # compare both matrixes and create another one with differences
 f= open(root3+"txt", 'w')
 matrix3 = np.zeros((number_of_spheres,number_of_spheres))
-diff_list = []
 for line in range(number_of_spheres):
     for column in range(number_of_spheres):   
         
-        difference = ((matrix1[line][column])/max_distance - (matrix2[line][column])/max_distance2)
+        #difference = ((matrix1[line][column])/max_distance - (matrix2[line][column])/max_distance2)
+        difference = ((matrix1[line][column])/distance - (matrix2[line][column])/distance2)
 
         #print "{}/{}\t-\t{}/{}\t=\t{}".format (matrix1[line][column],max_distance,matrix2[line][column],max_distance2,difference)
-        diff_list.append(difference)
         matrix3[line][column] = difference
         f.write(str(line)+","+str(column)+","+str(difference))   
         f.write("\n")
 
-print matrix1[9][54]/distance
+print max_distance
 print matrix1[9][54]
+print matrix1[9][54]/max_distance
 
-print matrix2[9][54]/distance2
+print max_distance2
 print matrix2[9][54]
+print matrix2[9][54]/max_distance2
+
 print matrix3[9][54]
 f.close()
 
@@ -150,6 +152,8 @@ for i in range(number_of_spheres):
         matrix_final[i][j] = matrix1[i][j]/distance
         matrix_final[j][i] = matrix2[i][j]/distance2
 
+print matrix_final[9][54]
+print matrix_final[54][9]
 
 
 fig = plt.figure()
@@ -174,7 +178,7 @@ vmin = -1.0
 cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.40 / vmax, 'white'),(0.41 / vmax, 'white',(0.5 / vmax, 'white')),(0.59 / vmax, 'white'),(0.60 / vmax, 'white'),(1 / vmax, 'red')])
 
 #RED BLUE gradient with almost no white
-cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.50 / vmax, 'white'),(1 / vmax, 'red')])
+#cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.50 / vmax, 'white'),(1 / vmax, 'red')])
 
 c = plt.pcolor(z,cmap=cmap,vmax=vmax, vmin=vmin)
 ax.set_frame_on(False)
