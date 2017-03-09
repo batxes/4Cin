@@ -122,7 +122,6 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
     score_file = storage_folder+"/score"+str(starting_point)+".txt"
 
     if os.path.exists(score_file): os.remove(score_file) 
-    print "LOOOOL"
     
     exv_values = []
     hub_values = []
@@ -1395,34 +1394,38 @@ number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
 #opening vhic primers
 color_of_fragments = []
 vhic_primers = {}
+vhic_colors = {}
 try:
-	vhic_primers_file = open (data_dir+"primers_vhic.txt", 'r')
-	for line in vhic_primers_file:
-		m = re.search('([^\s\t]+).*chr\w+:(\d+)\s+(\w+)', line)
-		try:
-			vhic_primers[m.group(1)] = int(m.group(2))
-			color_of_fragments.append(m.group(3))
-		except:
+    vhic_primers_file = open (data_dir+"primers_vhic.txt", 'r')
+    for line in vhic_primers_file:
+        m = re.search('([^\s\t]+).*chr\w+:(\d+)\s+?(\w+)?', line)
+        try:
+            vhic_primers[m.group(1)] = int(m.group(2))
+            if m.group(3) == None:
+                vhic_colors[m.group(1)] = "yellow"
+            else:
+                vhic_colors[m.group(1)] = m.group(3)
+        except:
 			break
 except IOError:
-	print "\nError: File "+ data_dir+ " primers_vhic.txt does not appear to exist. Using primers.txt to paint positions in the virtual Hi-C\n"
-	vhic_primers_file = fileCheck(data_dir+"primers.txt")
-	for line in vhic_primers_file:
-		m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
-		try:
-			vhic_primers[m.group(1)] = int(m.group(2))
-			color_of_fragments.append("yellow")
-		except:
-			break
+    print "\nError: File "+ data_dir+ " primers_vhic.txt does not appear to exist. Using primers.txt to paint positions in the virtual Hi-C\n"
+    vhic_primers_file = fileCheck(data_dir+"primers.txt")
+    for line in vhic_primers_file:
+        m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+        try:
+            vhic_primers[m.group(1)] = int(m.group(2))
+            vhic_colors[m.group(1)] = "yellow"
+        except:
+            break
 print "This are the virtual Hi-C positions: "
 show_fragments_in_vhic = []
 counter = 0
 for k,v in vhic_primers.iteritems():
-
-	print "VHi-C name:{}\tposition:{}\tcolor:{}".format(k,v,color_of_fragments[counter])
+	print "VHi-C name:{}\tposition:{}\tcolor:{}".format(k,v,vhic_colors[k])
 	counter += 1
-	show_fragments_in_vhic.append(v)
+show_fragments_in_vhic = vhic_primers.values()
 name_of_fragments = vhic_primers.keys()
+color_of_fragments = vhic_colors.values()
 name_of_fragments = [x[:10] for x in name_of_fragments]
 
 show_fragments_in_vhic = calculate_fragment_number(show_fragments_in_vhic,files[0])
