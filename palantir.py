@@ -739,27 +739,27 @@ def calculate_best_zscores():
 
 def run_analysis(std_dev,cut_off_percentage):
 
-    models_subset = []
-    jump = total_number_of_models / number_of_cpus
-    std_dev = std_dev
-    cut_off_percentage = cut_off_percentage
-    root = "{}{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
-    score_file = "{}/score.txt".format(root)
+	models_subset = []
+
+	std_dev = std_dev
+	cut_off_percentage = cut_off_percentage
+	root = "{}{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+	score_file = "{}/score.txt".format(root)
 
 
-    pyfiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.endswith(".py") ]
-    number_of_models = len(pyfiles)
-    try:
+	pyfiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.endswith(".py") ]
+	number_of_models = len(pyfiles)
+	try:
 		os.remove(root+"score.txt")
-    except OSError:
+	except OSError:
 		pass
-    scorefiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.startswith("score") ]
-    number_of_score_files = len(scorefiles)
-
-    models = defaultdict(list) # dict: each model ahs a list of 2 values
+	scorefiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.startswith("score") ]
+	number_of_score_files = len(scorefiles)
+	jump = total_number_of_models / number_of_score_files
+	models = defaultdict(list) # dict: each model ahs a list of 2 values
 
 	# first we create a unified score.txt
-    with open (score_file,"w") as f:
+	with open (score_file,"w") as f:
 		counter = 0
 		for i in range(number_of_score_files):
 			with open (root+"score"+str(counter)+".txt", "r") as f2:
@@ -767,8 +767,8 @@ def run_analysis(std_dev,cut_off_percentage):
 					f.write(line)
 			counter = counter + jump
 					
-    # create the dictionary and populate it
-    with open (score_file, "r") as f:
+	# create the dictionary and populate it
+	with open (score_file, "r") as f:
 		
 		counter = 0
 		for line in f:
@@ -784,51 +784,51 @@ def run_analysis(std_dev,cut_off_percentage):
 
 	# models = models[:number_of_models]    #take aonly the first ones 
 			
-    reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, max_distance,files)
+	reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, max_distance,files)
 
 
-    print "getting best {} models".format(subset)
-    analized_models = 0
-    ok_models = 0
-    for i in range(number_of_models):
-        distances_in_model = []
-        with open (root+prefix+str(i)+".txt","r") as f:
-            for line in f:
-                value = re.split("\t",line)
-                distances_in_model.append(value)
-    #         print distances_in_model
-        #EVALUATION
-     
-     
-        not_fulfilled = 0
-        total = 0
-        for k in range(len(files)):
+	print "getting best {} models".format(subset)
+	analized_models = 0
+	ok_models = 0
+	for i in range(number_of_models):
+		distances_in_model = []
+		with open (root+prefix+str(i)+".txt","r") as f:
+			for line in f:
+				value = re.split("\t",line)
+				distances_in_model.append(value)
+	#         print distances_in_model
+		#EVALUATION
+	 
+	 
+		not_fulfilled = 0
+		total = 0
+		for k in range(len(files)):
 
-            values = reads_values[k] 
-            for j in range(number_of_fragments):
-                if j != viewpoint_fragments[k]:
-                    
-                    real_d = distances_in_model[k][j]
-                     
-                    should_be_d = values[j] 
-                    if should_be_d != 0:
-                        total += 1
-                        if (should_be_d + std_dev < float(real_d)  or should_be_d - std_dev > float(real_d)):
-                            not_fulfilled += 1
-                #             print "restraint "+str(j)+"not fulfilled"
-                            
-                            verboseprint ("Restraint " +str(j)+"-"+str(viewpoint_fragments[k])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-float(real_d)))
-        #print str(i)+"-> Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(total),"%",str(not_fulfilled*100/(total))     
-        fulfil_percentage = not_fulfilled*100/total
-        verboseprint( "not_fulfilled -> {} out of {} restraints: {}% of all restraints are not fulfilled in this model.".format(not_fulfilled,total,fulfil_percentage))
-        if fulfil_percentage <= cut_off_percentage:
-            models[i].append(not_fulfilled)
-            ok_models += 1
-        else:
-            try:
-                del models[i]
-            except:
-                pass
+			values = reads_values[k] 
+			for j in range(number_of_fragments):
+				if j != viewpoint_fragments[k]:
+					
+					real_d = distances_in_model[k][j]
+					 
+					should_be_d = values[j] 
+					if should_be_d != 0:
+						total += 1
+						if (should_be_d + std_dev < float(real_d)  or should_be_d - std_dev > float(real_d)):
+							not_fulfilled += 1
+				#             print "restraint "+str(j)+"not fulfilled"
+							
+							verboseprint ("Restraint " +str(j)+"-"+str(viewpoint_fragments[k])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-float(real_d)))
+		#print str(i)+"-> Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(total),"%",str(not_fulfilled*100/(total))     
+		fulfil_percentage = not_fulfilled*100/total
+		verboseprint( "not_fulfilled -> {} out of {} restraints: {}% of all restraints are not fulfilled in this model.".format(not_fulfilled,total,fulfil_percentage))
+		if fulfil_percentage <= cut_off_percentage:
+			models[i].append(not_fulfilled)
+			ok_models += 1
+		else:
+			try:
+				del models[i]
+			except:
+				pass
 		analized_models += 1
 		verboseprint ("Percentage of models that fulfill the threshold: {}%".format(100*ok_models/analized_models))
 		verboseprint ("{}/{}".format(ok_models,analized_models))
@@ -838,29 +838,29 @@ def run_analysis(std_dev,cut_off_percentage):
 
 
 	#order the dictionary by score
-    sorted_models = sorted(models.items(), key=operator.itemgetter(1))
-    print "Number of models below cutoff: {}".format(len(sorted_models))
+	sorted_models = sorted(models.items(), key=operator.itemgetter(1))
+	print "Number of models below cutoff: {}".format(len(sorted_models))
 
-    # store them in a folder
-    storage_folder = working_dir+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance)+"/" #the dir where the data will be saved
-    if not os.path.exists(storage_folder): 
-        os.makedirs(storage_folder)
-    try: 
-        models_subset = sorted_models [:subset]
-        for k in range(subset):
-            i = models_subset[k][0]
-            shutil.copyfile("{}{}{}.py".format(root,prefix,i), "{}{}{}.py".format(storage_folder,prefix,i) )
-            shutil.copyfile("{}{}{}.txt".format(root,prefix,i), "{}{}{}.txt".format(storage_folder,prefix,i) )
-        print "copied best {} models to {}.".format(subset,storage_folder)
-    except:
-        print "\n ! Can not get {} models. Relaxing the std_dev and cut_off_percentage.\n ".format(subset)
-        return False,std_dev,cut_off_percentage,models_subset
+	# store them in a folder
+	storage_folder = working_dir+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance)+"/" #the dir where the data will be saved
+	if not os.path.exists(storage_folder): 
+		os.makedirs(storage_folder)
+	try: 
+		models_subset = sorted_models [:subset]
+		for k in range(subset):
+			i = models_subset[k][0]
+			shutil.copyfile("{}{}{}.py".format(root,prefix,i), "{}{}{}.py".format(storage_folder,prefix,i) )
+			shutil.copyfile("{}{}{}.txt".format(root,prefix,i), "{}{}{}.txt".format(storage_folder,prefix,i) )
+		print "copied best {} models to {}.".format(subset,storage_folder)
+	except:
+		print "\n ! Can not get {} models. Relaxing the std_dev and cut_off_percentage.\n ".format(subset)
+		return False,std_dev,cut_off_percentage,models_subset
 	# create the file to open in chimera
 	# superposition of the best models
-    with open(working_dir+prefix+"_superposition.py","w") as f:
-        f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
-        f.write("rc(\"open {}{}.py\")\n".format(prefix,models_subset[0][0]))
-        for k in range(1,subset):
+	with open(working_dir+prefix+"_superposition.py","w") as f:
+		f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
+		f.write("rc(\"open {}{}.py\")\n".format(prefix,models_subset[0][0]))
+		for k in range(1,subset):
 			i = models_subset[k][0]
 	#         print("rc(\"open {}{}.py\")\n".format(prefix,i))
 	#         print("rc(\"match #{}-{} #0-{}\")\n".format((k+1)*number_of_fragments,(k+1)*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
@@ -879,7 +879,9 @@ def run_clustering(models_subset):
     only_python_files = []
 
     for model_number in models_subset:
-        only_python_files.append(root+prefix+str(model_number[0])+".py")
+        only_python_files.append(root+prefix+str(model_number[0])+".py") #took out root+
+    print only_python_files
+    sys.exit()
     #for pyfile in listdir(root):
     #    if pyfile.endswith(".py"):
     #        only_python_files.append(pyfile)
@@ -1232,6 +1234,175 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
 	pp.close()
 	print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
 
+
+def calculate_representative_model(biggest_matrix):
+	number_of_beads = number_of_fragments
+	root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+	matrix_file = "{}matrix{}.txt".format(root,biggest_matrix)
+
+	########### FIRST GET THE PDB MODELS
+	#pdb directory will be inside the final models directory
+	pdb_output = "{}pdb_output/".format(root)
+	if not os.path.exists(pdb_output): os.makedirs(pdb_output)
+	write_pdb = "{}get_genome_pdbs.py".format(root)
+	models = []
+	with open(matrix_file, "r") as mtx:
+		for line in mtx:
+			models.append(re.split("\t", line)[0])
+
+	models = models[1:]
+
+
+	# in chimera:
+	# open all files (half of matrix)
+	# match all files
+	# combine all files
+	# write the pdb file
+
+	counter = 1
+	with open (write_pdb,'w') as output:
+		
+		output.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
+		verboseprint( "0 - {}".format(models[0]))
+		output.write("rc(\"open {}\")\n".format(models[0]))
+		for model in models[1:]:
+		# for model in models[-2:]:
+			verboseprint( "{} - {}".format(counter,model))
+			output.write("rc(\"open {}\")\n".format(model))
+			counter += 1       
+		for model in range(len(models)-1):
+			output.write("rc(\"match #{}-{} #0-{}\")\n".format((model+1)*number_of_beads,(model+1)*number_of_beads+number_of_beads-1,number_of_beads-1))
+		 
+		start_id = len(models)*number_of_beads    
+		for model in range(len(models)):
+			
+			output.write("rc(\"combine #{}-{} newchainids False name combine modelId {}\")\n".format(model*number_of_beads,(model*number_of_beads+number_of_beads-1),start_id))
+			output.write("rc(\"write format pdb #{} {}{}.pdb\")\n".format(start_id,pdb_output,models[model][:-3])) #with -3 we take out the ".PY"
+			start_id+=1
+			#combine #0-210 newchainids False name combine modelId 211    
+			
+			#write format pdb #211 test.pdb
+			
+	verboseprint("writting pdb-s... it can take time..." )       
+	distance_output = subprocess.check_output(["chimera", "--nogui", write_pdb])
+	verboseprint("Pdb's written. Calculating average model...")
+	os.remove(write_pdb)
+				
+			 
+	########## NOW WE GET THE AVERAGE MODEL
+	color_grey = "#b333b333b333"
+	color_gene = "#ffffb3330000"
+
+	#get the pdb files 
+	pdbFiles = [ f for f in listdir(pdb_output) if isfile(join(pdb_output,f)) ]
+
+	#get the x y and z position of all beads of all models
+	all_models = []
+
+	for pdbFile in pdbFiles:
+		one_model = []
+		with open("{}{}".format(pdb_output,pdbFile), "r") as f:
+			for line in f:
+				values = re.search(r'HETATM\s+\d+\s+\*{4}\s+\d+\s{4}(.{8})(.{8})(.{8})',line)  
+				if values:
+					value_tuple = (float(values.group(1)),float(values.group(2)),float(values.group(3)))
+					one_model.append(value_tuple)
+		all_models.append(one_model)
+		
+	mean_model = []
+	for bead in range(number_of_beads):   
+		lista_x = []
+		lista_y = []
+		lista_z = []           
+		for model in all_models:
+			lista_x.append(model[bead][0]) #get the X value of all models for each bead
+			lista_y.append(model[bead][1])
+			lista_z.append(model[bead][2])
+		x_media = np.mean(lista_x)
+		y_media = np.mean(lista_y)
+		z_media = np.mean(lista_z)
+		distance_tuple = (x_media,y_media,z_media)
+		mean_model.append(distance_tuple)
+
+	#mean model has the values in tuples of the mean for each bead
+
+	#now get the model more similar to these mean values
+
+	sum_of_distances = []
+
+	for model in all_models:
+		d_sum = 0
+		for bead in range(number_of_beads):
+			
+			d = (model[bead][0]-mean_model[bead][0])**2 + (model[bead][1]-mean_model[bead][1])**2 + (model[bead][2]-mean_model[bead][2])**2
+			square_d = np.sqrt(d)
+			d_sum = d_sum + square_d
+		sum_of_distances.append(d_sum)  
+	  
+	  
+
+
+	print "\nModel closest to average (Representative):"
+	# print sum_of_distances.index(min(sum_of_distances))
+	print pdbFiles[sum_of_distances.index(min(sum_of_distances))][:-2]+"y"
+	print "Most different model to average:"
+	print pdbFiles[sum_of_distances.index(max(sum_of_distances))][:-2]+"y"
+	#sum_of_distances.remove(max(sum_of_distances))
+	#print "Second MAX:"
+	#print pdbFiles[sum_of_distances.index(max(sum_of_distances))]
+
+
+	# save all models of this matrix in another dir
+	storage_folder =  "{}mtx1_models/".format(root)
+
+	# store them in a folder
+	# storage_folder = "../"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2)+"/" #the dir where the data will be saved
+	print "\nCopying models from the same cluster in: {}".format(storage_folder)
+	if not os.path.exists(storage_folder): os.makedirs(storage_folder)   
+
+
+
+	for i in pdbFiles:
+		i = i[:-4] #take out ".pdb"
+		
+		shutil.copyfile("{}/{}.py".format(root,i), "{}{}.py".format(storage_folder,i) )
+		shutil.copyfile("{}/{}.txt".format(root,i), "{}{}.txt".format(storage_folder,i) )
+		
+	number_of_files_to_super = pdbFiles
+	# number_of_files_to_super = number_of_files_to_super[:5]
+	number_of_beads = number_of_beads - 1 
+	with open("{}superposition.cmd".format(storage_folder),"w") as superposition:
+		for i in number_of_files_to_super:
+			i = i[:-4]
+			superposition.write("open {}.py \n".format(i))
+		for i in range(len(number_of_files_to_super)):
+			
+			for j in range(number_of_beads+1):
+				if j in viewpoint_fragments:
+					superposition.write("color {} #{}\n".format(color_gene,j+i*(number_of_beads+1)))
+				else:
+					superposition.write("color {} #{}\n".format(color_grey,j+i*(number_of_beads+1)))
+			i += 1      
+		for i in range(len(number_of_files_to_super)-1):
+			i += 1
+			superposition.write("match #{}-{} #0-{}\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads,number_of_beads))
+		for i in range(len(number_of_files_to_super)):
+			superposition.write("shape tube #{}-{} radius 20 bandlength 10000\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads))
+			
+		#if we want a model to be highlighted
+	#     for i in range(len(number_of_files_to_super)):
+	#         if number_of_files_to_super[i] == "HoxGenomeZebra21741.pdb":
+	#             superposition.write("shape tube #{}-{} radius 100 bandlength 10000\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads)) 
+	#         else:
+	#             superposition.write("shape tube #{}-{} radius 20 bandlength 10000\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads))
+			superposition.write("close #{}-{}\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads))
+	print "Superposition file generated in {}superposition.cmd. Open it with UCSF Chimera.".format(storage_folder)
+	shutil.copyfile("{}{}".format(root,pdbFiles[sum_of_distances.index(min(sum_of_distances))][:-2]+"y"), "{}Representative.py".format(root,i) )
+	shutil.copyfile("{}{}".format(root,pdbFiles[sum_of_distances.index(max(sum_of_distances))][:-2]+"y"), "{}LeastRepresentative.py".format(root,i) )
+	print "Representative.py and LeastRepresentative.py models saved in: {}".format(root)
+	
+
+
 ########################################## MAIN ##########################################
 
 working_dir = (os.path.realpath(__file__)).split("/")[:-1]
@@ -1262,16 +1433,16 @@ parser.add_argument("--cut_off_percentage",type=int, action="store",default=10, 
 parser.add_argument("prefix", action="store",help='Name of the models')
 parser.add_argument("--fragments_in_each_bead", type= int, default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
 parser.add_argument("--k_value",type=int, action="store",default=2, dest="k_mean",help='Number of cluster to expect in the clustering.')
-parser.add_argument("--jump_steps",type=int, action="store",nargs=4,default=[0,0,0,0], dest="jump_steps",help='List of 1|0 that indicate to jump (1) or not jump (0) a step or not. Steps: Pre-Modeling, Modeling, Analysis & Clustering')
+parser.add_argument("--jump_steps",type=int, action="store",nargs=5,default=[0,0,0,0,0], dest="jump_steps",help='List of 1|0 that indicate to jump (1) or not jump (0) a step or not. Steps: Pre-Modeling, Modeling, Analysis & Clustering, virtual Hi-C calculation, most representative model')
 parser.add_argument("--ignore_beads",type=int, action="store",nargs="+",default=[], dest="ignore_beads",help='Beads that are not gonna have distance restraints.')
 parser.add_argument("--uZ",type=float, action="store",dest="uZ", help='Upper bound Z score (Only needed if jumping pre-modeling steps)')
 parser.add_argument("--lZ", type=float, action="store",dest="lZ", help='Lower bound Z score (Only needed if jumping pre-modeling steps)')
 parser.add_argument("--max_distance", type=int, action="store",dest="max_distance", help='Maximum distance (Only needed if jumping pre-modeling steps)')
-parser.add_argument("--matrix_number", type=int, action="store",dest="biggest_matrix", help='number of the biggest matrix after the clustering, in case we want to only generate the virtual Hi-C')
+#parser.add_argument("--matrix_number", type=int, action="store",dest="biggest_matrix", help='number of the biggest matrix after the clustering, in case we want to only generate the virtual Hi-C')
 parser.add_argument("--maximum_hic_value", type=int, action="store",dest="maximum_hic_value", default = 0,help='The virtual Hi-C gradient color will be from 0 to maximum_hic_value.')
 
 args = parser.parse_args()
-#print args	
+print args	
 
 number_of_cpus = args.number_of_cpus
 pre_number_of_models = args.pre_number_of_models
@@ -1307,31 +1478,37 @@ except:
 	print "Since you are jumping the pre-modeling step, --max_distance, --uZ and --lZ flags are needed" 
 	sys.exit()
 
+# getting biggest_matrix
 try:
-	if jump_steps[2] and not jump_steps[3]:
-		biggest_matrix = args.biggest_matrix
-		if biggest_matrix == None:
-			raise Exception()
-except:
-	print "Since you are jumping the analysis and clustering step, --matrix_number flag is needed" 
-	try:
+	if jump_steps[2] and (not jump_steps[3] or not jump_steps[4]):
 		search_dir = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
-		commmand =  "ls {} | egrep matrix[0-9]+".format(search_dir)
-		matrix_files = subprocess.check_output(commmand,shell=True)
+		command =  "ls {} | egrep matrix[0-9]+".format(search_dir)
+		matrix_files = subprocess.check_output(command,shell=True)
 		aux = []
 		for x in matrix_files:
 			aux.append(x)
 		aux = "".join(aux)
-		matrix_files = aux.split("\n")
-		matrix_numbers = [re.search("matrix(\d+)",x) for x in matrix_files[:-1]] 
-		print "These are the matrix numbers available: "
-		for x in matrix_numbers:
-			print x.group(1)
-			 
-	except:
-		e = sys.exc_info()[1]
-		pass
-	sys.exit()
+		matrix_files = aux.split("\n")[:-1]
+		sizes = []
+		
+		for x in matrix_files:
+			command = "wc {}".format(search_dir+x)
+			matrix_sizes = subprocess.check_output(command,shell=True)
+			aux = []
+			
+			for char in matrix_sizes:
+				aux.append(char)
+			aux = "".join(aux)
+
+			sizes.append(int(aux.split()[0]))
+
+		biggest_matrix = matrix_files[sizes.index(max(sizes))]
+		biggest_matrix = int((re.findall(r'\d+',biggest_matrix))[0])
+
+except:
+	e = sys.exc_info()[1]
+	print e
+
 	
 if verbose:
 	def verboseprint(text):
@@ -1363,6 +1540,7 @@ files = [data_dir+f for f in file_names]
 # a_4c_file: chrN start end value
 start_frag = 0
 end_frag = 0
+
 number_of_fragments = 0
 
 a_4c_file = fileCheck(data_dir+primers.keys()[0])
@@ -1429,8 +1607,8 @@ color_of_fragments = vhic_colors.values()
 name_of_fragments = [x[:10] for x in name_of_fragments]
 
 show_fragments_in_vhic = calculate_fragment_number(show_fragments_in_vhic,files[0])
-
 show_fragments_in_vhic = [int(i/fragments_in_each_bead) for i in show_fragments_in_vhic]
+print show_fragments_in_vhic
 
 p = Pool(number_of_cpus)
 execute = []
@@ -1505,7 +1683,8 @@ if not jump_steps[2]:
     ######### cluster models
     print "Running clustering..."
     n_clusters = 0
-    n_clusters,biggest_matrix = run_clustering(models_subset)
+    n_clusters,
+    _matrix = run_clustering(models_subset)
     if n_clusters != k_mean:
         print "Redoing the clustering expecting {} clusters.".format(n_clusters)
         n_clusters,biggest_matrix = run_clustering(models_subset)
@@ -1523,15 +1702,18 @@ elif jump_steps[0] and jump_steps[1] and jump_steps[2]: #if we want to jump all
 	print "RePainting Virtual Hi-C"
 	calculate_vhic(biggest_matrix,False)
 	print "Virtual Hi-C RePainted"
+
+######### getting representative model
+if not jump_steps[4]:
+	print "Calculating representative model..."
+	calculate_representative_model(biggest_matrix)
+
 	
 print """\nWhat do you want to do now?:
 
--If the virtual Hi-C is too red or white, modify the maximum_hic_value in section [VHiC] in the config file and run:
-	'python {} {} {} False'
-
--To get the representative model and superposition of best models:
-	'python src/get_representative_model.py {} {}'
-
+-If the virtual Hi-C is too red or white, modify the --maximum_hic_value, --jump_steps 1 1 1 1 1, --uZ, --lZ, --max_distance flags and run again
+"""
+print """ 
 -To paint a model with epigenetic marks (bam/bed file required):
 	'python src/paint_model.py {} your_model.py '
 

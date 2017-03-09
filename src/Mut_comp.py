@@ -137,6 +137,7 @@ for line in range(number_of_spheres):
 
 print matrix1[9][54]/distance
 print matrix1[9][54]
+
 print matrix2[9][54]/distance2
 print matrix2[9][54]
 print matrix3[9][54]
