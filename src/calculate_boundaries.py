@@ -19,6 +19,7 @@ except ImportError:
 except:
     pass
 
+is_real_hi_data = True  #where high values mean contact. In our vhic, high values = long distance = no contact
 
 add_mean_values = True
 
@@ -46,12 +47,16 @@ with open(input_path,"r") as INPUT:
         aux_list.append(float(values[2][:-1]))
 tad_to = size
 tad_from = 1
-max_value = max(aux_list)
-with open(input_path,"r") as INPUT:
-    for line in INPUT:
-        values = line.split(",")
-        aux_list.append(max_value - float(values[2][:-1]))
+if not is_real_hi_data:
+    max_value = max(aux_list)
+    aux_list = []
+    with open(input_path,"r") as INPUT:
+        for line in INPUT:
+            values = line.split(",")
+            aux_list.append(max_value - float(values[2][:-1]))
 mean_value = np.mean(aux_list)
+print len(aux_list)
+print mean_value
 size += 1
 #size = int(np.sqrt(lines))
 
@@ -61,13 +66,14 @@ matrix = np.zeros((size,size))
 with open(input_path,"r") as INPUT:
     for line in INPUT:
         values = line.split(",")
-        #ONLY for virtual HIC
-        matrix[int(values[0])][int(values[1])] = max_value - float(values[2][:-1])
-        matrix[int(values[1])][int(values[0])] = max_value - float(values[2][:-1])
-        
-        #for original HIC
-        #matrix[int(values[0])][int(values[1])] = float(values[2][:-1])
-        #matrix[int(values[1])][int(values[0])] = float(values[2][:-1])
+        if is_real_hi_data: 
+            #for original HIC
+            matrix[int(values[0])][int(values[1])] = float(values[2][:-1])
+            matrix[int(values[1])][int(values[0])] = float(values[2][:-1])
+        else:
+            #ONLY for virtual HIC
+            matrix[int(values[0])][int(values[1])] = max_value - float(values[2][:-1])
+            matrix[int(values[1])][int(values[0])] = max_value - float(values[2][:-1])
 
 
 #Calculate the directionality index (Dixo et. al. 2012 Nature)
@@ -180,15 +186,17 @@ ax.set_ylim(-1*max(lim)*3/4,max(lim)*3/4)
 #ax.set_ylim(-100,100)
 ax.set_axis_bgcolor('white')
 
-#for reverse DI
-#di_list_neg = [i * -1 for i in di_list_neg] 
-#di_list_pos = [i * -1 for i in di_list_pos] 
-#plt.bar(index,di_list_neg,facecolor='#9999ff')
-#plt.bar(index,di_list_pos,facecolor='#ff9999')
+if not is_real_hi_data:
+    #for reverse DI
+    di_list_neg = [i * -1 for i in di_list_neg] 
+    di_list_pos = [i * -1 for i in di_list_pos] 
+    plt.bar(index,di_list_neg,facecolor='#9999ff')
+    plt.bar(index,di_list_pos,facecolor='#ff9999')
 
-#for rest
-plt.bar(index,di_list_pos,facecolor='#9999ff')
-plt.bar(index,di_list_neg,facecolor='#ff9999')
+else:
+    #for rest
+    plt.bar(index,di_list_pos,facecolor='#9999ff')
+    plt.bar(index,di_list_neg,facecolor='#ff9999')
 
 try:
     saved_in = input_path.split("/")

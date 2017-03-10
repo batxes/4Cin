@@ -22,64 +22,21 @@ matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-def chimera_worker(chimera_file):
-    distance_output = subprocess.check_output(["chimera", "--nogui", chimera_file])
-    return distance_output
 
-calculate_the_matrix = True #to get only the HIC from the text use TADS_generate_matrix
 
 number_of_arguments = len(sys.argv)
-if number_of_arguments != 3: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file, matrix file (absolute path) are required. You passed: ",sys.argv[1:]
+if number_of_arguments != 2: #Or all parameters, or no parameters 
+    print "Not enought parameters. Matrix file (absolute path) is required. You passed: ",sys.argv[1:]
     sys.exit()
 if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
-    ini_file = sys.argv[1]
-    root = sys.argv[2]
-    matrix_path = sys.argv[2]
+    root = sys.argv[1]
+    matrix_path = sys.argv[1]
     root = matrix_path.split("/")[0:-1]
     root = '/'.join(root)
     root = root+"/"
     print root
     
-#read the config file
-config = ConfigParser.ConfigParser()
-try:
-    config.read(ini_file)
-    
-    prefix = config.get("ModelingValues", "prefix")
-    verbose = int(config.get("ModelingValues", "verbose"))
-    WINDOW = float(config.get("ModelingValues", "WINDOW"))
-    
-    viewpoints = config.get("TADs", "viewpoints")
-    viewpoints = re.sub('[\n\s\t]','',viewpoints)
-    viewpoints = viewpoints.split(",")
-    viewpoints = [ int(i) for i in viewpoints]
-    viewpoints = [int(i/WINDOW) for i in viewpoints]
-    
-    genes = config.get("ModelingValues", "genes")
-    genes = re.sub('[\n\s\t]','',genes)
-    genes = genes.split(",")
-    genes = [ int(i) for i in genes]
-    genes = [int(i/WINDOW) for i in genes]
-    
-    
-    number_of_models = int(config.get("ModelingValues", "number_of_models"))
-    
-    gene_names = config.get("TADs", "gene_names")
-    gene_names = re.sub('[\n\s\t]','',gene_names)
-    gene_names = gene_names.split(",")
-    color = config.get("TADs", "color")
-    color = re.sub('[\n\s\t]','',color)
-    color = color.split(",")
-    
-    number_of_cpu = int(config.get("ModelingValues", "number_of_cpu"))
-    maximum_hic_value= int(config.get("TADs", "maximum_hic_value"))
-
-except:
-    print "\nError reading the configuration file.\n"
-    e = sys.exc_info()[1]
-    print e
-    sys.exit()
+prefix = "pax3"
 distance_file = "get_genome_distance_{}".format(prefix)
 path = "{}distances_of_current_model_{}".format(root,prefix)
 start_time = time.time()
@@ -102,7 +59,6 @@ max_list = []
 for line in matrix_mean:
     max_list.append(max(line))
 
-if verbose==3:  print "Generating matrix to plot..."     
 #matrix_mean = matrix_mean[15:-15,15:-15]
 #viewpoints = [x-15 for x in viewpoints]
 fig = plt.figure()
@@ -112,18 +68,18 @@ z = np.array(matrix_mean)
 
 
 vmax = max(max_list)
-vmax = 80 #foxo1 real hic human
+#vmax = 80 #foxo1 real hic human
 c = plt.pcolor(z,cmap=plt.cm.PuRd,vmax=vmax, vmin=0)
 ax.set_frame_on(False)
 plt.colorbar()
 
 #viewpoints = 51,15,57,69 #pax3,epha4,sgpp2,farsb human
-viewpoints = 111,115,61,58 #foxo1,mrps31,cog6,lhfp human
+#viewpoints = 111,115,61,58 #foxo1,mrps31,cog6,lhfp human
 #viewpoints = 47,53,62,13 #pax3,sgpp2,farsb,epha4 mouse
 #viewpoints = 58,50,96,97 #foxo1,maml3,cog6,lhfp mouse
 #to set the viewpoints
 #plt.scatter(viewpoints, viewpoints, s=20, c=color,cmap=plt.cm.autumn)
-plt.scatter(viewpoints, viewpoints, s=20,cmap=plt.cm.autumn)
+#plt.scatter(viewpoints, viewpoints, s=20,cmap=plt.cm.autumn)
 
 #ax.set_yticks(viewpoints)
 #ax.set_xticks(viewpoints)
