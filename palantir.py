@@ -1492,7 +1492,7 @@ parser.add_argument("--maximum_hic_value", type=int, action="store",dest="maximu
 parser.add_argument("--repaint_vhic", action="store_true", dest="repaint_vhic",help='repaint_vhic True to generate the virtual Hi-C again. Modify the --maximum_hic_value also.')
 
 args = parser.parse_args()
-print args	
+#print args	
 
 number_of_cpus = args.number_of_cpus
 pre_number_of_models = args.pre_number_of_models
@@ -1583,10 +1583,11 @@ for line in primers_file:
 		primers[m.group(1)] = int(m.group(2))
 	except:
 		break
-print "This is what primers.txt has: "
+print "\nPrimers.txt. These are the viewpoints that will be used in the modeling:"
 for k,v in primers.iteritems():
 	print "Viewpoint:{}\tposition:{}".format(k,v)
 	viewpoint_positions.append(v)
+print 
 	
 file_names = primers.keys()
 files = [data_dir+f for f in file_names]
@@ -1650,12 +1651,13 @@ except IOError:
             vhic_colors[m.group(1)] = "yellow"
         except:
             break
-print "This are the virtual Hi-C positions: "
+print "This positions will appear in the virtual Hi-C: "
 show_fragments_in_vhic = []
 counter = 0
 for k,v in vhic_primers.iteritems():
 	print "VHi-C name:{}\tposition:{}\tcolor:{}".format(k,v,vhic_colors[k])
 	counter += 1
+print
 show_fragments_in_vhic = vhic_primers.values()
 name_of_fragments = vhic_primers.keys()
 color_of_fragments = vhic_colors.values()
@@ -1663,7 +1665,7 @@ name_of_fragments = [x[:10] for x in name_of_fragments]
 
 show_fragments_in_vhic = calculate_fragment_number(show_fragments_in_vhic,files[0])
 show_fragments_in_vhic = [int(i/fragments_in_each_bead) for i in show_fragments_in_vhic]
-print show_fragments_in_vhic
+#print show_fragments_in_vhic
 
 p = Pool(number_of_cpus)
 execute = []
@@ -1764,24 +1766,24 @@ if not jump_steps[4]:
 	calculate_representative_model(biggest_matrix)
 
 	
-print """\nWhat do you want to do now?:
+print """##################################################################################################################
+\n What do you want to do now?:
 
--If the virtual Hi-C is too red or white, rerun with --repaint_vhic, modify --maximum_hic_value and set --uZ, --lZ and --max_distance.
-"""
-print """ 
--To paint a model with epigenetic marks (bam/bed file required):
+ -If the virtual Hi-C is too red or white, rerun with --repaint_vhic, modify --maximum_hic_value and set --uZ, --lZ and --max_distance.
+
+ -To paint a model with epigenetic marks (bam/bed file required):
 	'python src/paint_model.py {} your_model.py '
 
--To call the TAD boundaries, run:
+ -To call the TAD boundaries, run:
 	'python src/calculate_boundaries.py vhic tad_size'
 
-##todo
--To compare conserved regions between 2 virtual Hi-Cs (Different species or homolog regions), run:
+#todo
+ -To compare conserved regions between 2 virtual Hi-Cs (Different species or homolog regions), run:
 	'python src/Evo_comp.py {} config_file2 {} vhic2'
 
-##todo
--To compare this virtual Hi-C to another one of the same region (Mutants), run:
+#todo
+ -To compare this virtual Hi-C to another one of the same region (Mutants), run:
 	'python src/Mut_comp {} config_file2 {} vhic2'
-
+\n##################################################################################################################
 """  
 	
