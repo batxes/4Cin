@@ -1,15 +1,9 @@
 
-# 4c2vhic
+# aske
 
 This is a suite of scripts that lets you generate 3D models of the chromatin of your favourite locus, using 4C data as the only input. It is able to create Hi-C like contact maps of these 3D models and analyze the region further. 
 
 Used in Acemel RD, Tena JJ, Irastorza-Azcarate I, Marletaz F, Gomez-Marin C, de la Calle-Mustienes E, Bertrand S, Diaz SG, Aldea D, Aury JM et al.: A single three-dimensional chromatin compartment in amphioxus indicates a stepwise evolution of vertebrate Hox bimodal regulation. Nat Genet 2016, 48: 336-341. (http://www.nature.com/ng/journal/v48/n3/full/ng.3497.html)
-
-## Overview 
-![alt tag](figures/github_pipe.png)
-
-Many other marks can be painted
-![alt tag](figures/genomePainting)
 
 ## Dependencies
 
@@ -34,12 +28,11 @@ Go to Installing dependencies to install them.
 2 - Provide a primers.txt file with name of primers and position:
     Six2 chr2:423234
     Six3 chr2:426351
-3 - python modeling.py 4C_files_dir Name_of_your_locus
+3 - python aske.py 4C_files_dir Name_of_your_locus
 ```
 
 [Optionals]
 ```
-10 - python src/get_representative_model.py config.ini matrix.txt
 11 - python src/paint_model.py config.ini model.py
 12 - python src/calculate_boundaries.py vhic.txt tad_size
 13 - python src/Evo_comp.py config.ini config2.ini vhic.txt vhic2.txt
@@ -54,24 +47,30 @@ Go to Installing dependencies to install them.
 
 >Example: python src/prepare_data.py 4C_files
 
-2 - Generate primers.txt file, with name of genes and position. Optional, primers_vhic.txt
+2 - Generate primers.txt file, with name of genes and position. Optional, primers_vhic.txt (the same format as in primers.txt) with more positions to paint in the virtual Hi-C. color can be added afterwards.
 
->Example:     
+>Example primers.txt:     
 
     Six2 chr2:423234
     Six3 chr2:426351
+    
+>Example primers_vhic.txt:     
+
+    Six2 chr2:423234 red
+    Six3 chr2:426351 cyan
+    gene3 chr2:436451 lightgreen
+    gene4 chr2:443251 darkviolet
+    enhancer1 chr2:468954 
+    
+    if no color stated, default will be yellow.
 
 3 - Do the modeling.
 
->Example: python modeling.py 4C_files_dir Name_of_your_locus
+>Example: python aske.py 4C_files_dir Name_of_your_locus
 
     
      
 Optional Steps:
-    
-10 - run "get_representative_model.py". Takes as argument the config file and the matrix of one of the solutions from GenomeClustering.py. It will tell us which model is the one closest and furthest to the average. It will also generate a superposition of the models of that cluster, that will be able to run in UCSF chimera. 
-
->Example: python src/get_representative_model.py config.ini matrix_cluster1.txt
 
 11 - run "paint_model.py". It will map epigenetic marks in a model of our choice. We will set the path of the bed or bam file and the colormap (matplotlib) in the config file under [Painting]. 
 
@@ -174,7 +173,7 @@ HiC_comp.py
 
 - If you want to concatenate the beads with a tube, after openning the model in UCSF-Chimera, write this in its command line: "shape tube #X-Y radius Z bandlength 10000" (X and Y being the first and last beads, Z being the thickness of tube in Angstroms.)
 
-- All the data will be stored under a directory with the same name as the prefix set in the config file
+- All the data will be stored under a directory with the same name as the prefix 
 
 - bam files need to be sorted and indexed before using. Example: samtools sort mouse_h3k4me3_ES_bingren_rep1.bam mouse_h3k4me3_ES_bingren_rep1.bai 
 
@@ -202,9 +201,7 @@ ref2. Bystricky K, Heun P, Gehlen L, Langowski J, Gasser SM. Long-range compacti
 
 
 ###### writeee
-    we modified the windows so the beads represent the same in SIX comparison
-
-    
+    we modified the windows so the beads represent the same in SIX comparison    
     Pax3 data -> take our locus
     then take chr2 and chr13 separately and apply prepare_data.py
     then concatenate them and double the value of the aberrant 2+13 chromosome
@@ -249,5 +246,10 @@ export HDF5_ROOT=/path/to/hdf5
 ####COMPILE IMP ####
 cmake ../imp-2.5.0 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT -DSWIG_EXECUTABLE=/path/to/swig/bin/swig-3.0.12
 
+## Overview 
+![alt tag](figures/github_pipe.png)
+
+Many other marks can be painted
+![alt tag](figures/genomePainting)
 
 
