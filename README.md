@@ -40,7 +40,7 @@ Go to Installing dependencies to install them.
 15 - python src/data_manager.py config.ini
 ```
 
-# Explained Usage
+## Explained Usage
 
 
 1 - run "prepare_data.py" to homogenize the 4C files. All 4C files need to have the same number of fragments and the same length.
