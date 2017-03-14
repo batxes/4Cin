@@ -11,8 +11,8 @@ import numpy as np
 import math
 from collections import defaultdict
 import operator
+import matplotlib.pyplot as plt
 try:
-    import matplotlib.pyplot as plt
     plt.style.use('ggplot')
 except ImportError:
     pass

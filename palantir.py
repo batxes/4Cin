@@ -1202,6 +1202,8 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
 				matrix_mean[int(values[0])][int(values[1])] = float(values[2])
 
 
+
+
 	print "Generating virtual Hi-C plot..."     
 	show_fragments_in_vhic_shifted = [c+0.5 for c in show_fragments_in_vhic] #to match the name_of_fragments in the matrix Since the ticks don't match with the heatmap.
 	fig = plt.figure()
@@ -1233,6 +1235,53 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
 	pp.savefig(fig)
 	pp.close()
 	print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
+
+	#### Exteriorness
+	#all regions
+	#dviolet = [26,24,37,44] #outside
+	#lgreen = [45,43,46,16,25,19,29,30,34,36,38,35,50,49] #inside
+	#tad = range(9,55)
+	#Only ZPA
+	dviolet = [24,26,32,37,42,44] #outside
+	lgreen = [29,43,45,46] #inside
+	tad = [54]
+
+	box_plot_dataset = []
+	box_plot_color = []
+	#outside
+	avg_d_out = []
+	for out_bead in dviolet:
+		aux = []
+		for bead in tad:
+			if bead != out_bead:
+				#aux.append(matrix_mean[out_bead][bead])
+				box_plot_dataset.append(matrix_mean[out_bead][bead])
+				box_plot_color.append("darkviolet")
+		#box_plot_dataset.append(aux)
+		#box_plot_color.append("darkviolet")
+	#inside
+	avg_d_in = []
+	for in_bead in lgreen:
+		aux = []
+		for bead in tad:
+			if bead != in_bead:
+				#aux.append(matrix_mean[in_bead][bead])
+				box_plot_dataset.append(matrix_mean[in_bead][bead])
+				box_plot_color.append("lightgreen")
+		#box_plot_dataset.append(aux)
+		#box_plot_color.append("lightgreen")
+	fig, ax = plt.subplots()
+	#bp = plt.boxplot(box_plot_dataset,patch_artist=True)
+	print range(len(dviolet+lgreen)),box_plot_dataset
+	bp = plt.bar(range(len(dviolet+lgreen)),box_plot_dataset,color=box_plot_color)
+	#for box, color in zip(bp['boxes'], box_plot_color):
+	#	box.set(facecolor = color)
+	ax.set_xticklabels(dviolet+lgreen)
+	pp = PdfPages('{}{}_boxplot.pdf'.format(root,prefix))
+	pp.savefig(fig)
+	pp.close()
+	#plt.show()
+	
 
 
 def calculate_representative_model(biggest_matrix):
@@ -1440,6 +1489,7 @@ parser.add_argument("--lZ", type=float, action="store",dest="lZ", help='Lower bo
 parser.add_argument("--max_distance", type=int, action="store",dest="max_distance", help='Maximum distance (Only needed if jumping pre-modeling steps)')
 #parser.add_argument("--matrix_number", type=int, action="store",dest="biggest_matrix", help='number of the biggest matrix after the clustering, in case we want to only generate the virtual Hi-C')
 parser.add_argument("--maximum_hic_value", type=int, action="store",dest="maximum_hic_value", default = 0,help='The virtual Hi-C gradient color will be from 0 to maximum_hic_value.')
+parser.add_argument("--repaint_vhic", action="store_true", dest="repaint_vhic",help='repaint_vhic True to generate the virtual Hi-C again. Modify the --maximum_hic_value also.')
 
 args = parser.parse_args()
 print args	
@@ -1466,6 +1516,9 @@ cut_off_percentage = args.cut_off_percentage
 maximum_hic_value = args.maximum_hic_value
 ignore_beads = args.ignore_beads
 biggest_matrix = 0
+repaint_vhic = args.repaint_vhic
+if repaint_vhic:
+	jump_steps = jump_steps[1,1,1,1,1]
 
 try:
 	if jump_steps[0] :
@@ -1515,6 +1568,8 @@ if verbose:
 		print text;
 else:   
 	verboseprint = lambda *a: None      # do-nothing function
+	
+
 
 
 # get the name and position from primers.txt
@@ -1576,7 +1631,7 @@ vhic_colors = {}
 try:
     vhic_primers_file = open (data_dir+"primers_vhic.txt", 'r')
     for line in vhic_primers_file:
-        m = re.search('([^\s\t]+).*chr\w+:(\d+)\s+?(\w+)?', line)
+        m = re.search('([^\s\t]+).*chr\w+:(\d+)\s*(\w+)?', line)
         try:
             vhic_primers[m.group(1)] = int(m.group(2))
             if m.group(3) == None:
@@ -1698,7 +1753,7 @@ if not jump_steps[3]:
 	print "Generating Virtual Hi-C"
 	calculate_vhic(biggest_matrix,True)
 	print "Virtual Hi-C generated"
-elif jump_steps[0] and jump_steps[1] and jump_steps[2]: #if we want to jump all
+if repaint_vhic and jump_steps[3]: 
 	print "RePainting Virtual Hi-C"
 	calculate_vhic(biggest_matrix,False)
 	print "Virtual Hi-C RePainted"
@@ -1711,18 +1766,20 @@ if not jump_steps[4]:
 	
 print """\nWhat do you want to do now?:
 
--If the virtual Hi-C is too red or white, modify the --maximum_hic_value, --jump_steps 1 1 1 1 1, --uZ, --lZ, --max_distance flags and run again
+-If the virtual Hi-C is too red or white, rerun with --repaint_vhic, modify --maximum_hic_value and set --uZ, --lZ and --max_distance.
 """
 print """ 
 -To paint a model with epigenetic marks (bam/bed file required):
 	'python src/paint_model.py {} your_model.py '
 
 -To call the TAD boundaries, run:
-	'python src/calculate_boundaries.py {} tad_size'
+	'python src/calculate_boundaries.py vhic tad_size'
 
+##todo
 -To compare conserved regions between 2 virtual Hi-Cs (Different species or homolog regions), run:
 	'python src/Evo_comp.py {} config_file2 {} vhic2'
-	
+
+##todo
 -To compare this virtual Hi-C to another one of the same region (Mutants), run:
 	'python src/Mut_comp {} config_file2 {} vhic2'
 
