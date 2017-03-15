@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# Written by: Ibai Irastorza
+# Universidad Pablo de Olavide, CABD, Sevilla. 
+
 # Script that runs small rounds of modeling with different Max distances
 
 import sys, os, re, inspect, glob
@@ -1449,6 +1452,16 @@ def calculate_representative_model(biggest_matrix):
 	shutil.copyfile("{}{}".format(root,pdbFiles[sum_of_distances.index(min(sum_of_distances))][:-2]+"y"), "{}Representative.py".format(root,i) )
 	shutil.copyfile("{}{}".format(root,pdbFiles[sum_of_distances.index(max(sum_of_distances))][:-2]+"y"), "{}LeastRepresentative.py".format(root,i) )
 	print "Representative.py and LeastRepresentative.py models saved in: {}".format(root)
+    with open ("{}Representative_tubes.cmd", "w") as out:
+        out.write("open {}Representative.py\n".format(root,i))
+        out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
+        out.write("close #0-{}\n".format(number_of_beads))
+    with open ("{}LeastRepresentative_tubes.cmd", "w") as out:
+        out.write("open {}Representative.py\n".format(root,i))
+        out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
+        out.write("close #0-{}\n".format(number_of_beads))
+	print "Representative_tube.cmd and LeastRepresentative_tubes.cmd models saved in: {}".format(root)
+    print "Open them with UCSF Chimera."
 	
 
 
@@ -1517,6 +1530,10 @@ maximum_hic_value = args.maximum_hic_value
 ignore_beads = args.ignore_beads
 biggest_matrix = 0
 repaint_vhic = args.repaint_vhic
+
+if data_dir[-1] != "/":
+    data_dir = data_dir + "/"
+
 if repaint_vhic:
 	jump_steps = jump_steps[1,1,1,1,1]
 

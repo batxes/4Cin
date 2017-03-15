@@ -5,7 +5,7 @@
 
 
 ## CREATE THE CMD TO USE IN CHIMERA
-import re
+import re,os
 import sys
 import subprocess
 from multiprocessing import Pool
@@ -14,69 +14,137 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-import ConfigParser
+from data_manager import fileCheck, sizeReader,  calculateNWindowedDistances, calculate_fragment_number
+import argparse
+
+working_dir = (os.path.realpath(__file__)).split("/")[:-1]
+working_dir = "/".join(working_dir)+"/"
+
+parser = argparse.ArgumentParser(
+description='''Program that compares two virtual Hi-C's.''',
+epilog= """primers.txt will be used to highlight beads if primers_vhic.txt is not provided. """)
+group1 = parser.add_argument_group('First Models', 'Parameters of the first models')
+group2 = parser.add_argument_group('Second Models', 'Parameters of the second models')
+parser.add_argument("data_dir", action="store",help='Directory with the 4C files')
+group1.add_argument("prefix", action="store",help='Name of the models')
+group1.add_argument("VHiC", action="store",help='Virtual Hi-C of the first models')
+group1.add_argument("distance", type=int, action="store",help='Maximum distance used in the first models')
+
+group2.add_argument("prefix2", action="store",help='Name of the other models')
+group2.add_argument("VHiC2", action="store",help='Virtual Hi-C of the other models')
+group2.add_argument("distance2", type=int, action="store",help='Maximum distance used in the other models')
+
+parser.add_argument("--storage_dir", action="store",default=working_dir, dest="storage_dir",help='location where the comparison pdf will be generated')
+parser.add_argument("--fragments_in_each_bead", type= int, default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
+
+args = parser.parse_args()
+print args
+
+root = args.VHiC
+root2 = args.VHiC2
+storage_dir = args.storage_dir
+prefix = args.prefix
+prefix2 = args.prefix2
+data_dir = args.data_dir
+window = args.fragments_in_each_bead
+distance = args.distance
+distance2 = args.distance2
 
 
-number_of_arguments = len(sys.argv)
-if number_of_arguments != 5: #Or all parameters, or no parameters 
-    print "Not enough parameters. Config file 1, config file 2,  vhic 1 and vhic 2 are required."
-    print " -config_files 1 and 2: Config files of the regions you want to compare. Check config_template.ini for an example"
-    print " -Virtual Hi-C Matrices 1 and 2: vhic's related to config file 1 and 2. Files are generated after calculate_vhic.py. "
-    sys.exit()
-if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
-    ini_file = sys.argv[1]
-    ini_file2 = sys.argv[2]
-    root = sys.argv[3]
-    root2 = sys.argv[4]
 
 
+#opening vhic primers
+color_of_fragments = []
+mut_primers = {}
+mut_colors = {}
+viewpoint_positions = []
 
-#read the config file
-config = ConfigParser.ConfigParser()
+# get the name and position from primers.txt
+#primers.txt:  name chrN:position
+primers = {}
+viewpoint_positions = []
+primers_file = fileCheck(data_dir+"primers.txt")
+for line in primers_file:
+	m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+	try:
+		primers[m.group(1)] = int(m.group(2))
+	except:
+		break
+print "\nPrimers.txt. These are the viewpoints that will be used in the modeling:"
+for k,v in primers.iteritems():
+	print "Viewpoint:{}\tposition:{}".format(k,v)
+	viewpoint_positions.append(v)
+print 
+file_names = primers.keys()
+files = [data_dir+f for f in file_names]
+
+
 try:
-    config.read(ini_file)
-    prefix = config.get("Modeling", "prefix")
-    distance = int(config.get("Modeling", "max_dist"))
-    storage_dir = config.get("Modeling", "working_dir")
-    storage_dir = storage_dir + "data/" + prefix + "/"
-    WINDOW = float(config.get("Modeling", "fragments_in_each_bead"))
-    NFRAGMENTS = int(config.get("Modeling", "number_of_fragments"))
-    number_of_spheres = int(NFRAGMENTS/WINDOW)
-    #number_of_spheres = number_of_spheres - 1
+    primers_file = open (data_dir+"primers_vhic.txt", 'r')
+    for line in primers_file:
+        m = re.search('([^\s\t]+).*chr\w+:(\d+)\s*(\w+)?', line)
+        try:
+            mut_primers[m.group(1)] = int(m.group(2))
+            if m.group(3) == None:
+                mut_colors[m.group(1)] = "yellow"
+            else:
+                mut_colors[m.group(1)] = m.group(3)
+        except:
+			break
+except IOError:
+    print "\nError: File "+ data_dir+ " primers_vhic.txt does not appear to exist. Using primers.txt to paint positions in the virtual Hi-C\n"
+    primers_file = fileCheck(data_dir+"primers.txt")
+    for line in primers_file:
+        m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+        try:
+            mut_primers[m.group(1)] = int(m.group(2))
+            mut_colors[m.group(1)] = "yellow"
+        except:
+            break
 
-    viewpoints = config.get("VHiC", "show_fragments_in_vhic")
-    viewpoints = re.sub('[\n\s\t]','',viewpoints)
-    viewpoints = viewpoints.split(",")
-    viewpoints = [ int(i) for i in viewpoints]
-    viewpoints = [int(i/WINDOW) for i in viewpoints]
-    n_viewpoints = len(viewpoints)
+for k,v in mut_primers.iteritems():
+	print "Viewpoint:{}\tposition:{}".format(k,v)
+	viewpoint_positions.append(v)
 
-    gene_names = config.get("VHiC", "name_of_fragments")
-    gene_names = re.sub('[\n\s\t]','',gene_names)
-    gene_names = gene_names.split(",")
+print files
+viewpoint_fragments = calculate_fragment_number(viewpoint_positions,files[0])
 
-    color = config.get("VHiC", "color_of_fragments")
-    color = re.sub('[\n\s\t]','',color)
-    color = color.split(",")
-    number_of_cpu = int(config.get("Modeling", "number_of_cpus"))
+fragments_in_each_bead = 0
+start_frag = 0
+end_frag = 0
+number_of_fragments = 0
+a_4c_file = fileCheck(files[0])
+for line in a_4c_file:
+	values = line.split()
+	if len(values) != 4:
+		continue
+	if start_frag == 0:
+		start_frag = int(values[1])
+	end_frag = int(values[2])
+	number_of_fragments += 1
 
-except:
-    print "\nError reading the configuration file.\n"
-    e = sys.exc_info()[1]
-    print e
-    sys.exit()
-#read the config file2
-config2 = ConfigParser.ConfigParser()
-try:
-    config2.read(ini_file)
-    prefix2 = config2.get("Modeling", "prefix")
-    distance2 = int(config2.get("Modeling", "max_dist"))
+locus_size = end_frag - start_frag
+viewpoint_fragments = calculate_fragment_number(viewpoint_positions,files[0])
 
-except:
-    print "\nError reading the configuration file.\n"
-    e = sys.exc_info()[1]
-    print e
-    sys.exit()
+#default, we want 100 beads in each model
+if window == 0:
+	window = int(number_of_fragments / 100)
+	
+#viewpoints = [int(i/window) for i in viewpoint_fragments]
+
+# now get number of beads
+number_of_spheres = int(number_of_fragments/window)
+
+show_fragments_in_vhic = mut_primers.values()
+name_of_fragments = mut_primers.keys()
+color = mut_colors.values()
+gene_names = [x[:10] for x in name_of_fragments]
+
+show_fragments_in_vhic = calculate_fragment_number(show_fragments_in_vhic,files[0])
+show_fragments_in_vhic = [int(i/window) for i in show_fragments_in_vhic]
+
+
+
 
 root3 = "{}{}_vs_{}_mutcomp".format(storage_dir,prefix,prefix2)
 root4 = "{}{}_vs_{}_mutcomp_raw".format(storage_dir,prefix,prefix2)
@@ -121,7 +189,7 @@ for line in range(number_of_spheres):
         aux_matrix[line][col] = matrix2[guide[line]][guide[col]]
 matrix2 = aux_matrix
 # compare both matrixes and create another one with differences
-f= open(root3+"txt", 'w')
+f= open(root3+".txt", 'w')
 matrix3 = np.zeros((number_of_spheres,number_of_spheres))
 for line in range(number_of_spheres):
     for column in range(number_of_spheres):   
@@ -134,15 +202,7 @@ for line in range(number_of_spheres):
         f.write(str(line)+","+str(column)+","+str(difference))   
         f.write("\n")
 
-print max_distance
-print matrix1[9][54]
-print matrix1[9][54]/max_distance
 
-print max_distance2
-print matrix2[9][54]
-print matrix2[9][54]/max_distance2
-
-print matrix3[9][54]
 f.close()
 
 #  Populate a matrix with both matrices, just for the plotting, un triangle matrix1, the other matrix2
@@ -152,8 +212,7 @@ for i in range(number_of_spheres):
         matrix_final[i][j] = matrix1[i][j]/distance
         matrix_final[j][i] = matrix2[i][j]/distance2
 
-print matrix_final[9][54]
-print matrix_final[54][9]
+
 
 
 fig = plt.figure()
@@ -186,11 +245,11 @@ plt.colorbar()
 
 
 #to set the viewpoints
-viewpoints = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
-plt.scatter(viewpoints,viewpoints, s=20, c=color,cmap=plt.cm.autumn)
+show_fragments_in_vhic = [c+0.5 for c in show_fragments_in_vhic] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
+plt.scatter(show_fragments_in_vhic,show_fragments_in_vhic, s=20, c=color,cmap=plt.cm.autumn)
 
-ax.set_yticks(viewpoints)
-ax.set_xticks(viewpoints)
+ax.set_yticks(show_fragments_in_vhic)
+ax.set_xticks(show_fragments_in_vhic)
 ax.set_xticklabels(gene_names, minor=False)
 ax.set_yticklabels(gene_names, minor=False)
 plt.tick_params(axis='both', which='major', labelsize=8)
@@ -214,9 +273,9 @@ z = np.array(matrix_final)
 c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=0.85, vmin=0)
 plt.colorbar()
 #viewpoints = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
-plt.scatter(viewpoints,viewpoints, s=20, c=color,cmap=plt.cm.autumn)
-ax.set_yticks(viewpoints)
-ax.set_xticks(viewpoints)
+plt.scatter(show_fragments_in_vhic,show_fragments_in_vhic, s=20, c=color,cmap=plt.cm.autumn)
+ax.set_yticks(show_fragments_in_vhic)
+ax.set_xticks(show_fragments_in_vhic)
 ax.set_xticklabels(gene_names, minor=False)
 ax.set_yticklabels(gene_names, minor=False)
 plt.tick_params(axis='both', which='major', labelsize=8)
