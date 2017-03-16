@@ -942,7 +942,7 @@ def run_clustering(models_subset):
     for model_number in models_subset:
         only_python_files.append(root+prefix+str(model_number[0])+".py") #took out root+
 
-    sys.exit()
+
     #for pyfile in listdir(root):
     #    if pyfile.endswith(".py"):
     #        only_python_files.append(pyfile)
