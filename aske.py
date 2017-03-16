@@ -40,20 +40,19 @@ import scipy.cluster.hierarchy as sch
 from numpy import vstack,array
 from numpy.random import rand
 
+import matplotlib
+import matplotlib.pyplot as plt
 
-
-plot = True
-try:
-    import matplotlib
+try: 
     matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-    from matplotlib.backends.backend_pdf import PdfPages
+    plot = True
 except:
 	plot = False
 	print "\nPyplot is needed for the figures.\n"
 	e = sys.exc_info()[1]
 	print e
 	
+from matplotlib.backends.backend_pdf import PdfPages
 from math import fabs
 from scipy.stats.stats import spearmanr
 
@@ -741,7 +740,6 @@ def calculate_best_zscores():
 	return best_uZ,best_lZ
 
 def run_analysis(std_dev,cut_off_percentage):
-
 	models_subset = []
 
 	std_dev = std_dev
@@ -786,78 +784,139 @@ def run_analysis(std_dev,cut_off_percentage):
 				break
 
 	# models = models[:number_of_models]    #take aonly the first ones 
-			
 	reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, max_distance,files)
 
-
+	### get all distances from all the models
 	print "getting best {} models".format(subset)
-	analized_models = 0
-	ok_models = 0
+
+	all_distances_all_models = []
 	for i in range(number_of_models):
 		distances_in_model = []
 		with open (root+prefix+str(i)+".txt","r") as f:
 			for line in f:
 				value = re.split("\t",line)
-				distances_in_model.append(value)
+				distances_in_model.append(value[:-1]) #dont store "\n"
 	#         print distances_in_model
-		#EVALUATION
-	 
-	 
-		not_fulfilled = 0
-		total = 0
-		for k in range(len(files)):
+		all_distances_all_models.append(distances_in_model)
+		
+		
+	## Evaluation
+	if std_dev == 0:
+		std_dev = max_distance / 20  	
+	increase_dev_or_cutoff = 0
+	not_analyzed = True
+	increase_dev_or_cutoff = 0
+	stop_analysis_count = 1000
 
-			values = reads_values[k] 
-			for j in range(number_of_fragments):
-				if j != viewpoint_fragments[k]:
-					
-					real_d = distances_in_model[k][j]
-					 
-					should_be_d = values[j] 
-					if should_be_d != 0:
-						total += 1
-						if (should_be_d + std_dev < float(real_d)  or should_be_d - std_dev > float(real_d)):
-							not_fulfilled += 1
-				#             print "restraint "+str(j)+"not fulfilled"
-							
-							verboseprint ("Restraint " +str(j)+"-"+str(viewpoint_fragments[k])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-float(real_d)))
-		#print str(i)+"-> Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(total),"%",str(not_fulfilled*100/(total))     
-		fulfil_percentage = not_fulfilled*100/total
-		verboseprint( "not_fulfilled -> {} out of {} restraints: {}% of all restraints are not fulfilled in this model.".format(not_fulfilled,total,fulfil_percentage))
-		if fulfil_percentage <= cut_off_percentage:
-			models[i].append(not_fulfilled)
-			ok_models += 1
+	while not_analyzed:   
+		print "Running Analysis with:"
+		print "Std_dev: {}".format(std_dev)
+		print "cut_off_percentage: {}".format(cut_off_percentage)
+		analized_models = 0
+		ok_models = 0
+		i = 0
+		delete_models_list = []
+		analysis_count = 0
+		last_accumulative_percentage = 0
+		for distances_in_model in all_distances_all_models:
+			
+			#EVALUATION
+			not_fulfilled = 0
+			total = 0
+			for k in range(len(files)):
+				values = reads_values[k]
+				try: 
+					for j in range(number_of_fragments):
+						if j != viewpoint_fragments[k]:
+							real_d = distances_in_model[k][j]
+							should_be_d = values[j] 
+							if should_be_d != 0:
+								total += 1
+								if (should_be_d + std_dev < float(real_d)  or should_be_d - std_dev > float(real_d)):
+									not_fulfilled += 1
+									#verboseprint ("Restraint " +str(j)+"-"+str(viewpoint_fragments[k])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-float(real_d)))
+				except:
+					print "Something went wrong. Check --fragments_in_each_bead. Did you modify it in the modeling?"
+					sys.exit()
+			#print str(i)+"-> Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(total),"%",str(not_fulfilled*100/(total))     
+			not_fulfil_percentage = not_fulfilled*100/total
+			verboseprint( "not_fulfilled -> {} out of {} restraints: {}% of all restraints are not fulfilled in this model.".format(not_fulfilled,total,not_fulfil_percentage))
+			if not_fulfil_percentage <= cut_off_percentage:
+				models[i].append(not_fulfilled)
+				ok_models += 1
+			else:
+				delete_models_list.append(i)
+			analized_models += 1
+			accumulative_percentage = 100*ok_models/analized_models
+			verboseprint ("Percentage of models that fulfill the threshold: {}%".format(accumulative_percentage))
+			verboseprint ("{}/{}".format(ok_models,analized_models))
+			#print "{} -> number of models in subset {}".format(i,len(models))  
+			#after poplating all and takign out the models out of the cout off, take the subset of models
+			i += 1
+			
+			#Check if delta (difference with fulfil_percentage every round) changed analyzing 100 models. If it did not, loose more the threshold
+			if last_accumulative_percentage == accumulative_percentage and accumulative_percentage <= subset*100.0/total_number_of_models:
+				analysis_count += 1
+			if stop_analysis_count == analysis_count:
+				forced_break = True
+				break
+			last_accumulative_percentage = accumulative_percentage
+			forced_break = False
+			
+			if (analized_models) % 1000 == 0:
+				sys.stdout.write("\r{}%".format( analized_models*100/total_number_of_models))
+				sys.stdout.flush()
+			
+			
+			
+		print	
+		if not forced_break:	
+			#take out models from dict
+			for number in delete_models_list:
+				try:
+					del models[number]
+				except:
+					print "Can't delete model number {}. Are you working with the correct models? ".format(i)
+					sys.exit()
+			
+			#order the dictionary by score
+			sorted_models = sorted(models.items(), key=operator.itemgetter(1))
+			print "Number of models above cutoff: {}".format(len(sorted_models))
+			
+			if len(sorted_models) >= subset:
+			# store them in a folder
+				storage_folder = working_dir+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance)+"/" #the dir where the data will be saved
+				if not os.path.exists(storage_folder): 
+					os.makedirs(storage_folder)
+				try: 
+					models_subset = sorted_models [:subset]
+					for k in range(subset):
+						i = models_subset[k][0]
+						shutil.copyfile("{}{}{}.py".format(root,prefix,i), "{}{}{}.py".format(storage_folder,prefix,i) )
+						shutil.copyfile("{}{}{}.txt".format(root,prefix,i), "{}{}{}.txt".format(storage_folder,prefix,i) )
+					print "copied best {} models to {}.".format(subset,storage_folder)
+				except:
+					print "Error copying best models."				
+				not_analyzed = False
+			else:
+				print "\n ! Can not get {} models. Relaxing the std_dev and cut_off_percentage.\n ".format(subset)	
+				#Modify the cutoffs
+				if increase_dev_or_cutoff == 0:
+					std_dev = std_dev + max_distance*0.01 #increase std_def
+					increase_dev_or_cutoff = 1
+				else:
+					cut_off_percentage = cut_off_percentage+2 #increase #cut_off
+					increase_dev_or_cutoff = 0	 
 		else:
-			try:
-				del models[i]
-			except:
-				pass
-		analized_models += 1
-		verboseprint ("Percentage of models that fulfill the threshold: {}%".format(100*ok_models/analized_models))
-		verboseprint ("{}/{}".format(ok_models,analized_models))
-		#print "{} -> number of models in subset {}".format(i,len(models))  
-		#after poplating all and takign out the models out of the cout off, take the subset of models
+			print "\n ! Can not get {} models. Relaxing the std_dev and cut_off_percentage.\n ".format(subset)	
+			#Modify the cutoffs
+			if increase_dev_or_cutoff == 0:
+				std_dev = std_dev + max_distance*0.01 #increase std_def
+				increase_dev_or_cutoff = 1
+			else:
+				cut_off_percentage = cut_off_percentage+2 #increase #cut_off
+				increase_dev_or_cutoff = 0	
 
-
-
-	#order the dictionary by score
-	sorted_models = sorted(models.items(), key=operator.itemgetter(1))
-	print "Number of models below cutoff: {}".format(len(sorted_models))
-
-	# store them in a folder
-	storage_folder = working_dir+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance)+"/" #the dir where the data will be saved
-	if not os.path.exists(storage_folder): 
-		os.makedirs(storage_folder)
-	try: 
-		models_subset = sorted_models [:subset]
-		for k in range(subset):
-			i = models_subset[k][0]
-			shutil.copyfile("{}{}{}.py".format(root,prefix,i), "{}{}{}.py".format(storage_folder,prefix,i) )
-			shutil.copyfile("{}{}{}.txt".format(root,prefix,i), "{}{}{}.txt".format(storage_folder,prefix,i) )
-		print "copied best {} models to {}.".format(subset,storage_folder)
-	except:
-		print "\n ! Can not get {} models. Relaxing the std_dev and cut_off_percentage.\n ".format(subset)
-		return False,std_dev,cut_off_percentage,models_subset
 	# create the file to open in chimera
 	# superposition of the best models
 	with open(working_dir+prefix+"_superposition.py","w") as f:
@@ -872,8 +931,7 @@ def run_analysis(std_dev,cut_off_percentage):
 
 	print "Superposition of {} models created in {}{}\n".format(subset,working_dir,prefix)
 
-
-	return True,std_dev,cut_off_percentage,models_subset
+	return std_dev,cut_off_percentage,models_subset
 
 def run_clustering(models_subset):
     number_of_beads = number_of_fragments
@@ -883,7 +941,7 @@ def run_clustering(models_subset):
 
     for model_number in models_subset:
         only_python_files.append(root+prefix+str(model_number[0])+".py") #took out root+
-    print only_python_files
+
     sys.exit()
     #for pyfile in listdir(root):
     #    if pyfile.endswith(".py"):
@@ -925,9 +983,8 @@ def run_clustering(models_subset):
             execute = instructions[core:core+number_of_cpus] 
         # WE NEED TO EXECUTE THIS DEPENDING ON CPU SIZE
         rmsd_output = p.map(chimera_worker,execute)
-        #print rmsd_output
+
         for i in range(len(execute)):
-            #print "Writing [{}][{}]".format(rmsd_output[i][1],rmsd_output[i][2])
             string = ""
             lista = []
             for line2 in rmsd_output[i][0]:
@@ -970,25 +1027,6 @@ def run_clustering(models_subset):
     matrixtxt.close()
     print "\n\nmatrix.txt written! in {}".format(root)
     print "This is the whole RMSD matrix (all models vs all models)"
-    #matrix2 = np.zeros((subset,subset))
-
-    #models = []
-    #line_ = 0
-    #with open ("{}matrix.txt".format(root), "r") as f:
-    #    for line in f:
-    #        if line_ == 0:
-    #            models = line.split("\t")
-    #            models = models[1:-1]
-    #            line_ += 1
-    #        else:
-    #            column_ = 0
-    #            values = line.split("\t")
-    #            values = values[1:-1]
-    #            for value in values:
-    #                matrix2[line_-1][column_] = value
-    #                column_ += 1
-    #            line_ += 1
-
 
     D = matrix
 
@@ -1239,52 +1277,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
 	pp.close()
 	print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
 
-	#### Exteriorness
-	#all regions
-	#dviolet = [26,24,37,44] #outside
-	#lgreen = [45,43,46,16,25,19,29,30,34,36,38,35,50,49] #inside
-	#tad = range(9,55)
-	#Only ZPA
-	dviolet = [24,26,32,37,42,44] #outside
-	lgreen = [29,43,45,46] #inside
-	tad = [54]
 
-	box_plot_dataset = []
-	box_plot_color = []
-	#outside
-	avg_d_out = []
-	for out_bead in dviolet:
-		aux = []
-		for bead in tad:
-			if bead != out_bead:
-				#aux.append(matrix_mean[out_bead][bead])
-				box_plot_dataset.append(matrix_mean[out_bead][bead])
-				box_plot_color.append("darkviolet")
-		#box_plot_dataset.append(aux)
-		#box_plot_color.append("darkviolet")
-	#inside
-	avg_d_in = []
-	for in_bead in lgreen:
-		aux = []
-		for bead in tad:
-			if bead != in_bead:
-				#aux.append(matrix_mean[in_bead][bead])
-				box_plot_dataset.append(matrix_mean[in_bead][bead])
-				box_plot_color.append("lightgreen")
-		#box_plot_dataset.append(aux)
-		#box_plot_color.append("lightgreen")
-	fig, ax = plt.subplots()
-	#bp = plt.boxplot(box_plot_dataset,patch_artist=True)
-	print range(len(dviolet+lgreen)),box_plot_dataset
-	bp = plt.bar(range(len(dviolet+lgreen)),box_plot_dataset,color=box_plot_color)
-	#for box, color in zip(bp['boxes'], box_plot_color):
-	#	box.set(facecolor = color)
-	ax.set_xticklabels(dviolet+lgreen)
-	pp = PdfPages('{}{}_boxplot.pdf'.format(root,prefix))
-	pp.savefig(fig)
-	pp.close()
-	#plt.show()
-	
 
 
 def calculate_representative_model(biggest_matrix):
@@ -1452,16 +1445,16 @@ def calculate_representative_model(biggest_matrix):
 	shutil.copyfile("{}{}".format(root,pdbFiles[sum_of_distances.index(min(sum_of_distances))][:-2]+"y"), "{}Representative.py".format(root,i) )
 	shutil.copyfile("{}{}".format(root,pdbFiles[sum_of_distances.index(max(sum_of_distances))][:-2]+"y"), "{}LeastRepresentative.py".format(root,i) )
 	print "Representative.py and LeastRepresentative.py models saved in: {}".format(root)
-    with open ("{}Representative_tubes.cmd", "w") as out:
-        out.write("open {}Representative.py\n".format(root,i))
-        out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
-        out.write("close #0-{}\n".format(number_of_beads))
-    with open ("{}LeastRepresentative_tubes.cmd", "w") as out:
-        out.write("open {}Representative.py\n".format(root,i))
-        out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
-        out.write("close #0-{}\n".format(number_of_beads))
+	with open ("{}Representative_tubes.cmd", "w") as out:
+		out.write("open {}Representative.py\n".format(root,i))
+		out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
+		out.write("close #0-{}\n".format(number_of_beads))
+	with open ("{}LeastRepresentative_tubes.cmd", "w") as out:
+		out.write("open {}Representative.py\n".format(root,i))
+		out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
+		out.write("close #0-{}\n".format(number_of_beads))
 	print "Representative_tube.cmd and LeastRepresentative_tubes.cmd models saved in: {}".format(root)
-    print "Open them with UCSF Chimera."
+	print "Open them with UCSF Chimera."
 	
 
 
@@ -1535,7 +1528,9 @@ if data_dir[-1] != "/":
     data_dir = data_dir + "/"
 
 if repaint_vhic:
-	jump_steps = jump_steps[1,1,1,1,1]
+	jump_steps = []
+	for i in range(5):
+		jump_steps.append(1)
 
 try:
 	if jump_steps[0] :
@@ -1734,23 +1729,9 @@ if not jump_steps[1]:
 ############################################# anterior score files should be deleted
 if not jump_steps[2]:
     print "Analysis started"
-    if std_dev == 0:
-        std_dev = max_distance / 20  
-    increase_dev_or_cutoff = 0
-    while True:
-        print "Running Analysis with:"
-        print "Std_dev: {}".format(std_dev)
-        print "cut_off_percentage: {}".format(cut_off_percentage)
-        fulfilled, std_dev, cut_off_percentage, models_subset = run_analysis(std_dev,cut_off_percentage)
-        if fulfilled:
-            break
-        else:
-            if increase_dev_or_cutoff == 0:
-                std_dev = std_dev + max_distance*0.01 #increase std_def
-                increase_dev_or_cutoff = 1
-            else:
-                cut_off_percentage = cut_off_percentage+2 #increase #cut_off
-                increase_dev_or_cutoff = 0			
+
+    std_dev, cut_off_percentage, models_subset = run_analysis(std_dev,cut_off_percentage)
+		
     print "Final analysis thresholds: "
     print "Std_dev: {}".format(std_dev)
     print "cut_off_percentage: {}".format(cut_off_percentage)
