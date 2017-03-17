@@ -933,221 +933,222 @@ def run_analysis(std_dev,cut_off_percentage):
 	return std_dev,cut_off_percentage,models_subset
 
 def run_clustering(models_subset):
-    number_of_beads = number_of_fragments
-    root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)	
-    matrix = np.zeros((subset,subset))
-    only_python_files = []
+	number_of_beads = number_of_fragments
+	root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)	
+	matrix = np.zeros((subset,subset))
+	only_python_files = []
 
-    for model_number in models_subset:
-        only_python_files.append(root+prefix+str(model_number[0])+".py") #took out root+
+	for model_number in models_subset:
+		only_python_files.append(root+prefix+str(model_number[0])+".py") #took out root+
 
 
-    #for pyfile in listdir(root):
-    #    if pyfile.endswith(".py"):
-    #        only_python_files.append(pyfile)
+	#for pyfile in listdir(root):
+	#    if pyfile.endswith(".py"):
+	#        only_python_files.append(pyfile)
 	#only_python_files = only_python_files[:subset]
-    if len(only_python_files) != subset:
-        print "There are no {} models in {}. \nOnly {} models were found in the directory. Redo the analysis.".format(subset,root,len(only_python_files))
-        sys.exit()
+	if len(only_python_files) != subset:
+		print "There are no {} models in {}. \nOnly {} models were found in the directory. Redo the analysis.".format(subset,root,len(only_python_files))
+		sys.exit()
 
 	# generate a chimera file with match. Chimera when matched, it calculates the RMSD 
-    number_of_beads = number_of_beads -1
+	number_of_beads = number_of_beads -1
 
 	# combi = combinations(range(len(only_python_files)),2)
-    combi = combinations(range(subset),2)
-    instructions = []
-    print "Generating instructions..."
-    number_of_files = 0
-    for pair in combi:
-        instruction_files = []
-        number_of_files += 1
-        counter_line = pair[0]
-        counter_column = pair[1]
-        chimera_file = "{}_calculate_rmsd{}_{}.py".format(prefix,counter_line,counter_column)
-        rmsd_file = open (chimera_file, "w")
-        rmsd_file.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
-        rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_line]))
-        rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_column]))
-        rmsd_file.write("rc(\"match #{}-{} #{}-{}\")\n".format((number_of_beads+1),(number_of_beads+1)+number_of_beads ,0,number_of_beads))
-        rmsd_file.close()
-        instruction_files.append(chimera_file)
-        instruction_files.append(counter_line)
-        instruction_files.append(counter_column)
-        instructions.append(instruction_files)
-    print "Populating matrix.txt ..."
-    for core in range(0,number_of_files,number_of_cpus):
-        if len(instructions) - core < number_of_cpus:
-            execute = instructions[core:len(instructions)-core]
-        else:
-            execute = instructions[core:core+number_of_cpus] 
-        # WE NEED TO EXECUTE THIS DEPENDING ON CPU SIZE
-        rmsd_output = p.map(chimera_worker,execute)
+	combi = combinations(range(subset),2)
+	instructions = []
+	print "Generating instructions..."
+	number_of_files = 0
+	for pair in combi:
+		instruction_files = []
+		number_of_files += 1
+		counter_line = pair[0]
+		counter_column = pair[1]
+		chimera_file = "{}_calculate_rmsd{}_{}.py".format(prefix,counter_line,counter_column)
+		rmsd_file = open (chimera_file, "w")
+		rmsd_file.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
+		rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_line]))
+		rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_column]))
+		rmsd_file.write("rc(\"match #{}-{} #{}-{}\")\n".format((number_of_beads+1),(number_of_beads+1)+number_of_beads ,0,number_of_beads))
+		rmsd_file.close()
+		instruction_files.append(chimera_file)
+		instruction_files.append(counter_line)
+		instruction_files.append(counter_column)
+		instructions.append(instruction_files)
+	print "Populating matrix.txt ..."
+	for core in range(0,number_of_files,number_of_cpus):
+		if len(instructions) - core < number_of_cpus:
+			execute = instructions[core:len(instructions)-core]
+		else:
+			execute = instructions[core:core+number_of_cpus] 
+		# WE NEED TO EXECUTE THIS DEPENDING ON CPU SIZE
+		rmsd_output = p.map(chimera_worker,execute)
 
-        for i in range(len(execute)):
-            string = ""
-            lista = []
-            for line2 in rmsd_output[i][0]:
-                string = string + line2
-                if line2 == "\n":
-                    lista.append(string)
-                    string = ""
-            #RMSD between 103 atom pairs is 4404.816 angstroms
-            for line2 in lista:
-                exp = re.search(r"(\d+\.\d+) angstroms",line2)
-                if (exp):
-                    value = exp.group(1)
-                    matrix[rmsd_output[i][1]][rmsd_output[i][2]] = value
-                    matrix[rmsd_output[i][2]][rmsd_output[i][1]] = value    
-                    value = 0
-        #delete files while we execute them
-        for i in range(len(execute)):
-            remove(execute[i][0])
-            remove(execute[i][0]+"c")
-        if core!= 0:
-            sys.stdout.write("\r{}%".format( core*100/number_of_files))
-            sys.stdout.flush()
-    #write matrix       
-    matrixtxt = open("{}matrix.txt".format(root), "w")      
-    matrixtxt.write("\t")
-    for p_file in only_python_files:
-        matrixtxt.write(p_file)
-        matrixtxt.write("\t")
-    matrixtxt.write("\n")
-    counter_line = 0
-    for line in only_python_files:
-        counter_column = 0
-        matrixtxt.write(line)
-        matrixtxt.write("\t")
-        for column in only_python_files:
-            matrixtxt.write(str(matrix[counter_line][counter_column])+"\t")  
-            counter_column += 1
-        counter_line += 1
-        matrixtxt.write("\n") 
-    matrixtxt.close()
-    print "\n\nmatrix.txt written! in {}".format(root)
-    print "This is the whole RMSD matrix (all models vs all models)"
+		for i in range(len(execute)):
+			string = ""
+			lista = []
+			for line2 in rmsd_output[i][0]:
+				string = string + line2
+				if line2 == "\n":
+					lista.append(string)
+					string = ""
+			#RMSD between 103 atom pairs is 4404.816 angstroms
+			for line2 in lista:
+				exp = re.search(r"(\d+\.\d+) angstroms",line2)
+				if (exp):
+					value = exp.group(1)
+					matrix[rmsd_output[i][1]][rmsd_output[i][2]] = value
+					matrix[rmsd_output[i][2]][rmsd_output[i][1]] = value    
+					value = 0
+		#delete files while we execute them
+		for i in range(len(execute)):
+			remove(execute[i][0])
+			remove(execute[i][0]+"c")
+		if core!= 0:
+			sys.stdout.write("\r{}%".format( core*100/number_of_files))
+			sys.stdout.flush()
+	#write matrix       
+	matrixtxt = open("{}matrix.txt".format(root), "w")      
+	matrixtxt.write("\t")
+	for p_file in only_python_files:
+		matrixtxt.write(p_file)
+		matrixtxt.write("\t")
+	matrixtxt.write("\n")
+	counter_line = 0
+	for line in only_python_files:
+		counter_column = 0
+		matrixtxt.write(line)
+		matrixtxt.write("\t")
+		for column in only_python_files:
+			matrixtxt.write(str(matrix[counter_line][counter_column])+"\t")  
+			counter_column += 1
+		counter_line += 1
+		matrixtxt.write("\n") 
+	matrixtxt.close()
+	print "\n\nmatrix.txt written! in {}".format(root)
+	print "This is the whole RMSD matrix (all models vs all models)"
 
-    D = matrix
+	D = matrix
 
-    # Compute and plot first dendrogram.
-    fig = plt.figure(figsize=(8,8))
-    ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
-    Y = sch.linkage(D, method='average')
-    Z1 = sch.dendrogram(Y, orientation='right')
-    ax1.set_xticks([])
-    ax1.set_yticks([])
+	#compute dendogram
+	Y = sch.linkage(D, method='average')
+	Z1 = sch.dendrogram(Y, orientation='right')
+	Y = sch.linkage(D, method='average')
+	Z2 = sch.dendrogram(Y,orientation='top')
+	idx1 = Z1['leaves']
+	dendogra_colors = Z1['color_list']
+	idx2 = Z2['leaves']
+	D = D[idx1,:]
+	D = D[:,idx2]
 
-    # # Compute and plot second dendrogram.
-    ax2 = fig.add_axes([0.3,0.71,0.6,0.2])
-    Y = sch.linkage(D, method='average')
-    Z2 = sch.dendrogram(Y,orientation='top')
+	# Code to retrieve the clusters
+	n = subset
+	cluster_number = []
+	cluster_dict = dict()
+	solutions = [] #gather the clustering proccesses when we have the same number as kmeans 
+	for i in range(subset-2): #descend branches until the bottom
+		new_cluster_id = n+i
+		old_cluster_id_0 = Y[i, 0]
+		old_cluster_id_1 = Y[i, 1]
+		combined_ids = list()
+		if old_cluster_id_0 in cluster_dict:
+			combined_ids += cluster_dict[old_cluster_id_0]
+			del cluster_dict[old_cluster_id_0]
+		else:
+			combined_ids += [old_cluster_id_0]
+		if old_cluster_id_1 in cluster_dict:
+			combined_ids += cluster_dict[old_cluster_id_1]
+			del cluster_dict[old_cluster_id_1]
+		else:
+			combined_ids += [old_cluster_id_1]
+		cluster_dict[new_cluster_id] = combined_ids
+		if len(cluster_dict) == k_mean:
+			aux_dict = dict(cluster_dict)
+			solutions.append(aux_dict)
+	cluster_dict_def = solutions[-1]    
+	#get only the last clustering, since it is the one with all models
+	for i in cluster_dict_def:
+		cluster_number.append(i)
+			
+	number_of_beads = number_of_beads +1 
+	# Write the matrix data in different files, k_mean times
+	for i in cluster_number:
+		matrixtxt = open("{}matrix{}.txt".format(root,i), "w")      
+		matrixtxt.write("\t")
+		cluster_values = [int(j) for j in cluster_dict_def[i]]
+		cluster_models = [only_python_files[k] for k in cluster_values]
+		for p_file in cluster_models:
+			matrixtxt.write(p_file)
+			matrixtxt.write("\t")
+		matrixtxt.write("\n")
+		counter_line = 0
+		for line in cluster_models:
+			counter_column = 0
+			matrixtxt.write(line)
+			matrixtxt.write("\t")
+			for column in cluster_models:
+				matrixtxt.write(str(matrix[counter_line][counter_column])+"\t")  
+				counter_column += 1
+			counter_line += 1
+			matrixtxt.write("\n") 
+		matrixtxt.close()
+		print "\n------"
+		print "\nmatrix{}.txt written! in {}".format(i,root)
+		print "This is one of the clusters. These models are more similar between them."
+			
+			
+		# create the file to open in chimera
+		# superposition of the best models
+		print "Creating superposition of this cluster..."
+		with open(working_dir+prefix+"/"+prefix+"_superposition_"+str(i)+".py","w") as f:
+			f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
+			f.write("rc(\"open {}\")\n".format(cluster_models[0]))
+			for k in range(1,len(cluster_models)):
+				imodel = cluster_models[k]
+				f.write("rc(\"open {}\")\n".format(imodel))
+				f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_beads,k*number_of_beads+number_of_beads-1,number_of_beads-1))
 
-    ax2.set_xticks([])
-    ax2.set_yticks([])
+		print "created in {}{}/{}_superposition".format(working_dir,prefix,prefix)
+	n_clusters = len(set(dendogra_colors))-1
+	print "\n{} clusters were found in the clustering process.".format(n_clusters)
+	if k_mean != n_clusters:
+		print "Number of clusters found and k means value set are different." 
+	else:
+		lines_in_file = 0
+		for m in cluster_number:
+			num_lines = sum(1 for line in open('{}matrix{}.txt'.format(root,m)))
+			if num_lines > lines_in_file:
+				biggest_matrix = m
+				lines_in_file = num_lines
+				
 
-    # Plot distance matrix.
-    axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
-    plt.xlabel("RMSD matrix in Angstroms.")
-    idx1 = Z1['leaves']
-    dendogra_colors = Z1['color_list']
-    idx2 = Z2['leaves']
-    D = D[idx1,:]
-    D = D[:,idx2]
-    im = axmatrix.matshow(D, aspect='auto', origin='lower', cmap=plt.cm.YlGnBu)
-    axmatrix.set_xticks([])
-    axmatrix.set_yticks([])
+	# Plot dendrogram.
+	fig = plt.figure(figsize=(8,8))
+	ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
+	ax1.set_xticks([])
+	ax1.set_yticks([])
+	ax2 = fig.add_axes([0.3,0.71,0.6,0.2])
+	ax2.set_xticks([])
+	ax2.set_yticks([])
 
-    # Plot colorbar.
-    axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
-    plt.colorbar(im, cax=axcolor)
-    #fig.show()
-    try:
-        fig.savefig('{}{}_heatmap.png'.format(root,prefix))
-    except:
-        pass
+	# Plot distance matrix.
+	axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
+	plt.xlabel("RMSD matrix in Angstroms.")
+	im = axmatrix.matshow(D, aspect='auto', origin='lower', cmap=plt.cm.YlGnBu)
+	axmatrix.set_xticks([])
+	axmatrix.set_yticks([])
 
-    # Code to retrieve the clusters
-    n = subset
-    cluster_number = []
-    cluster_dict = dict()
-    solutions = [] #gather the clustering proccesses when we have the same number as kmeans 
-    for i in range(subset-2): #descend branches until the bottom
-        new_cluster_id = n+i
-        old_cluster_id_0 = Y[i, 0]
-        old_cluster_id_1 = Y[i, 1]
-        combined_ids = list()
-        if old_cluster_id_0 in cluster_dict:
-            combined_ids += cluster_dict[old_cluster_id_0]
-            del cluster_dict[old_cluster_id_0]
-        else:
-            combined_ids += [old_cluster_id_0]
-        if old_cluster_id_1 in cluster_dict:
-            combined_ids += cluster_dict[old_cluster_id_1]
-            del cluster_dict[old_cluster_id_1]
-        else:
-            combined_ids += [old_cluster_id_1]
-        cluster_dict[new_cluster_id] = combined_ids
-        if len(cluster_dict) == k_mean:
-            aux_dict = dict(cluster_dict)
-            solutions.append(aux_dict)
-    cluster_dict_def = solutions[-1]    
-    #get only the last clustering, since it is the one with all models
-    for i in cluster_dict_def:
-        cluster_number.append(i)
-            
-    number_of_beads = number_of_beads +1 
-    # Write the matrix data in different files, k_mean times
-    for i in cluster_number:
-        matrixtxt = open("{}matrix{}.txt".format(root,i), "w")      
-        matrixtxt.write("\t")
-        cluster_values = [int(j) for j in cluster_dict_def[i]]
-        cluster_models = [only_python_files[k] for k in cluster_values]
-        for p_file in cluster_models:
-            matrixtxt.write(p_file)
-            matrixtxt.write("\t")
-        matrixtxt.write("\n")
-        counter_line = 0
-        for line in cluster_models:
-            counter_column = 0
-            matrixtxt.write(line)
-            matrixtxt.write("\t")
-            for column in cluster_models:
-                matrixtxt.write(str(matrix[counter_line][counter_column])+"\t")  
-                counter_column += 1
-            counter_line += 1
-            matrixtxt.write("\n") 
-        matrixtxt.close()
-        print "\n------"
-        print "\nmatrix{}.txt written! in {}".format(i,root)
-        print "This is one of the clusters. These models are more similar between them."
-            
-            
-        # create the file to open in chimera
-        # superposition of the best models
-        print "Creating superposition of this cluster..."
-        with open(working_dir+prefix+"/"+prefix+"_superposition_"+str(i)+".py","w") as f:
-            f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
-            f.write("rc(\"open {}\")\n".format(cluster_models[0]))
-            for k in range(1,len(cluster_models)):
-                imodel = cluster_models[k]
-                f.write("rc(\"open {}\")\n".format(imodel))
-                f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_beads,k*number_of_beads+number_of_beads-1,number_of_beads-1))
+	# Plot colorbar.
+	axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
+	plt.colorbar(im, cax=axcolor)
 
-        print "created in {}{}/{}_superposition".format(working_dir,prefix,prefix)
-    n_clusters = len(set(dendogra_colors))-1
-    print "\n{} clusters were found in the clustering process. They can be checked here: {}{}_heatmap.png".format(n_clusters,root,prefix)
-    if k_mean != n_clusters:
-        print "Number of clusters found and k means value set are different." 
-    else:
-        lines_in_file = 0
-        for m in cluster_number:
-            num_lines = sum(1 for line in open('{}matrix{}.txt'.format(root,m)))
-            if num_lines > lines_in_file:
-                biggest_matrix = m
-                lines_in_file = num_lines
+	try:
+		fig.savefig('{}{}_heatmap.png'.format(root,prefix))
+		print "\n clusters can be checked here: {}{}_heatmap.png".format(root,prefix)
+	except:
+		pass
+		
 
-
-    return n_clusters, biggest_matrix
+	return n_clusters, biggest_matrix
 
 def calculate_vhic(biggest_matrix,calculate_the_matrix):
 	root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
