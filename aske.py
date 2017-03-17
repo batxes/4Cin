@@ -1111,7 +1111,7 @@ def run_clustering(models_subset):
 	n_clusters = len(set(dendogra_colors))-1
 	print "\n{} clusters were found in the clustering process.".format(n_clusters)
 	if k_mean != n_clusters:
-		print "Number of clusters found and k means value set are different." 
+		print "Number of clusters found and k means value set are different. " 
 	else:
 		lines_in_file = 0
 		for m in cluster_number:
@@ -1771,11 +1771,10 @@ if not jump_step[2]:
     ######### cluster models
     print "Running clustering..."
     n_clusters = 0
-    n_clusters,
-    _matrix = run_clustering(models_subset)
-    if n_clusters != k_mean:
-        print "Redoing the clustering expecting {} clusters.".format(n_clusters)
-        n_clusters,biggest_matrix = run_clustering(models_subset)
+    n_clusters,biggest_matrix = run_clustering(models_subset)
+    #if n_clusters != k_mean:
+    #    print "Redoing the clustering expecting {} clusters.".format(n_clusters)
+    #    n_clusters,biggest_matrix = run_clustering(models_subset)
     print "Clustering finished"
 if maximum_hic_value == 0: #set a default value
 	maximum_hic_value = max_distance*0.8
