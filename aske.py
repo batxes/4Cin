@@ -41,8 +41,6 @@ from numpy import vstack,array
 from numpy.random import rand
 
 import matplotlib
-import matplotlib.pyplot as plt
-
 try: 
     matplotlib.use('Agg')
     plot = True
@@ -51,6 +49,7 @@ except:
 	print "\nPyplot is needed for the figures.\n"
 	e = sys.exc_info()[1]
 	print e
+import matplotlib.pyplot as plt
 	
 from matplotlib.backends.backend_pdf import PdfPages
 from math import fabs
@@ -1470,32 +1469,44 @@ lZ = 0 #updated in calculate_best_zscores
 parser = argparse.ArgumentParser(
 description='''Program that generates 3D models and a virtual Hi-C of your favourite region.''',
 epilog= """Apart from the 4C data, a primers.txt file is needed in that folder, which has 4C file name and position of the gene. Optionaly, a primers_vhic.txt file can be also created to paint interesting positions in the virtual Hi-C. File needs to be like this: gene_name chrN:position color. Color writen as yellow, red, green or other colors.""")
-parser.add_argument("--cpu",type=int, default=1, action="store", dest="number_of_cpus",help='number of CPUs that will be used in this script')
-parser.add_argument("--preNmodels",type=int, default=50, action="store", dest="pre_number_of_models",help='number of models that will be generated in the pre-modeling phase')
-parser.add_argument("--Nmodels",type=int, default=50000, action="store", dest="number_of_models",help='number of models that will be generated in the modeling phase')
-parser.add_argument("--from_dist",type=int, default=5000, action="store", dest="from_dist",help='minimum max-distance that will be used in the pre-modeling phase')
-parser.add_argument("--to_dist",type=int, default=12000, action="store", dest="to_dist",help='maximum max-distance that will be used in the pre-modeling phase')
-parser.add_argument("--dist_bins",type=int, default=1000, action="store", dest="dist_bins",help='size of jump between from_dist and to_dist')
-parser.add_argument("--from_zscore",type=float, default=0.1, action="store", dest="from_zscore",help='minimum Z-score that will be used in the pre-modeling phase')
-parser.add_argument("--to_zscore",type=float, default=1.2, action="store", dest="to_zscore",help='maximum Z-score that will be used in the pre-modeling phase')
-parser.add_argument("--zscore_bins",type=float, default=0.1, action="store", dest="zscore_bins",help='size of jump between from_zscore and to_zscore')
-parser.add_argument("--verbose", action="store_true", dest="verbose",help='Verbose True for more information while executing the script')
-parser.add_argument("data_dir", action="store",help='location of the 4C data. primers.txt needs tobe in there also')
-parser.add_argument("--working_dir", action="store",default=working_dir, dest="working_dir",help='location where the models will be generated')
-parser.add_argument("--subset",type=int, action="store",default=200, dest="subset",help='Number of best models out of the Modeling process')
-parser.add_argument("--std_dev", type=int,action="store",default=0, dest="std_dev",help='Standard deviation of the distances between beads, to be considered fulfilled')
-parser.add_argument("--cut_off_percentage",type=int, action="store",default=10, dest="cut_off_percentage",help='Percetange of fulfilled distances in each model to be a good model')
-parser.add_argument("prefix", action="store",help='Name of the models')
-parser.add_argument("--fragments_in_each_bead", type= int, default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
-parser.add_argument("--k_value",type=int, action="store",default=2, dest="k_mean",help='Number of cluster to expect in the clustering.')
-parser.add_argument("--jump_steps",type=int, action="store",nargs=5,default=[0,0,0,0,0], dest="jump_steps",help='List of 1|0 that indicate to jump (1) or not jump (0) a step or not. Steps: Pre-Modeling, Modeling, Analysis & Clustering, virtual Hi-C calculation, most representative model')
-parser.add_argument("--ignore_beads",type=int, action="store",nargs="+",default=[], dest="ignore_beads",help='Beads that are not gonna have distance restraints.')
-parser.add_argument("--uZ",type=float, action="store",dest="uZ", help='Upper bound Z score (Only needed if jumping pre-modeling steps)')
-parser.add_argument("--lZ", type=float, action="store",dest="lZ", help='Lower bound Z score (Only needed if jumping pre-modeling steps)')
-parser.add_argument("--max_distance", type=int, action="store",dest="max_distance", help='Maximum distance (Only needed if jumping pre-modeling steps)')
+
+group1 = parser.add_argument_group('Pre-modeling', 'Parameters used in the pre-modeling')
+group2 = parser.add_argument_group('Modeling', 'Parameters used in the modeling')
+group3 = parser.add_argument_group('Analysis and clustering', 'Parameters used in the analysis and clustering')
+group4 = parser.add_argument_group('Virtual Hi-C', 'Parameters used in the generation of the virtual Hi-C')
+group5 = parser.add_argument_group('Global', 'Global parameters used in the modeling')
+
+group1.add_argument("--preNmodels",type=int, default=50, action="store", dest="pre_number_of_models",help='number of models that will be generated in the pre-modeling phase')
+group1.add_argument("--from_dist",type=int, default=5000, action="store", dest="from_dist",help='minimum max-distance that will be used in the pre-modeling phase')
+group1.add_argument("--to_dist",type=int, default=12000, action="store", dest="to_dist",help='maximum max-distance that will be used in the pre-modeling phase')
+group1.add_argument("--dist_bins",type=int, default=1000, action="store", dest="dist_bins",help='size of jump between from_dist and to_dist')
+group1.add_argument("--from_zscore",type=float, default=0.1, action="store", dest="from_zscore",help='minimum Z-score that will be used in the pre-modeling phase')
+group1.add_argument("--to_zscore",type=float, default=1.2, action="store", dest="to_zscore",help='maximum Z-score that will be used in the pre-modeling phase')
+group1.add_argument("--zscore_bins",type=float, default=0.1, action="store", dest="zscore_bins",help='size of jump between from_zscore and to_zscore')
+
+group2.add_argument("--Nmodels",type=int, default=50000, action="store", dest="number_of_models",help='number of models that will be generated in the modeling phase')
+group2.add_argument("--ignore_beads",type=int, action="store",nargs="+",default=[], dest="ignore_beads",help='Beads that are not gonna have distance restraints. Also usable in the pre-modeling')
+
+group3.add_argument("--subset",type=int, action="store",default=200, dest="subset",help='Number of best models out of the Modeling process')
+group3.add_argument("--std_dev", type=int,action="store",default=0, dest="std_dev",help='Standard deviation of the distances between beads, to be considered fulfilled')
+group3.add_argument("--cut_off_percentage",type=int, action="store",default=10, dest="cut_off_percentage",help='Percetange of fulfilled distances in each model to be a good model')
+group3.add_argument("--k_value",type=int, action="store",default=2, dest="k_mean",help='Number of cluster to expect in the clustering.')
+
+group4.add_argument("--maximum_hic_value", type=int, action="store",dest="maximum_hic_value", default = 0,help='The virtual Hi-C gradient color will be from 0 to maximum_hic_value.')
+group4.add_argument("--repaint_vhic", action="store_true", dest="repaint_vhic",help='repaint_vhic True to generate the virtual Hi-C again. Modify the --maximum_hic_value also.')
+
+group5.add_argument("data_dir", action="store",help='location of the 4C data. primers.txt needs tobe in there also')
+group5.add_argument("prefix", action="store",help='Name of the models')
+group5.add_argument("--cpu",type=int, default=1, action="store", dest="number_of_cpus",help='number of CPUs that will be used in this script')
+group5.add_argument("--verbose", action="store_true", dest="verbose",help='Verbose True for more information while executing the script')
+group5.add_argument("--working_dir", action="store",default=working_dir, dest="working_dir",help='location where the models will be generated')
+group5.add_argument("--fragments_in_each_bead", type= int, default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
+group5.add_argument("--jump_step", action="store",choices=['pre_modeling', 'modeling', 'analysis', 'vhic','representative'], default= "None", dest="jump_step",help='Jump the step and the previous ones. The steps in order are: Pre-Modeling, Modeling, Analysis & Clustering, virtual Hi-C calculation, most representative model')
+group5.add_argument("--uZ",type=float, action="store",dest="uZ", help='Upper bound Z score (Only needed if jumping pre-modeling steps)')
+group5.add_argument("--lZ", type=float, action="store",dest="lZ", help='Lower bound Z score (Only needed if jumping pre-modeling steps)')
+group5.add_argument("--max_distance", type=int, action="store",dest="max_distance", help='Maximum distance (Only needed if jumping pre-modeling steps)')
 #parser.add_argument("--matrix_number", type=int, action="store",dest="biggest_matrix", help='number of the biggest matrix after the clustering, in case we want to only generate the virtual Hi-C')
-parser.add_argument("--maximum_hic_value", type=int, action="store",dest="maximum_hic_value", default = 0,help='The virtual Hi-C gradient color will be from 0 to maximum_hic_value.')
-parser.add_argument("--repaint_vhic", action="store_true", dest="repaint_vhic",help='repaint_vhic True to generate the virtual Hi-C again. Modify the --maximum_hic_value also.')
+
 
 args = parser.parse_args()
 #print args	
@@ -1515,7 +1526,8 @@ working_dir = args.working_dir
 prefix = args.prefix
 fragments_in_each_bead = args.fragments_in_each_bead
 k_mean = args.k_mean
-jump_steps = args.jump_steps
+jump_step = args.jump_step
+step = jump_step
 subset = args.subset
 std_dev = args.std_dev
 cut_off_percentage = args.cut_off_percentage
@@ -1524,16 +1536,36 @@ ignore_beads = args.ignore_beads
 biggest_matrix = 0
 repaint_vhic = args.repaint_vhic
 
+jump_step = [1]*5
+if step != "None":
+	if step == "pre_modeling":
+		jump_step[1] = 0
+		jump_step[2] = 0
+		jump_step[3] = 0
+		jump_step[4] = 0
+	else: 
+		if step == "modeling":
+			jump_step[2] = 0
+			jump_step[3] = 0
+			jump_step[4] = 0
+		else: 
+			if step == "analysis":
+				jump_step[3] = 0
+				jump_step[4] = 0
+			else:
+				if step == "vhic":
+					jump_step[4] = 0
+else:
+	jump_step = [0]*5
+		
+	
 if data_dir[-1] != "/":
     data_dir = data_dir + "/"
-
 if repaint_vhic:
-	jump_steps = []
-	for i in range(5):
-		jump_steps.append(1)
+	jump_step = [1]*5
 
 try:
-	if jump_steps[0] :
+	if jump_step[0] :
 		max_distance = args.max_distance
 		uZ = args.uZ
 		lZ = args.lZ
@@ -1545,7 +1577,7 @@ except:
 
 # getting biggest_matrix
 try:
-	if jump_steps[2] and (not jump_steps[3] or not jump_steps[4]):
+	if jump_step[2] and (not jump_step[3] or not jump_step[4]):
 		search_dir = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
 		command =  "ls {} | egrep matrix[0-9]+".format(search_dir)
 		matrix_files = subprocess.check_output(command,shell=True)
@@ -1687,7 +1719,7 @@ execute = []
 ########################################  Pipeline
 
 ######### pre-modeling 
-if not jump_steps[0]:
+if not jump_step[0]:
 	print "Doing the pre-modeling..."
 	print "Modeling with variable max_distance ranging {}:{}".format(from_dist,to_dist)
 	for dist in range(from_dist,to_dist+dist_bins,dist_bins):
@@ -1714,7 +1746,7 @@ if not jump_steps[0]:
 	
 	
 ######### Modeling 	
-if not jump_steps[1]:
+if not jump_step[1]:
 	print "Modeling started, modeling {} models...".format(total_number_of_models)
 	number_of_models = total_number_of_models/number_of_cpus
 	for cpu in range(number_of_cpus):
@@ -1727,7 +1759,7 @@ if not jump_steps[1]:
 
 ######### Analysis of models
 ############################################# anterior score files should be deleted
-if not jump_steps[2]:
+if not jump_step[2]:
     print "Analysis started"
 
     std_dev, cut_off_percentage, models_subset = run_analysis(std_dev,cut_off_percentage)
@@ -1749,17 +1781,17 @@ if maximum_hic_value == 0: #set a default value
 
 
 ######### vhic calculation
-if not jump_steps[3]:
+if not jump_step[3]:
 	print "Generating Virtual Hi-C"
 	calculate_vhic(biggest_matrix,True)
 	print "Virtual Hi-C generated"
-if repaint_vhic and jump_steps[3]: 
+if repaint_vhic and jump_step[3]: 
 	print "RePainting Virtual Hi-C"
 	calculate_vhic(biggest_matrix,False)
 	print "Virtual Hi-C RePainted"
 
 ######### getting representative model
-if not jump_steps[4]:
+if not jump_step[4]:
 	print "Calculating representative model..."
 	calculate_representative_model(biggest_matrix)
 
