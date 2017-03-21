@@ -18,7 +18,7 @@ IMP 2.5, 2.4 (newer versions crash) (Download from http://integrativemodeling.or
 pysam (for paint_model.py)
 ```
 
-Go to Installing dependencies to install them.
+Go to Installing dependencies(https://github.com/batxes/4Cin/blob/master/README.md#installing-dependencies) to install them.
 
 
 ## Fast Usage (run this commands)
