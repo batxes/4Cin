@@ -28,7 +28,7 @@ Go to Installing dependencies(https://github.com/batxes/4Cin/blob/master/README.
 2 - Provide a primers.txt file with name of primers and position:
     Six2 chr2:423234
     Six3 chr2:426351
-3 - python aske.py 4C_files_dir Name_of_your_locus
+3 - python 4Cin.py 4C_files_dir Name_of_your_locus
 ```
 
 [Optionals]
