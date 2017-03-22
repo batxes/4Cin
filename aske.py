@@ -13,19 +13,18 @@ from multiprocessing import Process, Lock, Pool, current_process
 import argparse
 import warnings
 with warnings.catch_warnings():
-	warnings.filterwarnings("ignore",category=DeprecationWarning)
-	import IMP.kernel
-	import IMP.algebra
-	import IMP.core
-	import IMP.display
-	import IMP.base
-	import IMP.atom
-	import IMP.rmf
-	import IMP.container
-	import RMF
+    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    import IMP.kernel
+    import IMP.algebra
+    import IMP.core
+    import IMP.display
+    import IMP.base
+    import IMP.atom
+    import IMP.rmf
+    import IMP.container
+    import RMF
 #warnings.filterwarnings("ignore")
 import time
-from math import fabs
 from random import randint
 
 import numpy as np
@@ -45,12 +44,12 @@ try:
     matplotlib.use('Agg')
     plot = True
 except:
-	plot = False
-	print "\nPyplot is needed for the figures.\n"
-	e = sys.exc_info()[1]
-	print e
+    plot = False
+    print "\nPyplot is needed for the figures.\n"
+    e = sys.exc_info()[1]
+    print e
 import matplotlib.pyplot as plt
-	
+    
 from matplotlib.backends.backend_pdf import PdfPages
 from math import fabs
 from scipy.stats.stats import spearmanr
@@ -58,7 +57,7 @@ from scipy.stats.stats import spearmanr
 # realpath() will make your script run, even if you symlink it :)
 cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
 if cmd_folder not in sys.path:
-	sys.path.insert(0, cmd_folder)
+    sys.path.insert(0, cmd_folder)
 
 # use this if you want to include modules from a subfolder
 cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"src")))
@@ -134,391 +133,391 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
 
     radius_scale = 0.0423 #Radius of 1 bp in A. for the IrxB models. It's the canonical value for 30 nm chromatin
 
-	# radius_scale = 0.00055 #depending my calculations
-	## nucleosome = 200 bp. 30nm fiber -> 6-7 nucleosomes = 11 nm. -> then 1bp = 0.00846nm.
-	## string of beads  11nm = 200bp. 1bp = 0.055nm. 
-	## radius for both:
-	##                30nm : 0.00423nm = 0.0423A
-	##                string of beads : 0.0275nm = 0.275A
-	#http://www.nature.com/nsmb/journal/v18/n1/pdf/nsmb.1936.pdf -> 0.01 occupancy
-	#http://www.pnas.org/content/84/22/7802.full.pdf
-	# dsDNA_1bp_size = 34 #Angstrom Double strand DNA 1 bp size
-	####### FACT: 10 NUCLEOTIDES = 34 aNGSTROMS IN LENGTH
+    # radius_scale = 0.00055 #depending my calculations
+    ## nucleosome = 200 bp. 30nm fiber -> 6-7 nucleosomes = 11 nm. -> then 1bp = 0.00846nm.
+    ## string of beads  11nm = 200bp. 1bp = 0.055nm. 
+    ## radius for both:
+    ##                30nm : 0.00423nm = 0.0423A
+    ##                string of beads : 0.0275nm = 0.275A
+    #http://www.nature.com/nsmb/journal/v18/n1/pdf/nsmb.1936.pdf -> 0.01 occupancy
+    #http://www.pnas.org/content/84/22/7802.full.pdf
+    # dsDNA_1bp_size = 34 #Angstrom Double strand DNA 1 bp size
+    ####### FACT: 10 NUCLEOTIDES = 34 aNGSTROMS IN LENGTH
 
 
 
-	#to get the size of the fragments, we read any file
+    #to get the size of the fragments, we read any file
     reads_size = sizeReader(fileCheck(files[0]))
 
-	###################################### ###################################### 
-	###################################### ###################################### 
-	###################################### THE REAL DEAL!
+    ###################################### ###################################### 
+    ###################################### ###################################### 
+    ###################################### THE REAL DEAL!
     start_time = time.time()
     for sample in range(starting_point, starting_point+number_of_models):
-		
-		movers = []
-		n_restraints = []
-		genome = []
-		spheres = []
-		restraints = []
-		movers = []
-		bead_radii = []
-		fragment_bp_quantity =[]
-		scores = []
-		
-		chimera_file = prefix+str(sample)+".py"
-		verboseprint ("Generating {} ...".format(chimera_file))
-		values_file = prefix+str(sample)+".txt"
-		w = IMP.display.ChimeraWriter(storage_folder+"/"+chimera_file)
-		m = IMP.Model()
-		
-		if rmf_video:
-			hierarqy= IMP.atom.Hierarchy.setup_particle(IMP.Particle(m))
-		
-		
-		##########################    REPRESENTATION ##########################    REPRESENTATION
-		##########################    REPRESENTATION ##########################    REPRESENTATION
-		for i in range(number_of_fragments):
-			
-				# Create "untyped" Particles
-				p = IMP.kernel.Particle(m,"particle_"+str(i))
-				
-				radius_sum = 0
-				for j in range(int(fragments_in_each_bead)):
-					radius_sum = radius_sum + reads_size[(i*int(fragments_in_each_bead))+j]
-				radius = radius_scale * radius_sum #sphere radius proportional to fragments
-				fragment_bp_quantity.append(radius_sum)
-				#verboseprint ("Fragment number:{} size:{} radius:{}".format(i,radius_sum,radius))
-				#decorator with sphere  
-				#Creating very far away particles (10000) could alter the final result of the beads that are not restrained
-				d = IMP.core.XYZR.setup_particle(p, IMP.algebra.Sphere3D(IMP.algebra.Vector3D(randint(0,int(y2)), randint(0,int(y2)), randint(0,int(y2))), radius)) 
-				bead_radii.append(radius)
-				if i in(viewpoint_fragments):
-					if i in(are_genes):
-						color = IMP.display.Color(1,0.7,0)
-					else: 
-						color = IMP.display.Color(0,1,0)
-					IMP.display.Colored.setup_particle(p, color)
-				else:
-					
-	#               #one theme of color #blue, purple, red
-					#color = IMP.display.Color(1/float(number_of_fragments)*i,0.0,1-1/float(number_of_fragments)*i) 
-					
-					
-					#another them (only grey)
-					color = IMP.display.Color(0.7,0.7,0.7) 
-					
-		
-					
-					IMP.display.Colored.setup_particle(p, color)
-				
-				d.set_coordinates_are_optimized(True) #tHIS IS FOR Ball Mover. BallMover can't move non-optimized attribute
-				
-				genome.append(p)
-				spheres.append(d)
-				# to use with montecarlo
-				movers.append(IMP.core.BallMover([p], radius*2))
-		#         movers[-1].set_was_used(True) -> #what does this do?
-				
-				if (rmf_video):
-					IMP.atom.Mass.setup_particle(p,30)
-					IMP.atom.Diffusion.setup_particle(p)
-					hierarqy.add_child(IMP.atom.Hierarchy.setup_particle(p))
-		##########################  RESTRAINTS ##########################  RESTRAINTS
-		##########################  RESTRAINTS ##########################  RESTRAINTS
-		
-		#Distances
-		#Excluded volume
-		#Connectivity (HUB and HLB)
-		#------------------
-		
-		r_count = 0
-		reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, y2,files)
-		
-		for j in range(len(files)):
+        
+        movers = []
+        n_restraints = []
+        genome = []
+        spheres = []
+        restraints = []
+        movers = []
+        bead_radii = []
+        fragment_bp_quantity =[]
+        scores = []
+        
+        chimera_file = prefix+str(sample)+".py"
+        verboseprint ("Generating {} ...".format(chimera_file))
+        values_file = prefix+str(sample)+".txt"
+        w = IMP.display.ChimeraWriter(storage_folder+"/"+chimera_file)
+        m = IMP.Model()
+        
+        if rmf_video:
+            hierarqy= IMP.atom.Hierarchy.setup_particle(IMP.Particle(m))
+        
+        
+        ##########################    REPRESENTATION ##########################    REPRESENTATION
+        ##########################    REPRESENTATION ##########################    REPRESENTATION
+        for i in range(number_of_fragments):
+            
+                # Create "untyped" Particles
+                p = IMP.kernel.Particle(m,"particle_"+str(i))
+                
+                radius_sum = 0
+                for j in range(int(fragments_in_each_bead)):
+                    radius_sum = radius_sum + reads_size[(i*int(fragments_in_each_bead))+j]
+                radius = radius_scale * radius_sum #sphere radius proportional to fragments
+                fragment_bp_quantity.append(radius_sum)
+                #verboseprint ("Fragment number:{} size:{} radius:{}".format(i,radius_sum,radius))
+                #decorator with sphere  
+                #Creating very far away particles (10000) could alter the final result of the beads that are not restrained
+                d = IMP.core.XYZR.setup_particle(p, IMP.algebra.Sphere3D(IMP.algebra.Vector3D(randint(0,int(y2)), randint(0,int(y2)), randint(0,int(y2))), radius)) 
+                bead_radii.append(radius)
+                if i in(viewpoint_fragments):
+                    if i in(are_genes):
+                        color = IMP.display.Color(1,0.7,0)
+                    else: 
+                        color = IMP.display.Color(0,1,0)
+                    IMP.display.Colored.setup_particle(p, color)
+                else:
+                    
+    #               #one theme of color #blue, purple, red
+                    #color = IMP.display.Color(1/float(number_of_fragments)*i,0.0,1-1/float(number_of_fragments)*i) 
+                    
+                    
+                    #another them (only grey)
+                    color = IMP.display.Color(0.7,0.7,0.7) 
+                    
+        
+                    
+                    IMP.display.Colored.setup_particle(p, color)
+                
+                d.set_coordinates_are_optimized(True) #tHIS IS FOR Ball Mover. BallMover can't move non-optimized attribute
+                
+                genome.append(p)
+                spheres.append(d)
+                # to use with montecarlo
+                movers.append(IMP.core.BallMover([p], radius*2))
+        #         movers[-1].set_was_used(True) -> #what does this do?
+                
+                if (rmf_video):
+                    IMP.atom.Mass.setup_particle(p,30)
+                    IMP.atom.Diffusion.setup_particle(p)
+                    hierarqy.add_child(IMP.atom.Hierarchy.setup_particle(p))
+        ##########################  RESTRAINTS ##########################  RESTRAINTS
+        ##########################  RESTRAINTS ##########################  RESTRAINTS
+        
+        #Distances
+        #Excluded volume
+        #Connectivity (HUB and HLB)
+        #------------------
+        
+        r_count = 0
+        reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, y2,files)
+        
+        for j in range(len(files)):
 
-			reads_weight = reads_weights[j]
-			reads_value = reads_values[j]
+            reads_weight = reads_weights[j]
+            reads_value = reads_values[j]
 
-			#get the number of reads and their size from our files
-			f = fileCheck(files[j])
-			reads_size = sizeReader(f)
-			n_fragments = len(reads_size)/int(fragments_in_each_bead)  
+            #get the number of reads and their size from our files
+            f = fileCheck(files[j])
+            reads_size = sizeReader(f)
+            n_fragments = len(reads_size)/int(fragments_in_each_bead)  
 
-	# # # # # # # # # # # # # # # # # # # # # # # # #harmonic restraints got from file
-			counter = 0
-			if (RESTRAINTS[0]):
-				
+    # # # # # # # # # # # # # # # # # # # # # # # # #harmonic restraints got from file
+            counter = 0
+            if (RESTRAINTS[0]):
+                
 
-				p1 = genome[viewpoint_fragments[j]]
-				for i in range(n_fragments):
-					counter += 1
-					if i != viewpoint_fragments[j]:
-						if reads_value[i] != 0: #aplying the Z Score lower bound and upper bound (see calculate10WindowedDistances)
-							if i not in ignore_beads:
+                p1 = genome[viewpoint_fragments[j]]
+                for i in range(n_fragments):
+                    counter += 1
+                    if i != viewpoint_fragments[j]:
+                        if reads_value[i] != 0: #aplying the Z Score lower bound and upper bound (see calculate10WindowedDistances)
+                            if i not in ignore_beads:
 
-								p2 = genome[i]
-								
-								#We add the diameters of the beads to the distance
-								# the real distance is not from the core, we need to add the diameter, all the dna sequence
-	#                         distance = bead_radii[j] + bead_radii[i] + float(reads_value[i])
-								
-								
-								distance = float(reads_value[i])
-								
+                                p2 = genome[i]
+                                
+                                #We add the diameters of the beads to the distance
+                                # the real distance is not from the core, we need to add the diameter, all the dna sequence
+    #                         distance = bead_radii[j] + bead_radii[i] + float(reads_value[i])
+                                
+                                
+                                distance = float(reads_value[i])
+                                
 
-								if distance != float(y2):
-	#                             if True:
-									#if distance < y2: #if maximum distance is reached, don't set a restraint, because it can be further in genomic distance
-									kk2 = fabs(reads_weight[i])
-									#if it is not in the window of the 4C interactome
-									if (start_windows[j] > counter or end_windows[j] < counter):
-										f = IMP.core.HarmonicLowerBound(distance, k*kk2)#don't give very good score?
-										#f = IMP.core.Harmonic(distance, k*kk2)
-										#harmonicLoweBound of max distance, so that they can not enter in a diameter of MAXDIS
-									else:     
-										f = IMP.core.Harmonic(distance, k*kk2) #)  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now                  
-				#                     f = IMP.core.Harmonic(float(reads_value[i]), k*fabs(reads_weight[i])) #)  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now
-									s = IMP.core.DistancePairScore(f)
-									r = IMP.core.PairRestraint(s, (p1, p2))  #this is the restraint
-									restraints.append(r)
-									m.add_restraint(r)
-									r_count += 1
+                                if distance != float(y2):
+    #                             if True:
+                                    #if distance < y2: #if maximum distance is reached, don't set a restraint, because it can be further in genomic distance
+                                    kk2 = fabs(reads_weight[i])
+                                    #if it is not in the window of the 4C interactome
+                                    if (start_windows[j] > counter or end_windows[j] < counter):
+                                        f = IMP.core.HarmonicLowerBound(distance, k*kk2)#don't give very good score?
+                                        #f = IMP.core.Harmonic(distance, k*kk2)
+                                        #harmonicLoweBound of max distance, so that they can not enter in a diameter of MAXDIS
+                                    else:     
+                                        f = IMP.core.Harmonic(distance, k*kk2) #)  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now                  
+                #                     f = IMP.core.Harmonic(float(reads_value[i]), k*fabs(reads_weight[i])) #)  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now
+                                    s = IMP.core.DistancePairScore(f)
+                                    r = IMP.core.PairRestraint(s, (p1, p2))  #this is the restraint
+                                    restraints.append(r)
+                                    m.add_restraint(r)
+                                    r_count += 1
 
-				  
-		n_restraints.append(r_count)  
-		RESTRAINTS_QUANTITY[0] = r_count 
-	# # # # # # # # # # # # # # # # # # # # # # # # # excluded volume
-		if (RESTRAINTS[1]):
-			mode = 1
-			if mode == 1:
-				r = IMP.core.ExcludedVolumeRestraint(genome,k) #we can remove k and 1 (genome,k,1) 
-				restraints.append(r)
-				m.add_restraint(r)
-				  
-			
-			if mode == 2:
-				# this container lists all pairs that are close at the time of evaluation
-				nbl= IMP.container.ClosePairContainer(genome, 0,2)
-				h= IMP.core.HarmonicLowerBound(300,1)
-				sd= IMP.core.DistancePairScore(h)
-				#sd= IMP.core.SphereDistancePairScore(h)
-				# use the lower bound on the inter-sphere distance to push the spheres apart
-				nbr= IMP.container.PairsRestraint(sd, nbl)
-				m.add_restraint(nbr)
-			RESTRAINTS_QUANTITY[1] = 1 
-	# # # # # # # # # # # # # # # # # # # # # # # # # String of beads upper bound
-		if (RESTRAINTS[2]):
-			# using a HarmonicDistancePairScore for fixed length links is more
-			# efficient than using a HarmonicSphereDistnacePairScore and works
-			# better with the optimizer
-			res_count = 0
-			for i in range(len(genome)-1): 
-					#### Different std_dev
-				kk = 1    
-				hub = IMP.core.HarmonicUpperBound(bead_radii[i]+bead_radii[i+1],k*kk) #como conseguir esto bien? 4 653 000
-				p1 = genome[i]
-				p2 = genome[i+1]
-			#                 f = IMP.core.Harmonic(float(reads_value[i]), k * np.sqrt(reads_value[i]))  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now
-				s = IMP.core.DistancePairScore(hub)
-				r = IMP.core.PairRestraint(s, (p1, p2))  #this is the restraint
-				restraints.append(r)
-				m.add_restraint(r)
-				res_count += 1
-			RESTRAINTS_QUANTITY[2] = res_count
-		
+                  
+        n_restraints.append(r_count)  
+        RESTRAINTS_QUANTITY[0] = r_count 
+    # # # # # # # # # # # # # # # # # # # # # # # # # excluded volume
+        if (RESTRAINTS[1]):
+            mode = 1
+            if mode == 1:
+                r = IMP.core.ExcludedVolumeRestraint(genome,k) #we can remove k and 1 (genome,k,1) 
+                restraints.append(r)
+                m.add_restraint(r)
+                  
+            
+            if mode == 2:
+                # this container lists all pairs that are close at the time of evaluation
+                nbl= IMP.container.ClosePairContainer(genome, 0,2)
+                h= IMP.core.HarmonicLowerBound(300,1)
+                sd= IMP.core.DistancePairScore(h)
+                #sd= IMP.core.SphereDistancePairScore(h)
+                # use the lower bound on the inter-sphere distance to push the spheres apart
+                nbr= IMP.container.PairsRestraint(sd, nbl)
+                m.add_restraint(nbr)
+            RESTRAINTS_QUANTITY[1] = 1 
+    # # # # # # # # # # # # # # # # # # # # # # # # # String of beads upper bound
+        if (RESTRAINTS[2]):
+            # using a HarmonicDistancePairScore for fixed length links is more
+            # efficient than using a HarmonicSphereDistnacePairScore and works
+            # better with the optimizer
+            res_count = 0
+            for i in range(len(genome)-1): 
+                    #### Different std_dev
+                kk = 1    
+                hub = IMP.core.HarmonicUpperBound(bead_radii[i]+bead_radii[i+1],k*kk) #como conseguir esto bien? 4 653 000
+                p1 = genome[i]
+                p2 = genome[i+1]
+            #                 f = IMP.core.Harmonic(float(reads_value[i]), k * np.sqrt(reads_value[i]))  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now
+                s = IMP.core.DistancePairScore(hub)
+                r = IMP.core.PairRestraint(s, (p1, p2))  #this is the restraint
+                restraints.append(r)
+                m.add_restraint(r)
+                res_count += 1
+            RESTRAINTS_QUANTITY[2] = res_count
+        
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # String of beads lower bound 
-		if (RESTRAINTS[3]): 
-			res_count = 0 
-			hlb = IMP.core.HarmonicLowerBound(300,k)
-			for h in range(len(genome)):
-				p1 = genome[h]
-				for i in range(len(genome)):
-					if i != h and i != h-1 and i != h+1:
-						p2 = genome[i]
-						s = IMP.core.DistancePairScore(hlb)
-						r = IMP.core.PairRestraint(s, (p1, p2))  #this is the restraint
-						restraints.append(r)
-						m.add_restraint(r)  
-						res_count+=1    
-		##########################  SAMPLING ##########################  SAMPLING
-		##########################  SAMPLING ##########################  SAMPLING
-			RESTRAINTS_QUANTITY[3] = res_count
-		
-		cg = IMP.core.ConjugateGradients(m) 
-		mc = IMP.core.MonteCarloWithLocalOptimization(cg, LSTEPS) 
-		mc.set_return_best(True) 
-		mc.set_name("MC")
-		sm = IMP.core.SerialMover(movers)
-		mc.add_mover(sm)
-		 
-		# sf = IMP.core.RestraintsScoringFunction(restraints, "RSF")
-		# mc.set_scoring_function(sf) #monte carlo
-		# cg.set_scoring_function(sf)     
-		
-		######################RMF VIDEO, INSTALL RMF AGAIN!! ######################    
-		if rmf_video:
-		 
-		#create the RMF file to show the movie
-			rmf= RMF.create_rmf_file('genome.rmf')
-			rmf.set_description("Simulate genome.\n")
-			 
-			bd = IMP.atom.BrownianDynamics(m)
-			bd.set_log_level(IMP.base.SILENT)
-	#         bd.set_scoring_function(sf)
+    # # # # # # # # # # # # # # # # # # # # # # # # # String of beads lower bound 
+        if (RESTRAINTS[3]): 
+            res_count = 0 
+            hlb = IMP.core.HarmonicLowerBound(300,k)
+            for h in range(len(genome)):
+                p1 = genome[h]
+                for i in range(len(genome)):
+                    if i != h and i != h-1 and i != h+1:
+                        p2 = genome[i]
+                        s = IMP.core.DistancePairScore(hlb)
+                        r = IMP.core.PairRestraint(s, (p1, p2))  #this is the restraint
+                        restraints.append(r)
+                        m.add_restraint(r)  
+                        res_count+=1    
+        ##########################  SAMPLING ##########################  SAMPLING
+        ##########################  SAMPLING ##########################  SAMPLING
+            RESTRAINTS_QUANTITY[3] = res_count
+        
+        cg = IMP.core.ConjugateGradients(m) 
+        mc = IMP.core.MonteCarloWithLocalOptimization(cg, LSTEPS) 
+        mc.set_return_best(True) 
+        mc.set_name("MC")
+        sm = IMP.core.SerialMover(movers)
+        mc.add_mover(sm)
+         
+        # sf = IMP.core.RestraintsScoringFunction(restraints, "RSF")
+        # mc.set_scoring_function(sf) #monte carlo
+        # cg.set_scoring_function(sf)     
+        
+        ######################RMF VIDEO, INSTALL RMF AGAIN!! ######################    
+        if rmf_video:
+         
+        #create the RMF file to show the movie
+            rmf= RMF.create_rmf_file('genome.rmf')
+            rmf.set_description("Simulate genome.\n")
+             
+            bd = IMP.atom.BrownianDynamics(m)
+            bd.set_log_level(IMP.base.SILENT)
+    #         bd.set_scoring_function(sf)
 
-			bd.set_maximum_time_step(100)
-			 
-			IMP.rmf.add_hierarchy(rmf, hierarqy)
-			IMP.rmf.add_restraints(rmf, restraints)
+            bd.set_maximum_time_step(100)
+             
+            IMP.rmf.add_hierarchy(rmf, hierarqy)
+            IMP.rmf.add_restraints(rmf, restraints)
 
-			oss= IMP.rmf.SaveOptimizerState(m,rmf)
+            oss= IMP.rmf.SaveOptimizerState(m,rmf)
 
-			oss.update_always("initial conformation")
-			oss.set_log_level(IMP.base.SILENT)
-			oss.set_simulator(bd)
-			bd.add_optimizer_state(oss)
-			print "Optimizing twith Brownian Dynamics for the RMF file (movie)."
-			bd.optimize(frames)
-		
-		IMP.base.set_log_level(IMP.base.SILENT)
-		
-		#verboseprint( "Number of restraints: %i" % (len(restraints)))
-		
-		#first score
-		scores.append(m.evaluate(False))
-		#verboseprint ("Start score: {}".format(scores[-1]))
-		#verboseprint ("\nStarts the optimization... ")
+            oss.update_always("initial conformation")
+            oss.set_log_level(IMP.base.SILENT)
+            oss.set_simulator(bd)
+            bd.add_optimizer_state(oss)
+            print "Optimizing twith Brownian Dynamics for the RMF file (movie)."
+            bd.optimize(frames)
+        
+        IMP.base.set_log_level(IMP.base.SILENT)
+        
+        #verboseprint( "Number of restraints: %i" % (len(restraints)))
+        
+        #first score
+        scores.append(m.evaluate(False))
+        #verboseprint ("Start score: {}".format(scores[-1]))
+        #verboseprint ("\nStarts the optimization... ")
 
-		#First hightemp iterations, do not stop the optimization
-		#verboseprint ("High temp iterations")
-		for i in range(0,hightemp):
-			temperature = alpha * (1.1 * NROUNDS - i) / NROUNDS
-			mc.set_kt(temperature)
-			scores.append(mc.optimize(STEPS))
-			# verboseprint ("{} {} temp:{}".format(i, scores[-1],mc.get_kt()))
-		
-		needed_time = time.time() - start_time
-		lownrj = scores[-1]
-		# verboseprint ("Time for High temp iterations {}".format(needed_time))
-		# verboseprint ("Low temp iterations")
-		for i in range(hightemp,NROUNDS): 
-			temperature = alpha * (1.1 * NROUNDS - i) / NROUNDS
-			mc.set_kt(temperature)
-			scores.append(mc.optimize(STEPS))
-			# verboseprint ("{} {} temp:{}".format(i, scores[-1],mc.get_kt()))
-			# Calculate the score variation and check if the optimization
-			# can be stopped or not
-			if lownrj > 0:
-				deltaE = fabs((scores[-1] - lownrj) / lownrj)
-			else:
-				deltaE = scores[-1]
-			if (deltaE < endLoopValue and endLoopCount == stopCount):
-				break
-			elif (deltaE < endLoopValue and endLoopCount < stopCount):
-				endLoopCount += 1
-				lownrj = scores[-1]
-			else:
-				endLoopCount = 0
-				lownrj = scores[-1]
-				
-		
-		
+        #First hightemp iterations, do not stop the optimization
+        #verboseprint ("High temp iterations")
+        for i in range(0,hightemp):
+            temperature = alpha * (1.1 * NROUNDS - i) / NROUNDS
+            mc.set_kt(temperature)
+            scores.append(mc.optimize(STEPS))
+            # verboseprint ("{} {} temp:{}".format(i, scores[-1],mc.get_kt()))
+        
+        needed_time = time.time() - start_time
+        lownrj = scores[-1]
+        # verboseprint ("Time for High temp iterations {}".format(needed_time))
+        # verboseprint ("Low temp iterations")
+        for i in range(hightemp,NROUNDS): 
+            temperature = alpha * (1.1 * NROUNDS - i) / NROUNDS
+            mc.set_kt(temperature)
+            scores.append(mc.optimize(STEPS))
+            # verboseprint ("{} {} temp:{}".format(i, scores[-1],mc.get_kt()))
+            # Calculate the score variation and check if the optimization
+            # can be stopped or not
+            if lownrj > 0:
+                deltaE = fabs((scores[-1] - lownrj) / lownrj)
+            else:
+                deltaE = scores[-1]
+            if (deltaE < endLoopValue and endLoopCount == stopCount):
+                break
+            elif (deltaE < endLoopValue and endLoopCount < stopCount):
+                endLoopCount += 1
+                lownrj = scores[-1]
+            else:
+                endLoopCount = 0
+                lownrj = scores[-1]
+                
+        
+        
 
-		suma1 = suma2 = suma3 = suma4 = 0
-		if RESTRAINTS[0]:
-			for r in restraints[0:RESTRAINTS_QUANTITY[0]]:
-				suma1 = suma1 + r.evaluate(False)
-	#         print RESTRAINTS_QUANTITY[0], "distance restraints: ",suma1
-		if RESTRAINTS[1]:
-			suma2 = restraints[RESTRAINTS_QUANTITY[0]].evaluate(False)
-	#         print 1, " excluded Volume restraint: ",suma2
-		if RESTRAINTS[2]:    
-			n = RESTRAINTS_QUANTITY[0]+RESTRAINTS_QUANTITY[1]
-			n2 = RESTRAINTS_QUANTITY[0]+RESTRAINTS_QUANTITY[1]+RESTRAINTS_QUANTITY[2]
-			for r in restraints[n:n2]:
-				suma3 = suma3 + r.evaluate(False)
-	#         print n2-n, " connectivity HUB restraints: ",suma3
-		if RESTRAINTS[3]:  
-			n = RESTRAINTS_QUANTITY[0]+RESTRAINTS_QUANTITY[1]+RESTRAINTS_QUANTITY[2]
-			n2 = RESTRAINTS_QUANTITY[0]+RESTRAINTS_QUANTITY[1]+RESTRAINTS_QUANTITY[2]+RESTRAINTS_QUANTITY[3]
-			for r in restraints[n:n2]:
-				suma4 = suma4 + r.evaluate(False)
-	#         print n-n2, " connectivity HLB restraints: ",suma4
-		#verboseprint ("Total: ".format(suma1+suma2+suma3+suma4))
-		#verboseprint ("------------------------\n")
-		#verboseprint ("Number of restraints: %i" % (len(restraints)))
+        suma1 = suma2 = suma3 = suma4 = 0
+        if RESTRAINTS[0]:
+            for r in restraints[0:RESTRAINTS_QUANTITY[0]]:
+                suma1 = suma1 + r.evaluate(False)
+    #         print RESTRAINTS_QUANTITY[0], "distance restraints: ",suma1
+        if RESTRAINTS[1]:
+            suma2 = restraints[RESTRAINTS_QUANTITY[0]].evaluate(False)
+    #         print 1, " excluded Volume restraint: ",suma2
+        if RESTRAINTS[2]:    
+            n = RESTRAINTS_QUANTITY[0]+RESTRAINTS_QUANTITY[1]
+            n2 = RESTRAINTS_QUANTITY[0]+RESTRAINTS_QUANTITY[1]+RESTRAINTS_QUANTITY[2]
+            for r in restraints[n:n2]:
+                suma3 = suma3 + r.evaluate(False)
+    #         print n2-n, " connectivity HUB restraints: ",suma3
+        if RESTRAINTS[3]:  
+            n = RESTRAINTS_QUANTITY[0]+RESTRAINTS_QUANTITY[1]+RESTRAINTS_QUANTITY[2]
+            n2 = RESTRAINTS_QUANTITY[0]+RESTRAINTS_QUANTITY[1]+RESTRAINTS_QUANTITY[2]+RESTRAINTS_QUANTITY[3]
+            for r in restraints[n:n2]:
+                suma4 = suma4 + r.evaluate(False)
+    #         print n-n2, " connectivity HLB restraints: ",suma4
+        #verboseprint ("Total: ".format(suma1+suma2+suma3+suma4))
+        #verboseprint ("------------------------\n")
+        #verboseprint ("Number of restraints: %i" % (len(restraints)))
 
-		needed_time = time.time() - start_time
-		#verboseprint ("Time for Low temp iterations".format(needed_time))
-		
-		
-		f1 = open (score_file,"a+")
-		f1.write(str(sample)+"\t"+str(scores[-1])+"\n")
-		f1.close()
-		#EVALUATION
-		if (evaluation):
-		
-			not_fulfilled = 0
-			total_restraints = 0
-			for i in range(len(files)):
-				values = reads_values[i] 
-				for j in range(n_fragments):
-					if j != viewpoint_fragments[i]:
-						# the distance is to the surface, not to the center, so add radius*2
-						real_d = IMP.core.get_distance(spheres[j],spheres[viewpoint_fragments[i]]) 
-		#                 real_d = real_d + radius*2
-						real_d = real_d + bead_radii[j] + bead_radii[viewpoint_fragments[i]]
-						
-						should_be_d = values[j] #take out the Z score near 0 average values
-						if should_be_d != 0:
-							total_restraints += 1
+        needed_time = time.time() - start_time
+        #verboseprint ("Time for Low temp iterations".format(needed_time))
+        
+        
+        f1 = open (score_file,"a+")
+        f1.write(str(sample)+"\t"+str(scores[-1])+"\n")
+        f1.close()
+        #EVALUATION
+        if (evaluation):
+        
+            not_fulfilled = 0
+            total_restraints = 0
+            for i in range(len(files)):
+                values = reads_values[i] 
+                for j in range(n_fragments):
+                    if j != viewpoint_fragments[i]:
+                        # the distance is to the surface, not to the center, so add radius*2
+                        real_d = IMP.core.get_distance(spheres[j],spheres[viewpoint_fragments[i]]) 
+        #                 real_d = real_d + radius*2
+                        real_d = real_d + bead_radii[j] + bead_radii[viewpoint_fragments[i]]
+                        
+                        should_be_d = values[j] #take out the Z score near 0 average values
+                        if should_be_d != 0:
+                            total_restraints += 1
 
-							should_be_d = values[j] + bead_radii[j] + bead_radii[viewpoint_fragments[i]]
-							if (should_be_d + std_dev < real_d  or should_be_d - std_dev > real_d):
-								not_fulfilled += 1
-					#             print "restraint "+str(j)+"not fulfilled"
-	#                                 if (verbose == 3):
-	#                                     print "Restraint " +str(j)+"-"+str(viewpoint_fragments[i])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-real_d)
-			verboseprint ("total: {}".format(total_restraints))
-			verboseprint ("Not fulfilled restraints: {}/{} %{}".format(not_fulfilled,n_restraints[0],not_fulfilled*100/n_restraints[0]))
+                            should_be_d = values[j] + bead_radii[j] + bead_radii[viewpoint_fragments[i]]
+                            if (should_be_d + std_dev < real_d  or should_be_d - std_dev > real_d):
+                                not_fulfilled += 1
+                    #             print "restraint "+str(j)+"not fulfilled"
+    #                                 if (verbose == 3):
+    #                                     print "Restraint " +str(j)+"-"+str(viewpoint_fragments[i])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-real_d)
+            verboseprint ("total: {}".format(total_restraints))
+            verboseprint ("Not fulfilled restraints: {}/{} %{}".format(not_fulfilled,n_restraints[0],not_fulfilled*100/n_restraints[0]))
 
 
-		# GENERATE THE TXT FILE WITH THE DATA
-		f = open (storage_folder+"/"+values_file,"w")  
-		for i in range(len(files)):
-			for j in range(n_fragments):
-				if j != viewpoint_fragments[i]:
-					real_d = IMP.core.get_distance(spheres[j],spheres[viewpoint_fragments[i]]) 
-					real_d = real_d + bead_radii[j] + bead_radii[viewpoint_fragments[i]]
-					f.write(str(real_d)+"\t")
-				else:
-					f.write("0\t")
-			f.write("\n")  
-		f.close()
-		
-		for sphere in genome:
-			g = IMP.core.XYZRGeometry(sphere)
-			w.add_geometry(g)
+        # GENERATE THE TXT FILE WITH THE DATA
+        f = open (storage_folder+"/"+values_file,"w")  
+        for i in range(len(files)):
+            for j in range(n_fragments):
+                if j != viewpoint_fragments[i]:
+                    real_d = IMP.core.get_distance(spheres[j],spheres[viewpoint_fragments[i]]) 
+                    real_d = real_d + bead_radii[j] + bead_radii[viewpoint_fragments[i]]
+                    f.write(str(real_d)+"\t")
+                else:
+                    f.write("0\t")
+            f.write("\n")  
+        f.close()
+        
+        for sphere in genome:
+            g = IMP.core.XYZRGeometry(sphere)
+            w.add_geometry(g)
 
-		verboseprint ("\nModel number {}".format(sample))
-		verboseprint ("Score: ".format(scores[-1]/1000000))
-		exv_value = suma2/1000000
-		exv_values.append(exv_value)
-		verboseprint ("EXV: {}".format(exv_value))
-		
-		hub_value = suma3/1000000
-		hub_values.append(hub_value)
-		verboseprint ("HUB: {}".format(hub_value))
-		needed_time = time.time() - start_time         
-		verboseprint ("{} seconds.".format(needed_time))       
+        verboseprint ("\nModel number {}".format(sample))
+        verboseprint ("Score: ".format(scores[-1]/1000000))
+        exv_value = suma2/1000000
+        exv_values.append(exv_value)
+        verboseprint ("EXV: {}".format(exv_value))
+        
+        hub_value = suma3/1000000
+        hub_values.append(hub_value)
+        verboseprint ("HUB: {}".format(hub_value))
+        needed_time = time.time() - start_time         
+        verboseprint ("{} seconds.".format(needed_time))       
 
-		verboseprint ("Mean exv for distance {} is: {}".format(y2,np.mean(exv_values))) 
-		verboseprint ("Mean hub for distance {} is: {}".format(y2,np.mean(hub_values)))  
-		verboseprint ("\nModel number {} finished.".format(sample))
+        verboseprint ("Mean exv for distance {} is: {}".format(y2,np.mean(exv_values))) 
+        verboseprint ("Mean hub for distance {} is: {}".format(y2,np.mean(hub_values)))  
+        verboseprint ("\nModel number {} finished.".format(sample))
     verboseprint ("Modeling from {} to {} with variables {} {} {} finished".format(starting_point,starting_point+number_of_models,uZ,lZ,y2))
-	 
+     
 def calculate_best_maxd():
         ############# code that evaluates all the models with different distances and gives you which distance is the optimum
 
@@ -712,750 +711,849 @@ def calculate_heatdifference(path, n_files_inside,files,plot):
 
 def calculate_best_zscores():
 
-	results_path = "{}{}/pre_modeling/{}_heatmap_difference_results.txt".format(working_dir,prefix,prefix)
-		   
-	with open (results_path,"w") as output_results:
-		all_scores = []
-		best_uZ = 0
-		best_lZ = 0
-		best_score = 0.0
-		for uZ in np.arange(from_zscore,to_zscore+zscore_bins,zscore_bins):
-			for lZ in np.arange(-from_zscore, -to_zscore-zscore_bins, -zscore_bins):
+    results_path = "{}{}/pre_modeling/{}_heatmap_difference_results.txt".format(working_dir,prefix,prefix)
+           
+    with open (results_path,"w") as output_results:
+        all_scores = []
+        best_uZ = 0
+        best_lZ = 0
+        best_score = 0.0
+        for uZ in np.arange(from_zscore,to_zscore+zscore_bins,zscore_bins):
+            for lZ in np.arange(-from_zscore, -to_zscore-zscore_bins, -zscore_bins):
 
-				score = calculate_heatdifference(working_dir+prefix+"/pre_modeling/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance),pre_number_of_models,files,plot)
-				output_results.write(str(uZ)+","+str(lZ)+","+str(max_distance)+"\t"+str(score)+"\n")
-				all_scores.append(score)
-				if score > best_score :
-					best_uZ = uZ
-					best_lZ = lZ
-					best_score = score
-		#output_results.write("MIN: {}".format(min(all_scores)))   
-		output_results.write("Max: {}".format(max(all_scores)))   
-		#print min(all_scores)
+                score = calculate_heatdifference(working_dir+prefix+"/pre_modeling/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance),pre_number_of_models,files,plot)
+                output_results.write(str(uZ)+","+str(lZ)+","+str(max_distance)+"\t"+str(score)+"\n")
+                all_scores.append(score)
+                if score > best_score :
+                    best_uZ = uZ
+                    best_lZ = lZ
+                    best_score = score
+        #output_results.write("MIN: {}".format(min(all_scores)))   
+        output_results.write("Max: {}".format(max(all_scores)))   
+        #print min(all_scores)
 
-	if plot:
-		print "\nFigures comparing raw data vs modeling were created in {}{}/".format(working_dir,prefix)
+    if plot:
+        print "\nFigures comparing raw data vs modeling were created in {}{}/".format(working_dir,prefix)
     
-	return best_uZ,best_lZ
+    return best_uZ,best_lZ
 
 def run_analysis(std_dev,cut_off_percentage):
-	models_subset = []
+    models_subset = []
 
-	std_dev = std_dev
-	cut_off_percentage = cut_off_percentage
-	root = "{}{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
-	score_file = "{}/score.txt".format(root)
+    std_dev = std_dev
+    cut_off_percentage = cut_off_percentage
+    root = "{}{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+    score_file = "{}/score.txt".format(root)
 
 
-	pyfiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.endswith(".py") ]
-	number_of_models = len(pyfiles)
-	try:
-		os.remove(root+"score.txt")
-	except OSError:
-		pass
-	scorefiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.startswith("score") ]
-	number_of_score_files = len(scorefiles)
-	jump = total_number_of_models / number_of_score_files
-	models = defaultdict(list) # dict: each model ahs a list of 2 values
+    pyfiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.endswith(".py") ]
+    number_of_models = len(pyfiles)
+    try:
+        os.remove(root+"score.txt")
+    except OSError:
+        pass
+    scorefiles = [ f for f in listdir(root) if isfile(join(root,f)) and f.startswith("score") ]
+    number_of_score_files = len(scorefiles)
+    jump = total_number_of_models / number_of_score_files
+    models = defaultdict(list) # dict: each model ahs a list of 2 values
 
-	# first we create a unified score.txt
-	with open (score_file,"w") as f:
-		counter = 0
-		for i in range(number_of_score_files):
-			with open (root+"score"+str(counter)+".txt", "r") as f2:
-				for line in f2:
-					f.write(line)
-			counter = counter + jump
-					
-	# create the dictionary and populate it
-	with open (score_file, "r") as f:
-		
-		counter = 0
-		for line in f:
-			counter += 1
-			model = []
-			values = re.split("\t", line)
-			number = int(values[0])
-			score = float(values[1])
-			model.append(score)
-			models[number] = model
-			if counter == number_of_models:
-				break
+    # first we create a unified score.txt
+    with open (score_file,"w") as f:
+        counter = 0
+        for i in range(number_of_score_files):
+            with open (root+"score"+str(counter)+".txt", "r") as f2:
+                for line in f2:
+                    f.write(line)
+            counter = counter + jump
+                    
+    # create the dictionary and populate it
+    with open (score_file, "r") as f:
+        
+        counter = 0
+        for line in f:
+            counter += 1
+            model = []
+            values = re.split("\t", line)
+            number = int(values[0])
+            score = float(values[1])
+            model.append(score)
+            models[number] = model
+            if counter == number_of_models:
+                break
 
-	# models = models[:number_of_models]    #take aonly the first ones 
-	reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, max_distance,files)
+    # models = models[:number_of_models]    #take aonly the first ones 
+    reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, max_distance,files)
 
-	### get all distances from all the models
-	print "getting best {} models".format(subset)
+    ### get all distances from all the models
+    print "getting best {} models".format(subset)
 
-	all_distances_all_models = []
-	for i in range(number_of_models):
-		distances_in_model = []
-		with open (root+prefix+str(i)+".txt","r") as f:
-			for line in f:
-				value = re.split("\t",line)
-				distances_in_model.append(value[:-1]) #dont store "\n"
-	#         print distances_in_model
-		all_distances_all_models.append(distances_in_model)
-		
-		
-	## Evaluation
-	if std_dev == 0:
-		std_dev = max_distance / 20  	
-	increase_dev_or_cutoff = 0
-	not_analyzed = True
-	increase_dev_or_cutoff = 0
-	stop_analysis_count = 1000
+    all_distances_all_models = []
+    for i in range(number_of_models):
+        distances_in_model = []
+        with open (root+prefix+str(i)+".txt","r") as f:
+            for line in f:
+                value = re.split("\t",line)
+                distances_in_model.append(value[:-1]) #dont store "\n"
+    #         print distances_in_model
+        all_distances_all_models.append(distances_in_model)
+        
+        
+    ## Evaluation
+    if std_dev == 0:
+        std_dev = max_distance / 20  	
+    increase_dev_or_cutoff = 0
+    not_analyzed = True
+    increase_dev_or_cutoff = 0
+    stop_analysis_count = 1000
 
-	while not_analyzed:   
-		print "Running Analysis with:"
-		print "Std_dev: {}".format(std_dev)
-		print "cut_off_percentage: {}".format(cut_off_percentage)
-		analized_models = 0
-		ok_models = 0
-		i = 0
-		delete_models_list = []
-		analysis_count = 0
-		last_accumulative_percentage = 0
-		for distances_in_model in all_distances_all_models:
-			
-			#EVALUATION
-			not_fulfilled = 0
-			total = 0
-			for k in range(len(files)):
-				values = reads_values[k]
-				try: 
-					for j in range(number_of_fragments):
-						if j != viewpoint_fragments[k]:
-							real_d = distances_in_model[k][j]
-							should_be_d = values[j] 
-							if should_be_d != 0:
-								total += 1
-								if (should_be_d + std_dev < float(real_d)  or should_be_d - std_dev > float(real_d)):
-									not_fulfilled += 1
-									#verboseprint ("Restraint " +str(j)+"-"+str(viewpoint_fragments[k])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-float(real_d)))
-				except:
-					print "Something went wrong. Check --fragments_in_each_bead. Did you modify it in the modeling?"
-					sys.exit()
-			#print str(i)+"-> Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(total),"%",str(not_fulfilled*100/(total))     
-			not_fulfil_percentage = not_fulfilled*100/total
-			verboseprint( "not_fulfilled -> {} out of {} restraints: {}% of all restraints are not fulfilled in this model.".format(not_fulfilled,total,not_fulfil_percentage))
-			if not_fulfil_percentage <= cut_off_percentage:
-				models[i].append(not_fulfilled)
-				ok_models += 1
-			else:
-				delete_models_list.append(i)
-			analized_models += 1
-			accumulative_percentage = 100*ok_models/analized_models
-			verboseprint ("Percentage of models that fulfill the threshold: {}%".format(accumulative_percentage))
-			verboseprint ("{}/{}".format(ok_models,analized_models))
-			#print "{} -> number of models in subset {}".format(i,len(models))  
-			#after poplating all and takign out the models out of the cout off, take the subset of models
-			i += 1
-			
-			#Check if delta (difference with fulfil_percentage every round) changed analyzing 100 models. If it did not, loose more the threshold
-			if last_accumulative_percentage == accumulative_percentage and accumulative_percentage <= subset*100.0/total_number_of_models:
-				analysis_count += 1
-			if stop_analysis_count == analysis_count:
-				forced_break = True
-				break
-			last_accumulative_percentage = accumulative_percentage
-			forced_break = False
-			
-			if (analized_models) % 1000 == 0:
-				sys.stdout.write("\r{}%".format( analized_models*100/total_number_of_models))
-				sys.stdout.flush()
-			
-			
-			
-		print	
-		if not forced_break:	
-			#take out models from dict
-			for number in delete_models_list:
-				try:
-					del models[number]
-				except:
-					print "Can't delete model number {}. Are you working with the correct models? ".format(i)
-					sys.exit()
-			
-			#order the dictionary by score
-			sorted_models = sorted(models.items(), key=operator.itemgetter(1))
-			print "Number of models above cutoff: {}".format(len(sorted_models))
-			
-			if len(sorted_models) >= subset:
-			# store them in a folder
-				storage_folder = working_dir+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance)+"/" #the dir where the data will be saved
-				if not os.path.exists(storage_folder): 
-					os.makedirs(storage_folder)
-				try: 
-					models_subset = sorted_models [:subset]
-					for k in range(subset):
-						i = models_subset[k][0]
-						shutil.copyfile("{}{}{}.py".format(root,prefix,i), "{}{}{}.py".format(storage_folder,prefix,i) )
-						shutil.copyfile("{}{}{}.txt".format(root,prefix,i), "{}{}{}.txt".format(storage_folder,prefix,i) )
-					print "copied best {} models to {}.".format(subset,storage_folder)
-				except:
-					print "Error copying best models."				
-				not_analyzed = False
-			else:
-				print "\n ! Can not get {} models. Relaxing the std_dev and cut_off_percentage.\n ".format(subset)	
-				#Modify the cutoffs
-				if increase_dev_or_cutoff == 0:
-					std_dev = std_dev + max_distance*0.01 #increase std_def
-					increase_dev_or_cutoff = 1
-				else:
-					cut_off_percentage = cut_off_percentage+2 #increase #cut_off
-					increase_dev_or_cutoff = 0	 
-		else:
-			print "\n ! Can not get {} models. Relaxing the std_dev and cut_off_percentage.\n ".format(subset)	
-			#Modify the cutoffs
-			if increase_dev_or_cutoff == 0:
-				std_dev = std_dev + max_distance*0.01 #increase std_def
-				increase_dev_or_cutoff = 1
-			else:
-				cut_off_percentage = cut_off_percentage+2 #increase #cut_off
-				increase_dev_or_cutoff = 0	
+    while not_analyzed:   
+        print "Running Analysis with:"
+        print "Std_dev: {}".format(std_dev)
+        print "cut_off_percentage: {}".format(cut_off_percentage)
+        analized_models = 0
+        ok_models = 0
+        i = 0
+        delete_models_list = []
+        analysis_count = 0
+        last_accumulative_percentage = 0
+        for distances_in_model in all_distances_all_models:
+            
+            #EVALUATION
+            not_fulfilled = 0
+            total = 0
+            for k in range(len(files)):
+                values = reads_values[k]
+                try: 
+                    for j in range(number_of_fragments):
+                        if j != viewpoint_fragments[k]:
+                            real_d = distances_in_model[k][j]
+                            should_be_d = values[j] 
+                            if should_be_d != 0:
+                                total += 1
+                                if (should_be_d + std_dev < float(real_d)  or should_be_d - std_dev > float(real_d)):
+                                    not_fulfilled += 1
+                                    #verboseprint ("Restraint " +str(j)+"-"+str(viewpoint_fragments[k])+" is "+str(real_d)+" and should be "+str(should_be_d)+" +- "+str(std_dev)+". Difference: "+str(should_be_d-float(real_d)))
+                except:
+                    print "Something went wrong. Check --fragments_in_each_bead. Did you modify it in the modeling?"
+                    sys.exit()
+            #print str(i)+"-> Not fulfilled restraints: "+str(not_fulfilled)+"/"+str(total),"%",str(not_fulfilled*100/(total))     
+            not_fulfil_percentage = not_fulfilled*100/total
+            verboseprint( "not_fulfilled -> {} out of {} restraints: {}% of all restraints are not fulfilled in this model.".format(not_fulfilled,total,not_fulfil_percentage))
+            if not_fulfil_percentage <= cut_off_percentage:
+                models[i].append(not_fulfilled)
+                ok_models += 1
+            else:
+                delete_models_list.append(i)
+            analized_models += 1
+            accumulative_percentage = 100*ok_models/analized_models
+            verboseprint ("Percentage of models that fulfill the threshold: {}%".format(accumulative_percentage))
+            verboseprint ("{}/{}".format(ok_models,analized_models))
+            #print "{} -> number of models in subset {}".format(i,len(models))  
+            #after poplating all and takign out the models out of the cout off, take the subset of models
+            i += 1
+            
+            #Check if delta (difference with fulfil_percentage every round) changed analyzing 100 models. If it did not, loose more the threshold
+            if last_accumulative_percentage == accumulative_percentage and accumulative_percentage <= subset*100.0/total_number_of_models:
+                analysis_count += 1
+            if stop_analysis_count == analysis_count:
+                forced_break = True
+                break
+            last_accumulative_percentage = accumulative_percentage
+            forced_break = False
+            
+            if (analized_models) % 1000 == 0:
+                sys.stdout.write("\r{}%".format( analized_models*100/total_number_of_models))
+                sys.stdout.flush()
+            
+            
+            
+        print	
+        if not forced_break:	
+            #take out models from dict
+            for number in delete_models_list:
+                try:
+                    del models[number]
+                except:
+                    print "Can't delete model number {}. Are you working with the correct models? ".format(i)
+                    sys.exit()
+            
+            #order the dictionary by score
+            sorted_models = sorted(models.items(), key=operator.itemgetter(1))
+            print "Number of models above cutoff: {}".format(len(sorted_models))
+            
+            if len(sorted_models) >= subset:
+            # store them in a folder
+                storage_folder = working_dir+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance)+"/" #the dir where the data will be saved
+                if not os.path.exists(storage_folder): 
+                    os.makedirs(storage_folder)
+                try: 
+                    models_subset = sorted_models [:subset]
+                    for k in range(subset):
+                        i = models_subset[k][0]
+                        shutil.copyfile("{}{}{}.py".format(root,prefix,i), "{}{}{}.py".format(storage_folder,prefix,i) )
+                        shutil.copyfile("{}{}{}.txt".format(root,prefix,i), "{}{}{}.txt".format(storage_folder,prefix,i) )
+                    print "copied best {} models to {}.".format(subset,storage_folder)
+                except:
+                    print "Error copying best models."				
+                not_analyzed = False
+            else:
+                print "\n ! Can not get {} models. Relaxing the std_dev and cut_off_percentage.\n ".format(subset)	
+                #Modify the cutoffs
+                if increase_dev_or_cutoff == 0:
+                    std_dev = std_dev + max_distance*0.01 #increase std_def
+                    increase_dev_or_cutoff = 1
+                else:
+                    cut_off_percentage = cut_off_percentage+2 #increase #cut_off
+                    increase_dev_or_cutoff = 0	 
+        else:
+            print "\n ! Can not get {} models. Relaxing the std_dev and cut_off_percentage.\n ".format(subset)	
+            #Modify the cutoffs
+            if increase_dev_or_cutoff == 0:
+                std_dev = std_dev + max_distance*0.01 #increase std_def
+                increase_dev_or_cutoff = 1
+            else:
+                cut_off_percentage = cut_off_percentage+2 #increase #cut_off
+                increase_dev_or_cutoff = 0	
 
-	# create the file to open in chimera
-	# superposition of the best models
-	with open(working_dir+prefix+"_superposition.py","w") as f:
-		f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
-		f.write("rc(\"open {}{}.py\")\n".format(prefix,models_subset[0][0]))
-		for k in range(1,subset):
-			i = models_subset[k][0]
-	#         print("rc(\"open {}{}.py\")\n".format(prefix,i))
-	#         print("rc(\"match #{}-{} #0-{}\")\n".format((k+1)*number_of_fragments,(k+1)*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
-			f.write("rc(\"open {}{}.py\")\n".format(prefix,i))
-			f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_fragments,k*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
+    # create the file to open in chimera
+    # superposition of the best models
+    with open(working_dir+prefix+"_superposition.py","w") as f:
+        f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
+        f.write("rc(\"open {}{}.py\")\n".format(prefix,models_subset[0][0]))
+        for k in range(1,subset):
+            i = models_subset[k][0]
+    #         print("rc(\"open {}{}.py\")\n".format(prefix,i))
+    #         print("rc(\"match #{}-{} #0-{}\")\n".format((k+1)*number_of_fragments,(k+1)*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
+            f.write("rc(\"open {}{}.py\")\n".format(prefix,i))
+            f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_fragments,k*number_of_fragments+number_of_fragments-1,number_of_fragments-1))
 
-	print "Superposition of {} models created in {}{}\n".format(subset,working_dir,prefix)
+    print "Superposition of {} models created in {}{}\n".format(subset,working_dir,prefix)
 
-	return std_dev,cut_off_percentage,models_subset
+    return std_dev,cut_off_percentage,models_subset
 
 def run_clustering(models_subset):
-	number_of_beads = number_of_fragments
-	root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)	
-	matrix = np.zeros((subset,subset))
-	only_python_files = []
+    number_of_beads = number_of_fragments
+    root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)	
+    matrix = np.zeros((subset,subset))
+    only_python_files = []
 
-	for model_number in models_subset:
-		only_python_files.append(root+prefix+str(model_number[0])+".py") #took out root+
+    for model_number in models_subset:
+        only_python_files.append(root+prefix+str(model_number[0])+".py") #took out root+
 
 
-	#for pyfile in listdir(root):
-	#    if pyfile.endswith(".py"):
-	#        only_python_files.append(pyfile)
-	#only_python_files = only_python_files[:subset]
-	if len(only_python_files) != subset:
-		print "There are no {} models in {}. \nOnly {} models were found in the directory. Redo the analysis.".format(subset,root,len(only_python_files))
-		sys.exit()
+    #for pyfile in listdir(root):
+    #    if pyfile.endswith(".py"):
+    #        only_python_files.append(pyfile)
+    #only_python_files = only_python_files[:subset]
+    if len(only_python_files) != subset:
+        print "There are no {} models in {}. \nOnly {} models were found in the directory. Redo the analysis.".format(subset,root,len(only_python_files))
+        sys.exit()
 
-	# generate a chimera file with match. Chimera when matched, it calculates the RMSD 
-	number_of_beads = number_of_beads -1
+    # generate a chimera file with match. Chimera when matched, it calculates the RMSD 
+    number_of_beads = number_of_beads -1
 
-	# combi = combinations(range(len(only_python_files)),2)
-	combi = combinations(range(subset),2)
-	instructions = []
-	print "Generating instructions..."
-	number_of_files = 0
-	for pair in combi:
-		instruction_files = []
-		number_of_files += 1
-		counter_line = pair[0]
-		counter_column = pair[1]
-		chimera_file = "{}_calculate_rmsd{}_{}.py".format(prefix,counter_line,counter_column)
-		rmsd_file = open (chimera_file, "w")
-		rmsd_file.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
-		rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_line]))
-		rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_column]))
-		rmsd_file.write("rc(\"match #{}-{} #{}-{}\")\n".format((number_of_beads+1),(number_of_beads+1)+number_of_beads ,0,number_of_beads))
-		rmsd_file.close()
-		instruction_files.append(chimera_file)
-		instruction_files.append(counter_line)
-		instruction_files.append(counter_column)
-		instructions.append(instruction_files)
-	print "Populating matrix.txt ..."
-	for core in range(0,number_of_files,number_of_cpus):
-		if len(instructions) - core < number_of_cpus:
-			execute = instructions[core:len(instructions)-core]
-		else:
-			execute = instructions[core:core+number_of_cpus] 
-		# WE NEED TO EXECUTE THIS DEPENDING ON CPU SIZE
-		rmsd_output = p.map(chimera_worker,execute)
+    # combi = combinations(range(len(only_python_files)),2)
+    combi = combinations(range(subset),2)
+    instructions = []
+    print "Generating instructions..."
+    number_of_files = 0
+    for pair in combi:
+        instruction_files = []
+        number_of_files += 1
+        counter_line = pair[0]
+        counter_column = pair[1]
+        chimera_file = "{}_calculate_rmsd{}_{}.py".format(prefix,counter_line,counter_column)
+        rmsd_file = open (chimera_file, "w")
+        rmsd_file.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
+        rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_line]))
+        rmsd_file.write("rc(\"open {}\")\n".format(only_python_files[counter_column]))
+        rmsd_file.write("rc(\"match #{}-{} #{}-{}\")\n".format((number_of_beads+1),(number_of_beads+1)+number_of_beads ,0,number_of_beads))
+        rmsd_file.close()
+        instruction_files.append(chimera_file)
+        instruction_files.append(counter_line)
+        instruction_files.append(counter_column)
+        instructions.append(instruction_files)
+    print "Populating matrix.txt ..."
+    for core in range(0,number_of_files,number_of_cpus):
+        if len(instructions) - core < number_of_cpus:
+            execute = instructions[core:len(instructions)-core]
+        else:
+            execute = instructions[core:core+number_of_cpus] 
+        # WE NEED TO EXECUTE THIS DEPENDING ON CPU SIZE
+        rmsd_output = p.map(chimera_worker,execute)
 
-		for i in range(len(execute)):
-			string = ""
-			lista = []
-			for line2 in rmsd_output[i][0]:
-				string = string + line2
-				if line2 == "\n":
-					lista.append(string)
-					string = ""
-			#RMSD between 103 atom pairs is 4404.816 angstroms
-			for line2 in lista:
-				exp = re.search(r"(\d+\.\d+) angstroms",line2)
-				if (exp):
-					value = exp.group(1)
-					matrix[rmsd_output[i][1]][rmsd_output[i][2]] = value
-					matrix[rmsd_output[i][2]][rmsd_output[i][1]] = value    
-					value = 0
-		#delete files while we execute them
-		for i in range(len(execute)):
-			remove(execute[i][0])
-			remove(execute[i][0]+"c")
-		if core!= 0:
-			sys.stdout.write("\r{}%".format( core*100/number_of_files))
-			sys.stdout.flush()
-	#write matrix       
-	matrixtxt = open("{}matrix.txt".format(root), "w")      
-	matrixtxt.write("\t")
-	for p_file in only_python_files:
-		matrixtxt.write(p_file)
-		matrixtxt.write("\t")
-	matrixtxt.write("\n")
-	counter_line = 0
-	for line in only_python_files:
-		counter_column = 0
-		matrixtxt.write(line)
-		matrixtxt.write("\t")
-		for column in only_python_files:
-			matrixtxt.write(str(matrix[counter_line][counter_column])+"\t")  
-			counter_column += 1
-		counter_line += 1
-		matrixtxt.write("\n") 
-	matrixtxt.close()
-	print "\n\nmatrix.txt written! in {}".format(root)
-	print "This is the whole RMSD matrix (all models vs all models)"
+        for i in range(len(execute)):
+            string = ""
+            lista = []
+            for line2 in rmsd_output[i][0]:
+                string = string + line2
+                if line2 == "\n":
+                    lista.append(string)
+                    string = ""
+            #RMSD between 103 atom pairs is 4404.816 angstroms
+            for line2 in lista:
+                exp = re.search(r"(\d+\.\d+) angstroms",line2)
+                if (exp):
+                    value = exp.group(1)
+                    matrix[rmsd_output[i][1]][rmsd_output[i][2]] = value
+                    matrix[rmsd_output[i][2]][rmsd_output[i][1]] = value    
+                    value = 0
+        #delete files while we execute them
+        for i in range(len(execute)):
+            remove(execute[i][0])
+            remove(execute[i][0]+"c")
+        if core!= 0:
+            sys.stdout.write("\r{}%".format( core*100/number_of_files))
+            sys.stdout.flush()
+    #write matrix       
+    matrixtxt = open("{}matrix.txt".format(root), "w")      
+    matrixtxt.write("\t")
+    for p_file in only_python_files:
+        matrixtxt.write(p_file)
+        matrixtxt.write("\t")
+    matrixtxt.write("\n")
+    counter_line = 0
+    for line in only_python_files:
+        counter_column = 0
+        matrixtxt.write(line)
+        matrixtxt.write("\t")
+        for column in only_python_files:
+            matrixtxt.write(str(matrix[counter_line][counter_column])+"\t")  
+            counter_column += 1
+        counter_line += 1
+        matrixtxt.write("\n") 
+    matrixtxt.close()
+    print "\n\nmatrix.txt written! in {}".format(root)
+    print "This is the whole RMSD matrix (all models vs all models)"
 
-	D = matrix
+    D = matrix
 
-	#compute dendogram
-	Y = sch.linkage(D, method='average')
-	Z1 = sch.dendrogram(Y, orientation='right')
-	Y = sch.linkage(D, method='average')
-	Z2 = sch.dendrogram(Y,orientation='top')
-	idx1 = Z1['leaves']
-	dendogra_colors = Z1['color_list']
-	idx2 = Z2['leaves']
-	D = D[idx1,:]
-	D = D[:,idx2]
+    #compute dendogram
+    Y = sch.linkage(D, method='average')
+    Z1 = sch.dendrogram(Y, orientation='right')
+    Y = sch.linkage(D, method='average')
+    Z2 = sch.dendrogram(Y,orientation='top')
+    idx1 = Z1['leaves']
+    dendogra_colors = Z1['color_list']
+    idx2 = Z2['leaves']
+    D = D[idx1,:]
+    D = D[:,idx2]
 
-	# Code to retrieve the clusters
-	n = subset
-	cluster_number = []
-	cluster_dict = dict()
-	solutions = [] #gather the clustering proccesses when we have the same number as kmeans 
-	for i in range(subset-2): #descend branches until the bottom
-		new_cluster_id = n+i
-		old_cluster_id_0 = Y[i, 0]
-		old_cluster_id_1 = Y[i, 1]
-		combined_ids = list()
-		if old_cluster_id_0 in cluster_dict:
-			combined_ids += cluster_dict[old_cluster_id_0]
-			del cluster_dict[old_cluster_id_0]
-		else:
-			combined_ids += [old_cluster_id_0]
-		if old_cluster_id_1 in cluster_dict:
-			combined_ids += cluster_dict[old_cluster_id_1]
-			del cluster_dict[old_cluster_id_1]
-		else:
-			combined_ids += [old_cluster_id_1]
-		cluster_dict[new_cluster_id] = combined_ids
-		if len(cluster_dict) == k_mean:
-			aux_dict = dict(cluster_dict)
-			solutions.append(aux_dict)
-	cluster_dict_def = solutions[-1]    
-	#get only the last clustering, since it is the one with all models
-	for i in cluster_dict_def:
-		cluster_number.append(i)
-			
-	number_of_beads = number_of_beads +1 
-	# Write the matrix data in different files, k_mean times
-	for i in cluster_number:
-		matrixtxt = open("{}matrix{}.txt".format(root,i), "w")      
-		matrixtxt.write("\t")
-		cluster_values = [int(j) for j in cluster_dict_def[i]]
-		cluster_models = [only_python_files[k] for k in cluster_values]
-		for p_file in cluster_models:
-			matrixtxt.write(p_file)
-			matrixtxt.write("\t")
-		matrixtxt.write("\n")
-		counter_line = 0
-		for line in cluster_models:
-			counter_column = 0
-			matrixtxt.write(line)
-			matrixtxt.write("\t")
-			for column in cluster_models:
-				matrixtxt.write(str(matrix[counter_line][counter_column])+"\t")  
-				counter_column += 1
-			counter_line += 1
-			matrixtxt.write("\n") 
-		matrixtxt.close()
-		print "\n------"
-		print "\nmatrix{}.txt written! in {}".format(i,root)
-		print "This is one of the clusters. These models are more similar between them."
-			
-			
-		# create the file to open in chimera
-		# superposition of the best models
-		print "Creating superposition of this cluster..."
-		with open(working_dir+prefix+"/"+prefix+"_superposition_"+str(i)+".py","w") as f:
-			f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
-			f.write("rc(\"open {}\")\n".format(cluster_models[0]))
-			for k in range(1,len(cluster_models)):
-				imodel = cluster_models[k]
-				f.write("rc(\"open {}\")\n".format(imodel))
-				f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_beads,k*number_of_beads+number_of_beads-1,number_of_beads-1))
+    # Code to retrieve the clusters
+    n = subset
+    cluster_number = []
+    cluster_dict = dict()
+    solutions = [] #gather the clustering proccesses when we have the same number as kmeans 
+    for i in range(subset-2): #descend branches until the bottom
+        new_cluster_id = n+i
+        old_cluster_id_0 = Y[i, 0]
+        old_cluster_id_1 = Y[i, 1]
+        combined_ids = list()
+        if old_cluster_id_0 in cluster_dict:
+            combined_ids += cluster_dict[old_cluster_id_0]
+            del cluster_dict[old_cluster_id_0]
+        else:
+            combined_ids += [old_cluster_id_0]
+        if old_cluster_id_1 in cluster_dict:
+            combined_ids += cluster_dict[old_cluster_id_1]
+            del cluster_dict[old_cluster_id_1]
+        else:
+            combined_ids += [old_cluster_id_1]
+        cluster_dict[new_cluster_id] = combined_ids
+        if len(cluster_dict) == k_mean:
+            aux_dict = dict(cluster_dict)
+            solutions.append(aux_dict)
+    cluster_dict_def = solutions[-1]    
+    #get only the last clustering, since it is the one with all models
+    for i in cluster_dict_def:
+        cluster_number.append(i)
+            
+    number_of_beads = number_of_beads +1 
+    # Write the matrix data in different files, k_mean times
+    for i in cluster_number:
+        matrixtxt = open("{}matrix{}.txt".format(root,i), "w")      
+        matrixtxt.write("\t")
+        cluster_values = [int(j) for j in cluster_dict_def[i]]
+        cluster_models = [only_python_files[k] for k in cluster_values]
+        for p_file in cluster_models:
+            matrixtxt.write(p_file)
+            matrixtxt.write("\t")
+        matrixtxt.write("\n")
+        counter_line = 0
+        for line in cluster_models:
+            counter_column = 0
+            matrixtxt.write(line)
+            matrixtxt.write("\t")
+            for column in cluster_models:
+                matrixtxt.write(str(matrix[counter_line][counter_column])+"\t")  
+                counter_column += 1
+            counter_line += 1
+            matrixtxt.write("\n") 
+        matrixtxt.close()
+        print "\n------"
+        print "\nmatrix{}.txt written! in {}".format(i,root)
+        print "This is one of the clusters. These models are more similar between them."
+            
+            
+        # create the file to open in chimera
+        # superposition of the best models
+        print "Creating superposition of this cluster..."
+        with open(working_dir+prefix+"/"+prefix+"_superposition_"+str(i)+".py","w") as f:
+            f.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\""+root+"\")\n")
+            f.write("rc(\"open {}\")\n".format(cluster_models[0]))
+            for k in range(1,len(cluster_models)):
+                imodel = cluster_models[k]
+                f.write("rc(\"open {}\")\n".format(imodel))
+                f.write("rc(\"match #{}-{} #0-{}\")\n".format(k*number_of_beads,k*number_of_beads+number_of_beads-1,number_of_beads-1))
 
-		print "created in {}{}/{}_superposition".format(working_dir,prefix,prefix)
-	n_clusters = len(set(dendogra_colors))-1
-	print "\n{} clusters were found in the clustering process.".format(n_clusters)
-	if k_mean != n_clusters:
-		print "Number of clusters found and k means value set are different. " 
-	else:
-		lines_in_file = 0
-		for m in cluster_number:
-			num_lines = sum(1 for line in open('{}matrix{}.txt'.format(root,m)))
-			if num_lines > lines_in_file:
-				biggest_matrix = m
-				lines_in_file = num_lines
-				
+        print "created in {}{}/{}_superposition".format(working_dir,prefix,prefix)
+    n_clusters = len(set(dendogra_colors))-1
+    print "\n{} clusters were found in the clustering process.".format(n_clusters)
+    if k_mean != n_clusters:
+        print "Number of clusters found and k means value set are different. " 
+    else:
+        lines_in_file = 0
+        for m in cluster_number:
+            num_lines = sum(1 for line in open('{}matrix{}.txt'.format(root,m)))
+            if num_lines > lines_in_file:
+                biggest_matrix = m
+                lines_in_file = num_lines
+                
 
-	# Plot dendrogram.
-	fig = plt.figure(figsize=(8,8))
-	ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
-	ax1.set_xticks([])
-	ax1.set_yticks([])
-	ax2 = fig.add_axes([0.3,0.71,0.6,0.2])
-	ax2.set_xticks([])
-	ax2.set_yticks([])
+    # Plot dendrogram.
+    fig = plt.figure(figsize=(8,8))
+    ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
+    ax1.set_xticks([])
+    ax1.set_yticks([])
+    ax2 = fig.add_axes([0.3,0.71,0.6,0.2])
+    ax2.set_xticks([])
+    ax2.set_yticks([])
 
-	# Plot distance matrix.
-	axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
-	plt.xlabel("RMSD matrix in Angstroms.")
-	im = axmatrix.matshow(D, aspect='auto', origin='lower', cmap=plt.cm.YlGnBu)
-	axmatrix.set_xticks([])
-	axmatrix.set_yticks([])
+    # Plot distance matrix.
+    axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
+    plt.xlabel("RMSD matrix in Angstroms.")
+    im = axmatrix.matshow(D, aspect='auto', origin='lower', cmap=plt.cm.YlGnBu)
+    axmatrix.set_xticks([])
+    axmatrix.set_yticks([])
 
-	# Plot colorbar.
-	axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
-	plt.colorbar(im, cax=axcolor)
+    # Plot colorbar.
+    axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
+    plt.colorbar(im, cax=axcolor)
 
-	try:
-		fig.savefig('{}{}_heatmap.png'.format(root,prefix))
-		print "\n clusters can be checked here: {}{}_heatmap.png".format(root,prefix)
-	except:
-		pass
-		
+    try:
+        fig.savefig('{}{}_heatmap.png'.format(root,prefix))
+        print "\n clusters can be checked here: {}{}_heatmap.png".format(root,prefix)
+    except:
+        pass
+        
 
-	return n_clusters, biggest_matrix
+    return n_clusters, biggest_matrix
 
 def calculate_vhic(biggest_matrix,calculate_the_matrix):
-	root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
-	matrix_path = "{}matrix{}.txt".format(root,biggest_matrix)
-	distance_file = "get_genome_distance_{}".format(prefix)
-	path = "{}vhic_{}.txt".format(root,prefix)
-	start_time = time.time()
-	if calculate_the_matrix:
-		models = []
-			## we get a file that (cmd) that we are gonna use it in chimera. It will write all distances in the model
-		with open("{}".format(matrix_path), "r") as mtx:
-			for line in mtx:
-				models = re.split("\t", line)
-				break
-		models = models[1:-1]
-		counter = 0
-		matrix = np.zeros((number_of_fragments,number_of_fragments,len(models)))
-		p = Pool(number_of_cpus)
+    root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+    matrix_path = "{}matrix{}.txt".format(root,biggest_matrix)
+    distance_file = "get_genome_distance_{}".format(prefix)
+    path = "{}vhic_{}.txt".format(root,prefix)
+    start_time = time.time()
+    if calculate_the_matrix:
+        models = []
+            ## we get a file that (cmd) that we are gonna use it in chimera. It will write all distances in the model
+        with open("{}".format(matrix_path), "r") as mtx:
+            for line in mtx:
+                models = re.split("\t", line)
+                break
+        models = models[1:-1]
+        counter = 0
+        matrix = np.zeros((number_of_fragments,number_of_fragments,len(models)))
+        p = Pool(number_of_cpus)
 
-		for model in models:
-			print "{} - {}".format(counter,model)
-			chimera_files = []
-			combi = combinations(range(0,number_of_fragments),2)
-			instruction_list = []
-			for pair in combi:
-				instruction_list.append("rc(\"distance #"+str(pair[0])+" #"+str(pair[1])+"\")\n")
-			for cpu in range(number_of_cpus):
-				instru_start = (cpu) * (len(instruction_list)/number_of_cpus) 
-				if cpu == number_of_cpus-1:
-					instru_end =  len(instruction_list)
-				else:
-					instru_end =  (cpu+1) * (len(instruction_list)/number_of_cpus) 
-					
-				dis_file = distance_file+"cpu"+str(cpu)+".py"
-				with open (dis_file,'w') as output:
-					output.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
-					output.write("rc(\"open {}\")\n".format(model))
-					for instru in instruction_list[instru_start:instru_end]:
-						output.write(instru)
-					chimera_files.append(dis_file)
+        for model in models:
+            print "{} - {}".format(counter,model)
+            chimera_files = []
+            combi = combinations(range(0,number_of_fragments),2)
+            instruction_list = []
+            for pair in combi:
+                instruction_list.append("rc(\"distance #"+str(pair[0])+" #"+str(pair[1])+"\")\n")
+            for cpu in range(number_of_cpus):
+                instru_start = (cpu) * (len(instruction_list)/number_of_cpus) 
+                if cpu == number_of_cpus-1:
+                    instru_end =  len(instruction_list)
+                else:
+                    instru_end =  (cpu+1) * (len(instruction_list)/number_of_cpus) 
+                    
+                dis_file = distance_file+"cpu"+str(cpu)+".py"
+                with open (dis_file,'w') as output:
+                    output.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
+                    output.write("rc(\"open {}\")\n".format(model))
+                    for instru in instruction_list[instru_start:instru_end]:
+                        output.write(instru)
+                    chimera_files.append(dis_file)
 
-				
-			print "Calculating in chimera..."       
-			distance_output = p.map(chimera_worker_vhic,chimera_files)
+                
+            print "Calculating in chimera..."       
+            distance_output = p.map(chimera_worker_vhic,chimera_files)
 
-			
+            
 
-			final_distance_output = []
-			for cha in range(len(distance_output)):   
-				final_distance_output = chain(final_distance_output,distance_output[cha])
-			string = ""
-			lista = []
-			
-			for line2 in final_distance_output:
-				string = string + line2
-				if line2 == "\n":
-					lista.append(string)
-					string = ""
-				 
-			#Distance between #209:1@ and #210:1@: 512.326
-			for line2 in lista:
-				distance = re.search(r'#(\d*).*#(\d*).*:\s?(\d*\.\d*)',line2)  
-				if (distance):
-					matrix[int(distance.group(1))][int(distance.group(2))][counter] = float(distance.group(3))
-					matrix[int(distance.group(2))][int(distance.group(1))][counter] = float(distance.group(3))
-			 
-			counter += 1        
-			print "{} seconds needed.".format(time.time() - start_time)
-
-
-
-		f= open(path, 'w') #store the data in file
-		matrix_mean = np.zeros((number_of_fragments,number_of_fragments))
-		for line in range(number_of_fragments):
-			for column in range(number_of_fragments):
-				mean_value = np.mean(matrix[line][column])
-	#         print "[{}][{}] = {}".format(line,column,mean_value)
-				matrix_mean[line][column] = mean_value
-	#         matrix_mean[column][line] = mean_value
-				f.write(str(line)+","+str(column)+","+str(mean_value))   
-				f.write("\n")
-		f.close()
-		print "\nThe virtual Hi-C data is in {}.".format(path)
-		for chi_file in chimera_files:
-			os.remove(chi_file)
-			os.remove(chi_file+"c")
-	else:
-		with open(path, 'r') as std_in:
-			matrix_mean = np.zeros((number_of_fragments,number_of_fragments))
-			for line in std_in:
-				values = line.split(",")
-				matrix_mean[int(values[0])][int(values[1])] = float(values[2])
+            final_distance_output = []
+            for cha in range(len(distance_output)):   
+                final_distance_output = chain(final_distance_output,distance_output[cha])
+            string = ""
+            lista = []
+            
+            for line2 in final_distance_output:
+                string = string + line2
+                if line2 == "\n":
+                    lista.append(string)
+                    string = ""
+                 
+            #Distance between #209:1@ and #210:1@: 512.326
+            for line2 in lista:
+                distance = re.search(r'#(\d*).*#(\d*).*:\s?(\d*\.\d*)',line2)  
+                if (distance):
+                    matrix[int(distance.group(1))][int(distance.group(2))][counter] = float(distance.group(3))
+                    matrix[int(distance.group(2))][int(distance.group(1))][counter] = float(distance.group(3))
+             
+            counter += 1        
+            print "{} seconds needed.".format(time.time() - start_time)
 
 
 
-
-	print "Generating virtual Hi-C plot..."     
-	show_fragments_in_vhic_shifted = [c+0.5 for c in show_fragments_in_vhic] #to match the name_of_fragments in the matrix Since the ticks don't match with the heatmap.
-	fig = plt.figure()
-	plt.title("Virtual Hi-C")
-	ax = plt.subplot(1,1,1)
-	z = np.array(matrix_mean)
-
-
-
-	c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=maximum_hic_value, vmin=0)
-	ax.set_frame_on(False)
-	plt.colorbar()
-
-
-	#to set the show_fragments_in_vhic
-	plt.scatter(show_fragments_in_vhic_shifted, show_fragments_in_vhic_shifted, s=20, c=color_of_fragments,cmap=plt.cm.autumn)
-	ax.set_yticks(show_fragments_in_vhic_shifted)
-	#ax.set_xticks(show_fragments_in_vhic_shifted)
-	#ax.set_xticklabels(name_of_fragments, minor=False)
-	ax.set_yticklabels(name_of_fragments, minor=False)
-	plt.tick_params(axis='both', which='major', labelsize=8)
-	#plt.xticks(rotation=90)
-
-	plt.axis([0,z.shape[1],0,z.shape[0]])
-
-	fig.set_facecolor('white')
-	
-	pp = PdfPages('{}{}_vHiC.pdf'.format(root,prefix))
-	pp.savefig(fig)
-	pp.close()
-	print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
+        f= open(path, 'w') #store the data in file
+        matrix_mean = np.zeros((number_of_fragments,number_of_fragments))
+        for line in range(number_of_fragments):
+            for column in range(number_of_fragments):
+                mean_value = np.mean(matrix[line][column])
+    #         print "[{}][{}] = {}".format(line,column,mean_value)
+                matrix_mean[line][column] = mean_value
+    #         matrix_mean[column][line] = mean_value
+                f.write(str(line)+","+str(column)+","+str(mean_value))   
+                f.write("\n")
+        f.close()
+        print "\nThe virtual Hi-C data is in {}.".format(path)
+        for chi_file in chimera_files:
+            os.remove(chi_file)
+            os.remove(chi_file+"c")
+    else:
+        with open(path, 'r') as std_in:
+            matrix_mean = np.zeros((number_of_fragments,number_of_fragments))
+            for line in std_in:
+                values = line.split(",")
+                matrix_mean[int(values[0])][int(values[1])] = float(values[2])
 
 
+
+
+    print "Generating virtual Hi-C plot..."     
+    show_fragments_in_vhic_shifted = [c+0.5 for c in show_fragments_in_vhic] #to match the name_of_fragments in the matrix Since the ticks don't match with the heatmap.
+    fig = plt.figure()
+    plt.title("Virtual Hi-C")
+    ax = plt.subplot(1,1,1)
+    z = np.array(matrix_mean)
+
+
+
+    #c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=maximum_hic_value, vmin=0)
+    cmap = plt.cm.get_cmap(colormap)
+    c = plt.pcolor(z,cmap=cmap,vmax=maximum_hic_value, vmin=0)
+    ax.set_frame_on(False)
+    cb = plt.colorbar()
+    cb.solids.set_edgecolor("face")
+
+    #to set the show_fragments_in_vhic
+    plt.scatter(show_fragments_in_vhic_shifted, show_fragments_in_vhic_shifted, s=20, c=color_of_fragments,cmap=plt.cm.autumn)
+    ax.set_yticks(show_fragments_in_vhic_shifted)
+    #ax.set_xticks(show_fragments_in_vhic_shifted)
+    #ax.set_xticklabels(name_of_fragments, minor=False)
+    ax.set_yticklabels(name_of_fragments, minor=False)
+    plt.tick_params(axis='both', which='major', labelsize=8)
+    #plt.xticks(rotation=90)
+
+    plt.axis([0,z.shape[1],0,z.shape[0]])
+
+    fig.set_facecolor('white')
+    #pp = PdfPages('{}{}_vHiC.pdf'.format(root,prefix))
+    #pp.savefig(fig)
+    #pp.close()
+    plt.savefig('{}{}_vHiC.png'.format(root,prefix),dpi=1000)
+
+    print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
+    
+    #### Exteriorness
+    #all regions
+    #red= [26,24,37,44] #outside
+    #lgreen = [45,43,46,16,25,19,29,30,34,36,38,35,50,49] #inside
+    #tad = range(9,55)
+    tad = [45,257,68,161,247,166,232,42,241,217,272,135]
+    #tad = range(46,272)
+    #print type(tad)
+    #Only ZPA
+    #red= [24,26,32,37,42,44] #outside
+    #lgreen = [29,43,45,46] #inside
+    #tad = [54]
+
+    #skarmeta
+    lgreen = [179,231,246,232,250,84,149,215,218,219,226,227,229]
+    yellow = [230,128,212,163,162,153,97]
+    red= [221,188,124,130]
+
+    box_plot_dataset = []
+    box_plot_color = []
+    #outside
+    for out_bead in red:
+        aux = []
+        for bead in tad:
+            if bead != out_bead:
+                aux.append(matrix_mean[out_bead][bead])
+                #box_plot_dataset.append(matrix_mean[out_bead][bead])
+                #box_plot_color.append("red")
+        box_plot_dataset.append(aux)
+        box_plot_color.append("lightcoral")
+    for mid_bead in yellow:
+        aux = []
+        for bead in tad:
+            if bead != mid_bead:
+                aux.append(matrix_mean[mid_bead][bead])
+                #box_plot_dataset.append(matrix_mean[mid_bead][bead])
+                #box_plot_color.append("yellow")
+        box_plot_dataset.append(aux)
+        box_plot_color.append("yellow")
+    #inside
+    for in_bead in lgreen:
+        aux = []
+        for bead in tad:
+            if bead != in_bead:
+                aux.append(matrix_mean[in_bead][bead])
+                #box_plot_dataset.append(matrix_mean[in_bead][bead])
+                #box_plot_color.append("lightgreen")
+        box_plot_dataset.append(aux)
+        box_plot_color.append("lightgreen")
+    fig, ax = plt.subplots()
+    bp = plt.boxplot(box_plot_dataset,patch_artist=True)
+    #print range(len(red+yellow+lgreen)),box_plot_dataset
+    #bp = plt.bar(range(len(red+yellow+lgreen)),box_plot_dataset,color=box_plot_color)
+    for box, color in zip(bp['boxes'], box_plot_color):
+        box.set(facecolor = color)
+    ax.set_xticklabels(red+yellow+lgreen)
+    plt.xticks(rotation=90)
+    pp = PdfPages('{}{}_boxplot.pdf'.format(root,prefix))
+    pp.savefig(fig)
+    pp.close()
+    #plt.show()
+    print "Means:"
+    means = []
+    box_plot_dataset_3 = []
+    l1 = [item for sublist in box_plot_dataset[0:len(red)] for item in sublist]
+    l2 = [item for sublist in box_plot_dataset[len(red):len(red)+len(yellow)] for item in sublist]
+    l3 = [item for sublist in box_plot_dataset[len(red)+len(yellow):len(red)+len(yellow)+len(lgreen)] for item in sublist]
+
+
+    for i in box_plot_dataset:
+        means.append(np.mean(i))
+    red_mean = means[0:len(red)]
+    yellow_mean = means[len(red):len(red)+len(yellow)]
+    green_mean = means[len(red)+len(yellow):len(red)+len(yellow)+len(lgreen)]
+    print "Red: {}".format(np.mean(red_mean))
+    print "Yellow: {}".format(np.mean(yellow_mean))
+    print "Green: {}".format(np.mean(green_mean))
+    print np.median(red_mean)
+    print np.median(yellow_mean)
+
+    fig, ax = plt.subplots()
+    box_plot_dataset_3.append(red_mean)
+    box_plot_dataset_3.append(yellow_mean)
+    box_plot_dataset_3.append(green_mean)
+    print red_mean
+    print yellow_mean
+    print green_mean
+    bcolor = ["red","yellow","green"]
+    bp3 = plt.boxplot(box_plot_dataset_3,patch_artist = True)
+    for box, color in zip(bp3['boxes'], bcolor):
+        box.set(facecolor = color)
+    pp = PdfPages('{}{}_boxplot3.pdf'.format(root,prefix))
+    pp.savefig(fig)
+    pp.close()
+
+    sys.exit()
 
 
 def calculate_representative_model(biggest_matrix):
-	number_of_beads = number_of_fragments
-	root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
-	matrix_file = "{}matrix{}.txt".format(root,biggest_matrix)
+    number_of_beads = number_of_fragments
+    root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+    matrix_file = "{}matrix{}.txt".format(root,biggest_matrix)
 
-	########### FIRST GET THE PDB MODELS
-	#pdb directory will be inside the final models directory
-	pdb_output = "{}pdb_output/".format(root)
-	if not os.path.exists(pdb_output): os.makedirs(pdb_output)
-	write_pdb = "{}get_genome_pdbs.py".format(root)
-	models = []
-	with open(matrix_file, "r") as mtx:
-		for line in mtx:
-			models.append(re.split("\t", line)[0])
+    ########### FIRST GET THE PDB MODELS
+    #pdb directory will be inside the final models directory
+    pdb_output = "{}pdb_output/".format(root)
+    if not os.path.exists(pdb_output): os.makedirs(pdb_output)
+    write_pdb = "{}get_genome_pdbs.py".format(root)
+    models = []
+    with open(matrix_file, "r") as mtx:
+        for line in mtx:
+            models.append(re.split("\t", line)[0])
 
-	models = models[1:]
-
-
-	# in chimera:
-	# open all files (half of matrix)
-	# match all files
-	# combine all files
-	# write the pdb file
-
-	counter = 1
-	with open (write_pdb,'w') as output:
-		
-		output.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
-		verboseprint( "0 - {}".format(models[0]))
-		output.write("rc(\"open {}\")\n".format(models[0]))
-		for model in models[1:]:
-		# for model in models[-2:]:
-			verboseprint( "{} - {}".format(counter,model))
-			output.write("rc(\"open {}\")\n".format(model))
-			counter += 1       
-		for model in range(len(models)-1):
-			output.write("rc(\"match #{}-{} #0-{}\")\n".format((model+1)*number_of_beads,(model+1)*number_of_beads+number_of_beads-1,number_of_beads-1))
-		 
-		start_id = len(models)*number_of_beads    
-		for model in range(len(models)):
-			
-			output.write("rc(\"combine #{}-{} newchainids False name combine modelId {}\")\n".format(model*number_of_beads,(model*number_of_beads+number_of_beads-1),start_id))
-			output.write("rc(\"write format pdb #{} {}{}.pdb\")\n".format(start_id,pdb_output,models[model][:-3])) #with -3 we take out the ".PY"
-			start_id+=1
-			#combine #0-210 newchainids False name combine modelId 211    
-			
-			#write format pdb #211 test.pdb
-			
-	verboseprint("writting pdb-s... it can take time..." )       
-	distance_output = subprocess.check_output(["chimera", "--nogui", write_pdb])
-	verboseprint("Pdb's written. Calculating average model...")
-	os.remove(write_pdb)
-				
-			 
-	########## NOW WE GET THE AVERAGE MODEL
-	color_grey = "#b333b333b333"
-	color_gene = "#ffffb3330000"
-
-	#get the pdb files 
-	pdbFiles = [ f for f in listdir(pdb_output) if isfile(join(pdb_output,f)) ]
-
-	#get the x y and z position of all beads of all models
-	all_models = []
-
-	for pdbFile in pdbFiles:
-		one_model = []
-		with open("{}{}".format(pdb_output,pdbFile), "r") as f:
-			for line in f:
-				values = re.search(r'HETATM\s+\d+\s+\*{4}\s+\d+\s{4}(.{8})(.{8})(.{8})',line)  
-				if values:
-					value_tuple = (float(values.group(1)),float(values.group(2)),float(values.group(3)))
-					one_model.append(value_tuple)
-		all_models.append(one_model)
-		
-	mean_model = []
-	for bead in range(number_of_beads):   
-		lista_x = []
-		lista_y = []
-		lista_z = []           
-		for model in all_models:
-			lista_x.append(model[bead][0]) #get the X value of all models for each bead
-			lista_y.append(model[bead][1])
-			lista_z.append(model[bead][2])
-		x_media = np.mean(lista_x)
-		y_media = np.mean(lista_y)
-		z_media = np.mean(lista_z)
-		distance_tuple = (x_media,y_media,z_media)
-		mean_model.append(distance_tuple)
-
-	#mean model has the values in tuples of the mean for each bead
-
-	#now get the model more similar to these mean values
-
-	sum_of_distances = []
-
-	for model in all_models:
-		d_sum = 0
-		for bead in range(number_of_beads):
-			
-			d = (model[bead][0]-mean_model[bead][0])**2 + (model[bead][1]-mean_model[bead][1])**2 + (model[bead][2]-mean_model[bead][2])**2
-			square_d = np.sqrt(d)
-			d_sum = d_sum + square_d
-		sum_of_distances.append(d_sum)  
-	  
-	  
+    models = models[1:]
 
 
-	print "\nModel closest to average (Representative):"
-	# print sum_of_distances.index(min(sum_of_distances))
-	print pdbFiles[sum_of_distances.index(min(sum_of_distances))][:-2]+"y"
-	print "Most different model to average:"
-	print pdbFiles[sum_of_distances.index(max(sum_of_distances))][:-2]+"y"
-	#sum_of_distances.remove(max(sum_of_distances))
-	#print "Second MAX:"
-	#print pdbFiles[sum_of_distances.index(max(sum_of_distances))]
+    # in chimera:
+    # open all files (half of matrix)
+    # match all files
+    # combine all files
+    # write the pdb file
+
+    counter = 1
+    with open (write_pdb,'w') as output:
+        verboseprint("Executing {}...".format(write_pdb))
+        
+        output.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
+        verboseprint( "0 - {}".format(models[0]))
+        output.write("rc(\"open {}\")\n".format(models[0]))
+        for model in models[1:]:
+        # for model in models[-2:]:
+            verboseprint( "{} - {}".format(counter,model))
+            output.write("rc(\"open {}\")\n".format(model))
+            counter += 1       
+        for model in range(len(models)-1):
+            output.write("rc(\"match #{}-{} #0-{}\")\n".format((model+1)*number_of_beads,(model+1)*number_of_beads+number_of_beads-1,number_of_beads-1))
+         
+        start_id = len(models)*number_of_beads    
+        for model in range(len(models)):
+            
+            output.write("rc(\"combine #{}-{} newchainids False name combine modelId {}\")\n".format(model*number_of_beads,(model*number_of_beads+number_of_beads-1),start_id))
+            output.write("rc(\"write format pdb #{} {}{}.pdb\")\n".format(start_id,pdb_output,models[model][:-3])) #with -3 we take out the ".PY"
+            start_id+=1
+            #combine #0-210 newchainids False name combine modelId 211    
+            
+            #write format pdb #211 test.pdb
+            
+    verboseprint("writting pdb-s... it can take time..." )       
+    distance_output = subprocess.check_output(["chimera", "--nogui", write_pdb])
+    verboseprint("Pdb's written. Calculating average model...")
+    os.remove(write_pdb)
+                
+             
+    ########## NOW WE GET THE AVERAGE MODEL
+    color_grey = "#b333b333b333"
+    color_gene = "#ffffb3330000"
+
+    #get the pdb files 
+    pdbFiles = [ f for f in listdir(pdb_output) if isfile(join(pdb_output,f)) ]
+
+    #get the x y and z position of all beads of all models
+    all_models = []
+
+    for pdbFile in pdbFiles:
+        one_model = []
+        with open("{}{}".format(pdb_output,pdbFile), "r") as f:
+            for line in f:
+                values = re.search(r'HETATM\s+\d+\s+\*{4}\s+\d+\s{4}(.{8})(.{8})(.{8})',line)  
+                if values:
+                    value_tuple = (float(values.group(1)),float(values.group(2)),float(values.group(3)))
+                    one_model.append(value_tuple)
+        all_models.append(one_model)
+        
+    mean_model = []
+    for bead in range(number_of_beads):   
+        lista_x = []
+        lista_y = []
+        lista_z = []           
+        for model in all_models:
+            lista_x.append(model[bead][0]) #get the X value of all models for each bead
+            lista_y.append(model[bead][1])
+            lista_z.append(model[bead][2])
+        x_media = np.mean(lista_x)
+        y_media = np.mean(lista_y)
+        z_media = np.mean(lista_z)
+        distance_tuple = (x_media,y_media,z_media)
+        mean_model.append(distance_tuple)
+
+    #mean model has the values in tuples of the mean for each bead
+
+    #now get the model more similar to these mean values
+
+    sum_of_distances = []
+
+    for model in all_models:
+        d_sum = 0
+        for bead in range(number_of_beads):
+            
+            d = (model[bead][0]-mean_model[bead][0])**2 + (model[bead][1]-mean_model[bead][1])**2 + (model[bead][2]-mean_model[bead][2])**2
+            square_d = np.sqrt(d)
+            d_sum = d_sum + square_d
+        sum_of_distances.append(d_sum)  
+      
+      
 
 
-	# save all models of this matrix in another dir
-	storage_folder =  "{}mtx1_models/".format(root)
+    print "\nModel closest to average (Representative):"
+    # print sum_of_distances.index(min(sum_of_distances))
+    print pdbFiles[sum_of_distances.index(min(sum_of_distances))][:-2]+"y"
+    print "Most different model to average:"
+    print pdbFiles[sum_of_distances.index(max(sum_of_distances))][:-2]+"y"
+    #sum_of_distances.remove(max(sum_of_distances))
+    #print "Second MAX:"
+    #print pdbFiles[sum_of_distances.index(max(sum_of_distances))]
 
-	# store them in a folder
-	# storage_folder = "../"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2)+"/" #the dir where the data will be saved
-	print "\nCopying models from the same cluster in: {}".format(storage_folder)
-	if not os.path.exists(storage_folder): os.makedirs(storage_folder)   
+
+    # save all models of this matrix in another dir
+    storage_folder =  "{}mtx1_models/".format(root)
+
+    # store them in a folder
+    # storage_folder = "../"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2)+"/" #the dir where the data will be saved
+    print "\nCopying models from the same cluster in: {}".format(storage_folder)
+    if not os.path.exists(storage_folder): os.makedirs(storage_folder)   
 
 
 
-	for i in pdbFiles:
-		i = i[:-4] #take out ".pdb"
-		
-		shutil.copyfile("{}/{}.py".format(root,i), "{}{}.py".format(storage_folder,i) )
-		shutil.copyfile("{}/{}.txt".format(root,i), "{}{}.txt".format(storage_folder,i) )
-		
-	number_of_files_to_super = pdbFiles
-	# number_of_files_to_super = number_of_files_to_super[:5]
-	number_of_beads = number_of_beads - 1 
-	with open("{}superposition.cmd".format(storage_folder),"w") as superposition:
-		for i in number_of_files_to_super:
-			i = i[:-4]
-			superposition.write("open {}.py \n".format(i))
-		for i in range(len(number_of_files_to_super)):
-			
-			for j in range(number_of_beads+1):
-				if j in viewpoint_fragments:
-					superposition.write("color {} #{}\n".format(color_gene,j+i*(number_of_beads+1)))
-				else:
-					superposition.write("color {} #{}\n".format(color_grey,j+i*(number_of_beads+1)))
-			i += 1      
-		for i in range(len(number_of_files_to_super)-1):
-			i += 1
-			superposition.write("match #{}-{} #0-{}\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads,number_of_beads))
-		for i in range(len(number_of_files_to_super)):
-			superposition.write("shape tube #{}-{} radius 20 bandlength 10000\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads))
-			
-		#if we want a model to be highlighted
-	#     for i in range(len(number_of_files_to_super)):
-	#         if number_of_files_to_super[i] == "HoxGenomeZebra21741.pdb":
-	#             superposition.write("shape tube #{}-{} radius 100 bandlength 10000\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads)) 
-	#         else:
-	#             superposition.write("shape tube #{}-{} radius 20 bandlength 10000\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads))
-			superposition.write("close #{}-{}\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads))
-	print "Superposition file generated in {}superposition.cmd. Open it with UCSF Chimera.".format(storage_folder)
-	shutil.copyfile("{}{}".format(root,pdbFiles[sum_of_distances.index(min(sum_of_distances))][:-2]+"y"), "{}Representative.py".format(root,i) )
-	shutil.copyfile("{}{}".format(root,pdbFiles[sum_of_distances.index(max(sum_of_distances))][:-2]+"y"), "{}LeastRepresentative.py".format(root,i) )
-	print "Representative.py and LeastRepresentative.py models saved in: {}".format(root)
-	with open ("{}Representative_tubes.cmd", "w") as out:
-		out.write("open {}Representative.py\n".format(root,i))
-		out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
-		out.write("close #0-{}\n".format(number_of_beads))
-	with open ("{}LeastRepresentative_tubes.cmd", "w") as out:
-		out.write("open {}Representative.py\n".format(root,i))
-		out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
-		out.write("close #0-{}\n".format(number_of_beads))
-	print "Representative_tube.cmd and LeastRepresentative_tubes.cmd models saved in: {}".format(root)
-	print "Open them with UCSF Chimera."
-	
+    for i in pdbFiles:
+        i = i[:-4] #take out ".pdb"
+        
+        shutil.copyfile("{}/{}.py".format(root,i), "{}{}.py".format(storage_folder,i) )
+        shutil.copyfile("{}/{}.txt".format(root,i), "{}{}.txt".format(storage_folder,i) )
+        
+    number_of_files_to_super = pdbFiles
+    # number_of_files_to_super = number_of_files_to_super[:5]
+    number_of_beads = number_of_beads - 1 
+    with open("{}superposition.cmd".format(storage_folder),"w") as superposition:
+        for i in number_of_files_to_super:
+            i = i[:-4]
+            superposition.write("open {}.py \n".format(i))
+        for i in range(len(number_of_files_to_super)):
+            
+            for j in range(number_of_beads+1):
+                if j in viewpoint_fragments:
+                    superposition.write("color {} #{}\n".format(color_gene,j+i*(number_of_beads+1)))
+                else:
+                    superposition.write("color {} #{}\n".format(color_grey,j+i*(number_of_beads+1)))
+            i += 1      
+        for i in range(len(number_of_files_to_super)-1):
+            i += 1
+            superposition.write("match #{}-{} #0-{}\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads,number_of_beads))
+        for i in range(len(number_of_files_to_super)):
+            superposition.write("shape tube #{}-{} radius 20 bandlength 10000\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads))
+            
+        #if we want a model to be highlighted
+    #     for i in range(len(number_of_files_to_super)):
+    #         if number_of_files_to_super[i] == "HoxGenomeZebra21741.pdb":
+    #             superposition.write("shape tube #{}-{} radius 100 bandlength 10000\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads)) 
+    #         else:
+    #             superposition.write("shape tube #{}-{} radius 20 bandlength 10000\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads))
+            superposition.write("close #{}-{}\n".format(i*(number_of_beads+1),i*(number_of_beads+1)+number_of_beads))
+    print "Superposition file generated in {}superposition.cmd. Open it with UCSF Chimera.".format(storage_folder)
+    shutil.copyfile("{}{}".format(root,pdbFiles[sum_of_distances.index(min(sum_of_distances))][:-2]+"y"), "{}Representative.py".format(root,i) )
+    shutil.copyfile("{}{}".format(root,pdbFiles[sum_of_distances.index(max(sum_of_distances))][:-2]+"y"), "{}LeastRepresentative.py".format(root,i) )
+    print "Representative.py and LeastRepresentative.py models saved in: {}".format(root)
+    with open ("{}Representative_tubes.cmd", "w") as out:
+        out.write("open {}Representative.py\n".format(root,i))
+        out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
+        out.write("close #0-{}\n".format(number_of_beads))
+    with open ("{}LeastRepresentative_tubes.cmd", "w") as out:
+        out.write("open {}Representative.py\n".format(root,i))
+        out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
+        out.write("close #0-{}\n".format(number_of_beads))
+    print "Representative_tube.cmd and LeastRepresentative_tubes.cmd models saved in: {}".format(root)
+    print "Open them with UCSF Chimera."
+    
 
 
 ########################################## MAIN ##########################################
@@ -1495,6 +1593,7 @@ group3.add_argument("--k_value",type=int, action="store",default=2, dest="k_mean
 
 group4.add_argument("--maximum_hic_value", type=int, action="store",dest="maximum_hic_value", default = 0,help='The virtual Hi-C gradient color will be from 0 to maximum_hic_value.')
 group4.add_argument("--repaint_vhic", action="store_true", dest="repaint_vhic",help='repaint_vhic True to generate the virtual Hi-C again. Modify the --maximum_hic_value also.')
+group4.add_argument("--colormap", action="store", dest="colormap",default = "PuRd_r", help='The colormap of the virtual Hi-C. Matplotlib colormap.')
 
 group5.add_argument("data_dir", action="store",help='location of the 4C data. primers.txt needs tobe in there also')
 group5.add_argument("prefix", action="store",help='Name of the models')
@@ -1536,84 +1635,85 @@ maximum_hic_value = args.maximum_hic_value
 ignore_beads = args.ignore_beads
 biggest_matrix = 0
 repaint_vhic = args.repaint_vhic
+colormap = args.colormap
 
 jump_step = [1]*5
 if step != "None":
-	if step == "pre_modeling":
-		jump_step[1] = 0
-		jump_step[2] = 0
-		jump_step[3] = 0
-		jump_step[4] = 0
-	else: 
-		if step == "modeling":
-			jump_step[2] = 0
-			jump_step[3] = 0
-			jump_step[4] = 0
-		else: 
-			if step == "analysis":
-				jump_step[3] = 0
-				jump_step[4] = 0
-			else:
-				if step == "vhic":
-					jump_step[4] = 0
+    if step == "pre_modeling":
+        jump_step[1] = 0
+        jump_step[2] = 0
+        jump_step[3] = 0
+        jump_step[4] = 0
+    else: 
+        if step == "modeling":
+            jump_step[2] = 0
+            jump_step[3] = 0
+            jump_step[4] = 0
+        else: 
+            if step == "analysis":
+                jump_step[3] = 0
+                jump_step[4] = 0
+            else:
+                if step == "vhic":
+                    jump_step[4] = 0
 else:
-	jump_step = [0]*5
-		
-	
+    jump_step = [0]*5
+        
+    
 if data_dir[-1] != "/":
     data_dir = data_dir + "/"
 if repaint_vhic:
-	jump_step = [1]*5
+    jump_step = [1]*5
 
 try:
-	if jump_step[0] :
-		max_distance = args.max_distance
-		uZ = args.uZ
-		lZ = args.lZ
-		if uZ == None or lZ == None or max_distance == None:
-			raise Exception()
+    if jump_step[0] :
+        max_distance = args.max_distance
+        uZ = args.uZ
+        lZ = args.lZ
+        if uZ == None or lZ == None or max_distance == None:
+            raise Exception()
 except:
-	print "Since you are jumping the pre-modeling step, --max_distance, --uZ and --lZ flags are needed" 
-	sys.exit()
+    print "Since you are jumping the pre-modeling step, --max_distance, --uZ and --lZ flags are needed" 
+    sys.exit()
 
 # getting biggest_matrix
 try:
-	if jump_step[2] and (not jump_step[3] or not jump_step[4]):
-		search_dir = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
-		command =  "ls {} | egrep matrix[0-9]+".format(search_dir)
-		matrix_files = subprocess.check_output(command,shell=True)
-		aux = []
-		for x in matrix_files:
-			aux.append(x)
-		aux = "".join(aux)
-		matrix_files = aux.split("\n")[:-1]
-		sizes = []
-		
-		for x in matrix_files:
-			command = "wc {}".format(search_dir+x)
-			matrix_sizes = subprocess.check_output(command,shell=True)
-			aux = []
-			
-			for char in matrix_sizes:
-				aux.append(char)
-			aux = "".join(aux)
+    if jump_step[2] and (not jump_step[3] or not jump_step[4]):
+        search_dir = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+        command =  "ls {} | egrep matrix[0-9]+".format(search_dir)
+        matrix_files = subprocess.check_output(command,shell=True)
+        aux = []
+        for x in matrix_files:
+            aux.append(x)
+        aux = "".join(aux)
+        matrix_files = aux.split("\n")[:-1]
+        sizes = []
+        
+        for x in matrix_files:
+            command = "wc {}".format(search_dir+x)
+            matrix_sizes = subprocess.check_output(command,shell=True)
+            aux = []
+            
+            for char in matrix_sizes:
+                aux.append(char)
+            aux = "".join(aux)
 
-			sizes.append(int(aux.split()[0]))
+            sizes.append(int(aux.split()[0]))
 
-		biggest_matrix = matrix_files[sizes.index(max(sizes))]
-		biggest_matrix = int((re.findall(r'\d+',biggest_matrix))[0])
+        biggest_matrix = matrix_files[sizes.index(max(sizes))]
+        biggest_matrix = int((re.findall(r'\d+',biggest_matrix))[0])
 
 except:
-	e = sys.exc_info()[1]
-	print e
+    e = sys.exc_info()[1]
+    print e
 
-	
+    
 if verbose:
-	def verboseprint(text):
-		print text;
+    def verboseprint(text):
+        print text;
 else:   
-	verboseprint = lambda *a: None      # do-nothing function
-	
+    verboseprint = lambda *a: None      # do-nothing function
+    
 
 
 
@@ -1623,17 +1723,17 @@ primers = {}
 viewpoint_positions = []
 primers_file = fileCheck(data_dir+"primers.txt")
 for line in primers_file:
-	m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
-	try:
-		primers[m.group(1)] = int(m.group(2))
-	except:
-		break
+    m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+    try:
+        primers[m.group(1)] = int(m.group(2))
+    except:
+        break
 print "\nPrimers.txt. These are the viewpoints that will be used in the modeling:"
 for k,v in primers.iteritems():
-	print "Viewpoint:{}\tposition:{}".format(k,v)
-	viewpoint_positions.append(v)
+    print "Viewpoint:{}\tposition:{}".format(k,v)
+    viewpoint_positions.append(v)
 print 
-	
+    
 file_names = primers.keys()
 files = [data_dir+f for f in file_names]
 
@@ -1646,13 +1746,13 @@ number_of_fragments = 0
 
 a_4c_file = fileCheck(data_dir+primers.keys()[0])
 for line in a_4c_file:
-	values = line.split()
-	if len(values) != 4:
-		continue
-	if start_frag == 0:
-		start_frag = int(values[1])
-	end_frag = int(values[2])
-	number_of_fragments += 1
+    values = line.split()
+    if len(values) != 4:
+        continue
+    if start_frag == 0:
+        start_frag = int(values[1])
+    end_frag = int(values[2])
+    number_of_fragments += 1
 
 locus_size = end_frag - start_frag
 viewpoint_fragments = calculate_fragment_number(viewpoint_positions,files[0])
@@ -1660,8 +1760,8 @@ viewpoint_fragments = calculate_fragment_number(viewpoint_positions,files[0])
 
 #default, we want 100 beads in each model
 if fragments_in_each_bead == 0:
-	fragments_in_each_bead = int(number_of_fragments / 100)
-	
+    fragments_in_each_bead = int(number_of_fragments / 100)
+    
 viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
 are_genes = viewpoint_fragments
 
@@ -1685,7 +1785,7 @@ try:
             else:
                 vhic_colors[m.group(1)] = m.group(3)
         except:
-			break
+            break
 except IOError:
     print "\nError: File "+ data_dir+ " primers_vhic.txt does not appear to exist. Using primers.txt to paint positions in the virtual Hi-C\n"
     vhic_primers_file = fileCheck(data_dir+"primers.txt")
@@ -1698,11 +1798,6 @@ except IOError:
             break
 print "This positions will appear in the virtual Hi-C: "
 show_fragments_in_vhic = []
-counter = 0
-for k,v in vhic_primers.iteritems():
-	print "VHi-C name:{}\tposition:{}\tcolor:{}".format(k,v,vhic_colors[k])
-	counter += 1
-print
 show_fragments_in_vhic = vhic_primers.values()
 name_of_fragments = vhic_primers.keys()
 color_of_fragments = vhic_colors.values()
@@ -1710,7 +1805,11 @@ name_of_fragments = [x[:10] for x in name_of_fragments]
 
 show_fragments_in_vhic = calculate_fragment_number(show_fragments_in_vhic,files[0])
 show_fragments_in_vhic = [int(i/fragments_in_each_bead) for i in show_fragments_in_vhic]
-#print show_fragments_in_vhic
+counter = 0
+for k,v in vhic_primers.iteritems():
+    print "VHi-C name:{}\tposition:{}\tcolor:{}\tbead:{} ".format(k,v,vhic_colors[k],show_fragments_in_vhic[counter])
+    counter += 1
+print
 
 p = Pool(number_of_cpus)
 execute = []
@@ -1721,41 +1820,42 @@ execute = []
 
 ######### pre-modeling 
 if not jump_step[0]:
-	print "Doing the pre-modeling..."
-	print "Modeling with variable max_distance ranging {}:{}".format(from_dist,to_dist)
-	for dist in range(from_dist,to_dist+dist_bins,dist_bins):
-		instructions = (0.1 ,-0.1, dist,0 ,False)
-		execute.append(instructions)
-	p.map(modeling,execute)
-	execute = []
-	######### max distance calculation
-	print "Calculating optimal max_dist parameter for the modeling...\n"
-	max_distance = calculate_best_maxd()
-	print "maxD calculated: Optimal max_distance value is: {}".format(max_distance)
-	print "Modeling with variables uZ and lZ ranging {}:{} and -{}:-{}".format(from_zscore,to_zscore,from_zscore,to_zscore)
-	for zmax in np.arange(from_zscore,to_zscore+zscore_bins,zscore_bins):
-		for zmin in np.arange(-from_zscore, -to_zscore-zscore_bins, -zscore_bins):
-			instructions = (zmax, zmin, max_distance, 0 ,False)
-			execute.append(instructions)
-	p.map(modeling,execute)
-	execute = []
-	######### z_scores calculation
-	print "Now calculating best uz and lz"
-	uZ, lZ = calculate_best_zscores()
-	print "uZ and lZ calculated: Optimal values are {} and {}.".format(uZ,lZ)
-	print "Pre-modeling finished"
-	
-	
+    print "Doing the pre-modeling..."
+    print "Modeling with variable max_distance ranging {}:{}".format(from_dist,to_dist)
+    for dist in range(from_dist,to_dist+dist_bins,dist_bins):
+        instructions = (0.1 ,-0.1, dist,0 ,False)
+        execute.append(instructions)
+    p.map(modeling,execute)
+    execute = []
+    ######### max distance calculation
+    print "Calculating optimal max_dist parameter for the modeling...\n"
+    max_distance = calculate_best_maxd()
+    print "maxD calculated: Optimal max_distance value is: {}".format(max_distance)
+    print "Modeling with variables uZ and lZ ranging {}:{} and -{}:-{}".format(from_zscore,to_zscore,from_zscore,to_zscore)
+    for zmax in np.arange(from_zscore,to_zscore+zscore_bins,zscore_bins):
+        for zmin in np.arange(-from_zscore, -to_zscore-zscore_bins, -zscore_bins):
+            instructions = (zmax, zmin, max_distance, 0 ,False)
+            execute.append(instructions)
+    p.map(modeling,execute)
+    execute = []
+    sys.exit()
+    ######### z_scores calculation
+    print "Now calculating best uz and lz"
+    uZ, lZ = calculate_best_zscores()
+    print "uZ and lZ calculated: Optimal values are {} and {}.".format(uZ,lZ)
+    print "Pre-modeling finished"
+    
+    
 ######### Modeling 	
 if not jump_step[1]:
-	print "Modeling started, modeling {} models...".format(total_number_of_models)
-	number_of_models = total_number_of_models/number_of_cpus
-	for cpu in range(number_of_cpus):
-		instructions = ( uZ,lZ, max_distance, cpu*number_of_models ,True)
-		execute.append(instructions)
-	p.map(modeling,execute)
-	execute = []
-	print "Modeling finished"
+    print "Modeling started, modeling {} models...".format(total_number_of_models)
+    number_of_models = total_number_of_models/number_of_cpus
+    for cpu in range(number_of_cpus):
+        instructions = ( uZ,lZ, max_distance, cpu*number_of_models ,True)
+        execute.append(instructions)
+    p.map(modeling,execute)
+    execute = []
+    print "Modeling finished"
 
 
 ######### Analysis of models
@@ -1764,7 +1864,7 @@ if not jump_step[2]:
     print "Analysis started"
 
     std_dev, cut_off_percentage, models_subset = run_analysis(std_dev,cut_off_percentage)
-		
+        
     print "Final analysis thresholds: "
     print "Std_dev: {}".format(std_dev)
     print "cut_off_percentage: {}".format(cut_off_percentage)
@@ -1777,43 +1877,43 @@ if not jump_step[2]:
     #    n_clusters,biggest_matrix = run_clustering(models_subset)
     print "Clustering finished"
 if maximum_hic_value == 0: #set a default value
-	maximum_hic_value = max_distance*0.8
+    maximum_hic_value = max_distance*0.8
 
 
 ######### vhic calculation
 if not jump_step[3]:
-	print "Generating Virtual Hi-C"
-	calculate_vhic(biggest_matrix,True)
-	print "Virtual Hi-C generated"
+    print "Generating Virtual Hi-C"
+    calculate_vhic(biggest_matrix,True)
+    print "Virtual Hi-C generated"
 if repaint_vhic and jump_step[3]: 
-	print "RePainting Virtual Hi-C"
-	calculate_vhic(biggest_matrix,False)
-	print "Virtual Hi-C RePainted"
+    print "RePainting Virtual Hi-C"
+    calculate_vhic(biggest_matrix,False)
+    print "Virtual Hi-C RePainted"
 
 ######### getting representative model
 if not jump_step[4]:
-	print "Calculating representative model..."
-	calculate_representative_model(biggest_matrix)
+    print "Calculating representative model..."
+    calculate_representative_model(biggest_matrix)
 
-	
+    
 print """##################################################################################################################
 \n What do you want to do now?:
 
  -If the virtual Hi-C is too red or white, rerun with --repaint_vhic, modify --maximum_hic_value and set --uZ, --lZ and --max_distance.
 
  -To paint a model with epigenetic marks (bam/bed file required):
-	'python src/paint_model.py {} your_model.py '
+    'python src/paint_model.py {} your_model.py '
 
  -To call the TAD boundaries, run:
-	'python src/calculate_boundaries.py vhic tad_size'
+    'python src/calculate_boundaries.py vhic tad_size'
 
 #todo
  -To compare conserved regions between 2 virtual Hi-Cs (Different species or homolog regions), run:
-	'python src/Evo_comp.py {} config_file2 {} vhic2'
+    'python src/Evo_comp.py {} config_file2 {} vhic2'
 
 #todo
  -To compare this virtual Hi-C to another one of the same region (Mutants), run:
-	'python src/Mut_comp {} config_file2 {} vhic2'
+    'python src/Mut_comp {} config_file2 {} vhic2'
 \n##################################################################################################################
 """  
-	
+    
