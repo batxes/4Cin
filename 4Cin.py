@@ -1279,6 +1279,8 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
 
     print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
     
+
+    ################################ CODE OF SHH STUFF. DELETE AFTERWARDS
     #### Exteriorness
     #all regions
     #red= [26,24,37,44] #outside
@@ -1374,7 +1376,6 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     pp.savefig(fig)
     pp.close()
 
-    sys.exit()
 
 
 def calculate_representative_model(biggest_matrix):
