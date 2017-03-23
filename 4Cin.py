@@ -1350,6 +1350,8 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     l3 = [item for sublist in box_plot_dataset[len(red)+len(yellow):len(red)+len(yellow)+len(lgreen)] for item in sublist]
 
 
+    
+
     for i in box_plot_dataset:
         means.append(np.mean(i))
     red_mean = means[0:len(red)]
@@ -1839,7 +1841,6 @@ if not jump_step[0]:
             execute.append(instructions)
     p.map(modeling,execute)
     execute = []
-    sys.exit()
     ######### z_scores calculation
     print "Now calculating best uz and lz"
     uZ, lZ = calculate_best_zscores()
