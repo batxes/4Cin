@@ -1281,7 +1281,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     
 
     ################################ CODE OF SHH STUFF. DELETE AFTERWARDS
-    #### Exteriorness
+    #### Exteriorness enhancers
     #all regions
     #red= [26,24,37,44] #outside
     #lgreen = [45,43,46,16,25,19,29,30,34,36,38,35,50,49] #inside
@@ -1298,6 +1298,8 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     lgreen = [179,231,246,232,250,84,149,215,218,219,226,227,229]
     yellow = [230,128,212,163,162,153,97]
     red= [221,188,124,130]
+    # scatter plot showing X and Y for distance to furthest and nearest enhancers
+    sshZRS = [46,271]
 
     box_plot_dataset = []
     box_plot_color = []
@@ -1348,6 +1350,48 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     l1 = [item for sublist in box_plot_dataset[0:len(red)] for item in sublist]
     l2 = [item for sublist in box_plot_dataset[len(red):len(red)+len(yellow)] for item in sublist]
     l3 = [item for sublist in box_plot_dataset[len(red)+len(yellow):len(red)+len(yellow)+len(lgreen)] for item in sublist]
+    
+    #12 is number of enhancers
+    min_list = []
+    max_list = []
+    for i in range(len(red)):
+        prox_list = l1[(0+i)*12:(1+i)*12]
+        min_list.append(min(prox_list))
+        max_list.append(max(prox_list))
+    for i in range(len(yellow)):
+        prox_list = l2[(0+i)*12:(1+i)*12]
+        min_list.append(min(prox_list))
+        max_list.append(max(prox_list))
+    for i in range(len(lgreen)):
+        prox_list = l3[(0+i)*12:(1+i)*12]
+        min_list.append(min(prox_list))
+        max_list.append(max(prox_list))
+
+    fig,ax = plt.subplots()
+    cred = ["red" for i in range(len(l1))]
+    cyellow = ["yellow" for i in range(len(l1))]
+    cgreen = ["green" for i in range(len(l1))]
+    l = []
+    l.append(l1)
+    l.append(l2)
+    l.append(l3)
+    bp = plt.boxplot(l)
+    for i in range(3):
+        y = l[i]
+        x = np.random.normal(1+i,0.04,size=len(y))
+        plt.plot(x,y,'r.',alpha=0.2)
+        
+    #c = ["red","red","red","red","yellow","yellow","yellow","yellow","yellow","yellow","green","green","green","green","green","green","green","green","green","green","green","green","green"]    
+    #plt.scatter(min_list,max_list , s=20,c = c )
+    #plt.xlim([0,4000])
+    #plt.ylim([0,4000])
+    pp = PdfPages('{}{}_scatter_enhancers.pdf'.format(root,prefix))
+    pp.savefig(fig)
+    pp.close()
+
+    
+    print min_list
+    print max_list
 
 
     
@@ -1377,6 +1421,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     pp = PdfPages('{}{}_boxplot3.pdf'.format(root,prefix))
     pp.savefig(fig)
     pp.close()
+
 
 
 
