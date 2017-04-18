@@ -1,61 +1,116 @@
 #!/usr/bin/python
 
 import sys
+import inspect
 import re
 import ConfigParser
 import pysam
-
+import os
 import numpy as np
 import heapq
 import matplotlib
 import matplotlib.cm  as cm
 import pylab
+import argparse
 
-number_of_arguments = len(sys.argv)
-if number_of_arguments != 3 and number_of_arguments != 4: #Or all parameters, or no parameters 
-    print "Not enought parameters. Config file and model to be painted. Distance matrix optional (To paint RMSD matrix with epigenetic marks). You passed: ",sys.argv[1:]
-    sys.exit()
-if len(sys.argv) == 3:  #if we pass the arguments (in the cluster)
-    model = sys.argv[2]
-    ini_file = sys.argv[1]
-if len(sys.argv) == 4:  #if we pass the arguments (in the cluster)
-    model = sys.argv[2]
-    ini_file = sys.argv[1]
-    distance_matrix = sys.argv[3]
+# realpath() will make your script run, even if you symlink it :)
+cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
+if cmd_folder not in sys.path:
+    sys.path.insert(0, cmd_folder)
+    
+# use this if you want to include modules from a subfolder
+cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"src")))
+if cmd_subfolder not in sys.path:
+    sys.path.insert(0, cmd_subfolder)
+    
+from data_manager import fileCheck, calculate_fragment_number
+
+
+working_dir = (os.path.realpath(__file__)).split("/")[:-1]
+working_dir = "/".join(working_dir)+"/"
+
+parser = argparse.ArgumentParser(
+        description = "Script that paints a 3D model generate with 4Cin, providing a bam or bed file.",
+        epilog = "if vHi-C (virtual Hi-C) is provided, a clustered RMSD is generated with the beads of the painted model depicted in the diagonal")
+parser.add_argument("model", action="store", help="3D model that will be painted.")
+parser.add_argument("--vHi-C", action="store", dest="distance_matrix", default = "None", help="vHi-C (virtual Hi-C) file generated with 4Cin.")
+parser.add_argument("--name", action="store",dest="prefix",default="4Cin", help="Name for the generated files.")
+parser.add_argument("--fragments_in_each_bead",type=int, action="store",dest="fragments_in_each_bead",default=0, help="Number of fragments that will be represented with each bead")
+parser.add_argument("data_dir", action="store",help='location of the 4C data. primers.txt file needs to be also in the directory')
+parser.add_argument("--working_dir", action="store",default=working_dir, dest="working_dir",help='location where the models will be generated')
+parser.add_argument("painting_path", action="store",help="Bed/Bam file.")
+parser.add_argument("colormap", action="store",help="Colormap (matplotlib) to paint the model. Check: http://matplotlib.org/examples/color/colormaps_reference.html.")
+
+args = parser.parse_args()
+model = args.model
+data_dir = args.data_dir
+painting_path = args.painting_path
+colormap = args.colormap
+distance_matrix = args.distance_matrix
+prefix = args.prefix
+fragments_in_each_bead = args.fragments_in_each_bead
+data_dir = args.data_dir
+working_dir = args.working_dir
+
+if data_dir[-1] != "/":
+    data_dir = data_dir + "/"
+
+#get the name and position from primers.txt
+#primers.txt:  name chrN:position
+primers = {}
+viewpoint_positions = []
+primers_file = fileCheck(data_dir+"primers.txt")
+for line in primers_file:
+    m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+    try:
+        primers[m.group(1)] = int(m.group(2))
+    except:
+        break
+print "\nPrimers.txt. These are the viewpoints that will be used in the modeling:"
+for k,v in primers.iteritems():
+    print "Viewpoint:{}\tposition:{}".format(k,v)
+    viewpoint_positions.append(v)
+print
+
+file_names = primers.keys()
+files = [data_dir+f for f in file_names]
+
+# read one of the files and get number of fragments and default fragments_in_each_bead
+# a_4c_file: chrN start end value
+start_frag = 0
+end_frag = 0
+
+number_of_fragments = 0
+
+a_4c_file = fileCheck(data_dir+primers.keys()[0])
+for line in a_4c_file:
+    values = line.split()
+    if len(values) != 4:
+        continue
+    if start_frag == 0:
+        start_frag = int(values[1])
+    end_frag = int(values[2])
+    number_of_fragments += 1
+
+locus_size = end_frag - start_frag
+viewpoint_fragments = calculate_fragment_number(viewpoint_positions,files[0])
+
+
+#default, we want 100 beads in each model
+if fragments_in_each_bead == 0:
+    fragments_in_each_bead = int(number_of_fragments / 100)
+
+viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
+are_genes = viewpoint_fragments
+
+# now get number of beads
+number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
+
+
 
 storage_dir = model.split("/")[:-1]
 storage_dir = "/".join(storage_dir)
 #read the config file
-config = ConfigParser.ConfigParser()
-try:
-    config.read(ini_file)
-    prefix = config.get("Modeling", "prefix")
-    
-    fragments_in_each_bead = float(config.get("Modeling", "fragments_in_each_bead"))
-    data_dir = config.get("Modeling", "data_dir")
-    working_dir = config.get("Modeling", "working_dir")
-    file_names = config.get("Modeling", "file_names")
-    file_names = re.sub('[\n\s\t]','',file_names)
-    file_names = file_names.split(",")
-    files = [data_dir+f for f in file_names]
-
-    
-    viewpoint_fragments = config.get("Modeling", "viewpoint_fragments")
-    viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
-    viewpoint_fragments = viewpoint_fragments.split(",")
-    viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
-    viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
-    
-    number_of_fragments_ALL = int(config.get("Modeling", "number_of_fragments"))
-    number_of_fragments = int(number_of_fragments_ALL/fragments_in_each_bead)
-
-    painting_path = config.get("Painting","file_path")
-    colormap = config.get("Painting","colormap")
-except:
-    print "\nError reading the configuration file.\n"
-    e = sys.exc_info()[1]
-    print e
-    sys.exit()
 
 bam_or_bed = painting_path[-3:]
 if bam_or_bed != "bam" and bam_or_bed != "bed":
@@ -194,13 +249,13 @@ fig.suptitle("Epigenetic Marks")
 pylab.xlabel("Bead Number")
 pylab.ylabel("Score")
 #pylab.plot(bead_values)
-pylab.bar(range(len(bead_values)),bead_values,color=cmap(norm(bead_values)),width=1,linewidth=0)
+h = pylab.bar(range(len(bead_values)),bead_values,color=cmap(norm(bead_values)),width=1,linewidth=0)
 #for i in range(len(bead_values)-1):
     #pylab.vlines(i,0,bead_values[i],color=cmap(norm(bead_values[i])),linewidth=6)
     #pylab.fill_between([range(len(bead_values))[i],range(len(bead_values))[i+1]],[bead_values[i],bead_values[i+1]],color=cmap(norm(bead_values[i])))
+
 axes = pylab.gca()
-axes.set_xlim([0,len(bead_values)])
-#axes.set_xlim([0,len(bead_values)-1])
+axes.set_xlim([0-0.5,len(bead_values)-0.5])
 try:
         fig.savefig('{}/genome_painting_stats_plot_{}.png'.format(storage_dir,prefix))
         print "Plot painted in {}/".format(storage_dir,prefix)
@@ -228,7 +283,7 @@ except:
         pass
 
 #distance_matrix needed for this plot
-if 'distance_matrix' in locals():
+if distance_matrix != "None":
     bead_count = len(bead_values)
     fig = pylab.figure(figsize=(8,8))
     distance_value = []
