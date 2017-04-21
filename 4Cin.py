@@ -1008,6 +1008,11 @@ def run_clustering(models_subset):
     #write matrix       
     matrixtxt = open("{}matrix.txt".format(root), "w")      
     matrixtxt.write("\t")
+
+    #leave only the name of the file
+    only_python_files = [f.split("/")[-1] for f in only_python_files]
+    print only_python_files
+
     for p_file in only_python_files:
         matrixtxt.write(p_file)
         matrixtxt.write("\t")
@@ -1286,9 +1291,8 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     #red= [26,24,37,44] #outside
     #lgreen = [45,43,46,16,25,19,29,30,34,36,38,35,50,49] #inside
     #tad = range(9,55)
-    tad = [45,257,68,161,247,166,232,42,241,217,272,135]
-    #tad = range(46,272)
-    #print type(tad)
+    enhancers = [45,257,68,161,247,166,232,42,241,217,272,135]
+    tad = range(46,273) #46 and 272 inside)
     #Only ZPA
     #red= [24,26,32,37,42,44] #outside
     #lgreen = [29,43,45,46] #inside
@@ -1300,13 +1304,13 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     red= [221,188,124,130]
     # scatter plot showing X and Y for distance to furthest and nearest enhancers
     sshZRS = [46,271]
-
+    
     box_plot_dataset = []
     box_plot_color = []
     #outside
     for out_bead in red:
         aux = []
-        for bead in tad:
+        for bead in enhancers:
             if bead != out_bead:
                 aux.append(matrix_mean[out_bead][bead])
                 #box_plot_dataset.append(matrix_mean[out_bead][bead])
@@ -1315,7 +1319,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
         box_plot_color.append("lightcoral")
     for mid_bead in yellow:
         aux = []
-        for bead in tad:
+        for bead in enhancers:
             if bead != mid_bead:
                 aux.append(matrix_mean[mid_bead][bead])
                 #box_plot_dataset.append(matrix_mean[mid_bead][bead])
@@ -1325,7 +1329,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     #inside
     for in_bead in lgreen:
         aux = []
-        for bead in tad:
+        for bead in enhancers:
             if bead != in_bead:
                 aux.append(matrix_mean[in_bead][bead])
                 #box_plot_dataset.append(matrix_mean[in_bead][bead])
@@ -1422,6 +1426,39 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     pp.savefig(fig)
     pp.close()
 
+
+    print "ARE ENHANCERS INSIDE THE TAD OR OUTSIDE?"
+    fig,ax = plt.subplots()
+    en_dis = []
+    not_en_dis = []
+    aux = []
+    enhancer_bp_list = []
+    for i in enhancers:
+        for j in tad:
+            if i != j:
+                aux.append(matrix_mean[i][j])
+        en_dis.append(np.mean(aux))
+        aux = []
+    for i in tad:
+        if i not in enhancers:
+            for j in tad:
+                if i!=j:
+                    aux.append(matrix_mean[i][j])
+            not_en_dis.append(np.mean(aux))
+            aux = []
+    enhancer_bp_list.append(en_dis)
+    enhancer_bp_list.append(not_en_dis)
+    print len(en_dis) 
+    print en_dis
+    print len(not_en_dis) 
+    print not_en_dis
+    bcolor = ["green","red"]
+    bp_en = plt.boxplot(enhancer_bp_list,patch_artist = True)
+    for box, color in zip(bp_en['boxes'], bcolor):
+        box.set(facecolor = color)
+    pp = PdfPages('{}{}_boxplot_enhancers.pdf'.format(root,prefix))
+    pp.savefig(fig)
+    pp.close()
 
 
 
@@ -1591,11 +1628,11 @@ def calculate_representative_model(biggest_matrix):
     shutil.copyfile("{}{}".format(root,pdbFiles[sum_of_distances.index(min(sum_of_distances))][:-2]+"y"), "{}Representative.py".format(root,i) )
     shutil.copyfile("{}{}".format(root,pdbFiles[sum_of_distances.index(max(sum_of_distances))][:-2]+"y"), "{}LeastRepresentative.py".format(root,i) )
     print "Representative.py and LeastRepresentative.py models saved in: {}".format(root)
-    with open ("{}Representative_tubes.cmd", "w") as out:
+    with open ("{}Representative_tubes.cmd".format(root), "w") as out:
         out.write("open {}Representative.py\n".format(root,i))
         out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
         out.write("close #0-{}\n".format(number_of_beads))
-    with open ("{}LeastRepresentative_tubes.cmd", "w") as out:
+    with open ("{}LeastRepresentative_tubes.cmd".format(root), "w") as out:
         out.write("open {}Representative.py\n".format(root,i))
         out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
         out.write("close #0-{}\n".format(number_of_beads))
