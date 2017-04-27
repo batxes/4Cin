@@ -1286,179 +1286,180 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     
 
     ################################ CODE OF SHH STUFF. DELETE AFTERWARDS
-    #### Exteriorness enhancers
-    #all regions
-    #red= [26,24,37,44] #outside
-    #lgreen = [45,43,46,16,25,19,29,30,34,36,38,35,50,49] #inside
-    #tad = range(9,55)
-    enhancers = [45,257,68,161,247,166,232,42,241,217,272,135]
-    tad = range(46,273) #46 and 272 inside)
-    #Only ZPA
-    #red= [24,26,32,37,42,44] #outside
-    #lgreen = [29,43,45,46] #inside
-    #tad = [54]
+    if False:
+        #### Exteriorness enhancers
+        #all regions
+        #red= [26,24,37,44] #outside
+        #lgreen = [45,43,46,16,25,19,29,30,34,36,38,35,50,49] #inside
+        #tad = range(9,55)
+        enhancers = [45,257,68,161,247,166,232,42,241,217,272,135]
+        tad = range(46,273) #46 and 272 inside)
+        #Only ZPA
+        #red= [24,26,32,37,42,44] #outside
+        #lgreen = [29,43,45,46] #inside
+        #tad = [54]
 
-    #skarmeta
-    lgreen = [179,231,246,232,250,84,149,215,218,219,226,227,229]
-    yellow = [230,128,212,163,162,153,97]
-    red= [221,188,124,130]
-    # scatter plot showing X and Y for distance to furthest and nearest enhancers
-    sshZRS = [46,271]
-    
-    box_plot_dataset = []
-    box_plot_color = []
-    #outside
-    for out_bead in red:
-        aux = []
-        for bead in enhancers:
-            if bead != out_bead:
-                aux.append(matrix_mean[out_bead][bead])
-                #box_plot_dataset.append(matrix_mean[out_bead][bead])
-                #box_plot_color.append("red")
-        box_plot_dataset.append(aux)
-        box_plot_color.append("lightcoral")
-    for mid_bead in yellow:
-        aux = []
-        for bead in enhancers:
-            if bead != mid_bead:
-                aux.append(matrix_mean[mid_bead][bead])
-                #box_plot_dataset.append(matrix_mean[mid_bead][bead])
-                #box_plot_color.append("yellow")
-        box_plot_dataset.append(aux)
-        box_plot_color.append("yellow")
-    #inside
-    for in_bead in lgreen:
-        aux = []
-        for bead in enhancers:
-            if bead != in_bead:
-                aux.append(matrix_mean[in_bead][bead])
-                #box_plot_dataset.append(matrix_mean[in_bead][bead])
-                #box_plot_color.append("lightgreen")
-        box_plot_dataset.append(aux)
-        box_plot_color.append("lightgreen")
-    fig, ax = plt.subplots()
-    bp = plt.boxplot(box_plot_dataset,patch_artist=True)
-    #print range(len(red+yellow+lgreen)),box_plot_dataset
-    #bp = plt.bar(range(len(red+yellow+lgreen)),box_plot_dataset,color=box_plot_color)
-    for box, color in zip(bp['boxes'], box_plot_color):
-        box.set(facecolor = color)
-    ax.set_xticklabels(red+yellow+lgreen)
-    plt.xticks(rotation=90)
-    pp = PdfPages('{}{}_boxplot.pdf'.format(root,prefix))
-    pp.savefig(fig)
-    pp.close()
-    #plt.show()
-    print "Means:"
-    means = []
-    box_plot_dataset_3 = []
-    l1 = [item for sublist in box_plot_dataset[0:len(red)] for item in sublist]
-    l2 = [item for sublist in box_plot_dataset[len(red):len(red)+len(yellow)] for item in sublist]
-    l3 = [item for sublist in box_plot_dataset[len(red)+len(yellow):len(red)+len(yellow)+len(lgreen)] for item in sublist]
-    
-    #12 is number of enhancers
-    min_list = []
-    max_list = []
-    for i in range(len(red)):
-        prox_list = l1[(0+i)*12:(1+i)*12]
-        min_list.append(min(prox_list))
-        max_list.append(max(prox_list))
-    for i in range(len(yellow)):
-        prox_list = l2[(0+i)*12:(1+i)*12]
-        min_list.append(min(prox_list))
-        max_list.append(max(prox_list))
-    for i in range(len(lgreen)):
-        prox_list = l3[(0+i)*12:(1+i)*12]
-        min_list.append(min(prox_list))
-        max_list.append(max(prox_list))
-
-    fig,ax = plt.subplots()
-    cred = ["red" for i in range(len(l1))]
-    cyellow = ["yellow" for i in range(len(l1))]
-    cgreen = ["green" for i in range(len(l1))]
-    l = []
-    l.append(l1)
-    l.append(l2)
-    l.append(l3)
-    bp = plt.boxplot(l)
-    for i in range(3):
-        y = l[i]
-        x = np.random.normal(1+i,0.04,size=len(y))
-        plt.plot(x,y,'r.',alpha=0.2)
+        #skarmeta
+        lgreen = [179,231,246,232,250,84,149,215,218,219,226,227,229]
+        yellow = [230,128,212,163,162,153,97]
+        red= [221,188,124,130]
+        # scatter plot showing X and Y for distance to furthest and nearest enhancers
+        sshZRS = [46,271]
         
-    #c = ["red","red","red","red","yellow","yellow","yellow","yellow","yellow","yellow","green","green","green","green","green","green","green","green","green","green","green","green","green"]    
-    #plt.scatter(min_list,max_list , s=20,c = c )
-    #plt.xlim([0,4000])
-    #plt.ylim([0,4000])
-    pp = PdfPages('{}{}_scatter_enhancers.pdf'.format(root,prefix))
-    pp.savefig(fig)
-    pp.close()
-
-    
-    print min_list
-    print max_list
-
-
-    
-
-    for i in box_plot_dataset:
-        means.append(np.mean(i))
-    red_mean = means[0:len(red)]
-    yellow_mean = means[len(red):len(red)+len(yellow)]
-    green_mean = means[len(red)+len(yellow):len(red)+len(yellow)+len(lgreen)]
-    print "Red: {}".format(np.mean(red_mean))
-    print "Yellow: {}".format(np.mean(yellow_mean))
-    print "Green: {}".format(np.mean(green_mean))
-    print np.median(red_mean)
-    print np.median(yellow_mean)
-
-    fig, ax = plt.subplots()
-    box_plot_dataset_3.append(red_mean)
-    box_plot_dataset_3.append(yellow_mean)
-    box_plot_dataset_3.append(green_mean)
-    print red_mean
-    print yellow_mean
-    print green_mean
-    bcolor = ["red","yellow","green"]
-    bp3 = plt.boxplot(box_plot_dataset_3,patch_artist = True)
-    for box, color in zip(bp3['boxes'], bcolor):
-        box.set(facecolor = color)
-    pp = PdfPages('{}{}_boxplot3.pdf'.format(root,prefix))
-    pp.savefig(fig)
-    pp.close()
-
-
-    print "ARE ENHANCERS INSIDE THE TAD OR OUTSIDE?"
-    fig,ax = plt.subplots()
-    en_dis = []
-    not_en_dis = []
-    aux = []
-    enhancer_bp_list = []
-    for i in enhancers:
-        for j in tad:
-            if i != j:
-                aux.append(matrix_mean[i][j])
-        en_dis.append(np.mean(aux))
-        aux = []
-    for i in tad:
-        if i not in enhancers:
-            for j in tad:
-                if i!=j:
-                    aux.append(matrix_mean[i][j])
-            not_en_dis.append(np.mean(aux))
+        box_plot_dataset = []
+        box_plot_color = []
+        #outside
+        for out_bead in red:
             aux = []
-    enhancer_bp_list.append(en_dis)
-    enhancer_bp_list.append(not_en_dis)
-    print len(en_dis) 
-    print en_dis
-    print len(not_en_dis) 
-    print not_en_dis
-    bcolor = ["green","red"]
-    bp_en = plt.boxplot(enhancer_bp_list,patch_artist = True)
-    for box, color in zip(bp_en['boxes'], bcolor):
-        box.set(facecolor = color)
-    pp = PdfPages('{}{}_boxplot_enhancers.pdf'.format(root,prefix))
-    pp.savefig(fig)
-    pp.close()
+            for bead in enhancers:
+                if bead != out_bead:
+                    aux.append(matrix_mean[out_bead][bead])
+                    #box_plot_dataset.append(matrix_mean[out_bead][bead])
+                    #box_plot_color.append("red")
+            box_plot_dataset.append(aux)
+            box_plot_color.append("lightcoral")
+        for mid_bead in yellow:
+            aux = []
+            for bead in enhancers:
+                if bead != mid_bead:
+                    aux.append(matrix_mean[mid_bead][bead])
+                    #box_plot_dataset.append(matrix_mean[mid_bead][bead])
+                    #box_plot_color.append("yellow")
+            box_plot_dataset.append(aux)
+            box_plot_color.append("yellow")
+        #inside
+        for in_bead in lgreen:
+            aux = []
+            for bead in enhancers:
+                if bead != in_bead:
+                    aux.append(matrix_mean[in_bead][bead])
+                    #box_plot_dataset.append(matrix_mean[in_bead][bead])
+                    #box_plot_color.append("lightgreen")
+            box_plot_dataset.append(aux)
+            box_plot_color.append("lightgreen")
+        fig, ax = plt.subplots()
+        bp = plt.boxplot(box_plot_dataset,patch_artist=True)
+        #print range(len(red+yellow+lgreen)),box_plot_dataset
+        #bp = plt.bar(range(len(red+yellow+lgreen)),box_plot_dataset,color=box_plot_color)
+        for box, color in zip(bp['boxes'], box_plot_color):
+            box.set(facecolor = color)
+        ax.set_xticklabels(red+yellow+lgreen)
+        plt.xticks(rotation=90)
+        pp = PdfPages('{}{}_boxplot.pdf'.format(root,prefix))
+        pp.savefig(fig)
+        pp.close()
+        #plt.show()
+        print "Means:"
+        means = []
+        box_plot_dataset_3 = []
+        l1 = [item for sublist in box_plot_dataset[0:len(red)] for item in sublist]
+        l2 = [item for sublist in box_plot_dataset[len(red):len(red)+len(yellow)] for item in sublist]
+        l3 = [item for sublist in box_plot_dataset[len(red)+len(yellow):len(red)+len(yellow)+len(lgreen)] for item in sublist]
+        
+        #12 is number of enhancers
+        min_list = []
+        max_list = []
+        for i in range(len(red)):
+            prox_list = l1[(0+i)*12:(1+i)*12]
+            min_list.append(min(prox_list))
+            max_list.append(max(prox_list))
+        for i in range(len(yellow)):
+            prox_list = l2[(0+i)*12:(1+i)*12]
+            min_list.append(min(prox_list))
+            max_list.append(max(prox_list))
+        for i in range(len(lgreen)):
+            prox_list = l3[(0+i)*12:(1+i)*12]
+            min_list.append(min(prox_list))
+            max_list.append(max(prox_list))
+
+        fig,ax = plt.subplots()
+        cred = ["red" for i in range(len(l1))]
+        cyellow = ["yellow" for i in range(len(l1))]
+        cgreen = ["green" for i in range(len(l1))]
+        l = []
+        l.append(l1)
+        l.append(l2)
+        l.append(l3)
+        bp = plt.boxplot(l)
+        for i in range(3):
+            y = l[i]
+            x = np.random.normal(1+i,0.04,size=len(y))
+            plt.plot(x,y,'r.',alpha=0.2)
+            
+        #c = ["red","red","red","red","yellow","yellow","yellow","yellow","yellow","yellow","green","green","green","green","green","green","green","green","green","green","green","green","green"]    
+        #plt.scatter(min_list,max_list , s=20,c = c )
+        #plt.xlim([0,4000])
+        #plt.ylim([0,4000])
+        pp = PdfPages('{}{}_scatter_enhancers.pdf'.format(root,prefix))
+        pp.savefig(fig)
+        pp.close()
+
+        
+        print min_list
+        print max_list
+
+
+        
+
+        for i in box_plot_dataset:
+            means.append(np.mean(i))
+        red_mean = means[0:len(red)]
+        yellow_mean = means[len(red):len(red)+len(yellow)]
+        green_mean = means[len(red)+len(yellow):len(red)+len(yellow)+len(lgreen)]
+        print "Red: {}".format(np.mean(red_mean))
+        print "Yellow: {}".format(np.mean(yellow_mean))
+        print "Green: {}".format(np.mean(green_mean))
+        print np.median(red_mean)
+        print np.median(yellow_mean)
+
+        fig, ax = plt.subplots()
+        box_plot_dataset_3.append(red_mean)
+        box_plot_dataset_3.append(yellow_mean)
+        box_plot_dataset_3.append(green_mean)
+        print red_mean
+        print yellow_mean
+        print green_mean
+        bcolor = ["red","yellow","green"]
+        bp3 = plt.boxplot(box_plot_dataset_3,patch_artist = True)
+        for box, color in zip(bp3['boxes'], bcolor):
+            box.set(facecolor = color)
+        pp = PdfPages('{}{}_boxplot3.pdf'.format(root,prefix))
+        pp.savefig(fig)
+        pp.close()
+
+
+        print "ARE ENHANCERS INSIDE THE TAD OR OUTSIDE?"
+        fig,ax = plt.subplots()
+        en_dis = []
+        not_en_dis = []
+        aux = []
+        enhancer_bp_list = []
+        for i in enhancers:
+            for j in tad:
+                if i != j:
+                    aux.append(matrix_mean[i][j])
+            en_dis.append(np.mean(aux))
+            aux = []
+        for i in tad:
+            if i not in enhancers:
+                for j in tad:
+                    if i!=j:
+                        aux.append(matrix_mean[i][j])
+                not_en_dis.append(np.mean(aux))
+                aux = []
+        enhancer_bp_list.append(en_dis)
+        enhancer_bp_list.append(not_en_dis)
+        print len(en_dis) 
+        print en_dis
+        print len(not_en_dis) 
+        print not_en_dis
+        bcolor = ["green","red"]
+        bp_en = plt.boxplot(enhancer_bp_list,patch_artist = True)
+        for box, color in zip(bp_en['boxes'], bcolor):
+            box.set(facecolor = color)
+        pp = PdfPages('{}{}_boxplot_enhancers.pdf'.format(root,prefix))
+        pp.savefig(fig)
+        pp.close()
 
 
 

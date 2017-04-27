@@ -24,7 +24,7 @@ working_dir = "/".join(working_dir)+"/"
 
 parser = argparse.ArgumentParser(
 description='''Program that compares two virtual Hi-C's.''',
-epilog= """primers.txt will be used to highlight beads if primers_vhic.txt is not provided. """)
+epilog= """primers.txt will be used to highlight beads if primers_ecovomp.txt is not provided. """)
 group1 = parser.add_argument_group('First Models', 'Parameters of the first models')
 group2 = parser.add_argument_group('Second Models', 'Parameters of the second models')
 group1.add_argument("data_dir", action="store",help='Directory with the 4C files of the first modeling')

@@ -12,6 +12,8 @@ import math
 from collections import defaultdict
 import operator
 import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
+from matplotlib.colors import ListedColormap, BoundaryNorm
 try:
     plt.style.use('ggplot')
 except ImportError:
@@ -19,7 +21,8 @@ except ImportError:
 except:
     pass
 
-is_real_hi_data = True  #where high values mean contact. In our vhic, high values = long distance = no contact
+is_real_hi_data = False #where high values mean contact. In our vhic, high values = long distance = no contact
+print "!!CARE, IS_REAL_HIC_DATA IS SET TO {}".format(is_real_hi_data)
 
 add_mean_values = True
 
@@ -177,24 +180,22 @@ for x in di_list:
 fig = plt.figure()
 plt.title("Differential Analysis.")
 ax = fig.add_subplot(111)
-ax.set_xlim(0,size)
+ax.set_xlim(-0.5,size)
 #limits will be 3/4 of maximum data
 lim = [abs(x) for x in di_list]
 ax.set_ylim(-1*max(lim)*3/4,max(lim)*3/4)
 #ax.set_ylim(-20000,20000)
 #for real Hi-C
 #ax.set_ylim(-100,100)
-ax.set_axis_bgcolor('white')
+ax.set_facecolor('white')
 
-if not is_real_hi_data:
-    #for reverse DI
+if is_real_hi_data:
     di_list_neg = [i * -1 for i in di_list_neg] 
     di_list_pos = [i * -1 for i in di_list_pos] 
     plt.bar(index,di_list_neg,facecolor='#9999ff')
     plt.bar(index,di_list_pos,facecolor='#ff9999')
 
 else:
-    #for rest
     plt.bar(index,di_list_pos,facecolor='#9999ff')
     plt.bar(index,di_list_neg,facecolor='#ff9999')
 
@@ -209,8 +210,11 @@ except:
 plt.show()
 
 
+
+
 ### Many times to find the boundaries:
 boundaries = defaultdict(int)
+complete_di_list = []
 for tad_size in range(tad_from,tad_to):
     di_list = []
     for i in range(size):
@@ -274,11 +278,42 @@ for tad_size in range(tad_from,tad_to):
             #print "Boundary: {}".format(di_list.index(i))
             boundaries[di_list.index(i)] += 1
             boundary = False
+    complete_di_list.append(di_list)
 sorted_x = sorted(boundaries.items(), key=operator.itemgetter(1), reverse=True)
 print "\nCalculating Tad boundaries, with TAD sizes ranging between {} and {}.".format(tad_from, tad_to)
 print "Number of times a boundary was found: "
+tad_list = [0]*len(index)
 for i in sorted_x:
     if i[0] != 0:
         print "Boundary: {} -  found {} times out of {}".format(i[0],i[1],tad_to-tad_from)
+        tad_list[i[0]]=i[1]
 
 print "\nReminder: boundaries are found between bins that change from negative to positive values."
+
+fig = plt.figure() 
+plt.title("TAD calling")
+ax = fig.add_subplot(111)
+ax.set_xlim(-0.5,size)
+ax.set_facecolor('white')
+
+#create a color array depending on Below 0 or not
+
+
+for di_list in complete_di_list:
+    x = np.asarray(index)
+    y = np.asarray(di_list)
+    #plt.plot(x,y,"r",alpha=0.05)
+    plt.fill_between(x,y,0,where=y<=0,facecolor="red",alpha=0.01,interpolate=True)
+    plt.fill_between(x,y,0,where=y>0,facecolor="blue",alpha=0.01,interpolate=True)
+    #plt.scatter(index,di_list,facecolor='#ff0000',alpha =0.05 )
+    #plt.bar(index,di_list,facecolor='#ff0000',alpha =0.05 )
+
+try:
+    saved_in = input_path.split("/")
+    add_string = "/".join(saved_in[:-1])
+    fig.savefig("{}/Hi-C_TADs.png".format(add_string))
+    print "----\nPlot saved in {}/Hi-C_TADs.png\n----".format(add_string)
+except:
+    pass
+
+plt.show()
