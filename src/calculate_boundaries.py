@@ -298,9 +298,14 @@ ax.set_facecolor('white')
 
 #create a color array depending on Below 0 or not
 
+#for mouse #@@#
+#delete after paper
+
 
 for di_list in complete_di_list:
     x = np.asarray(index)
+    di_list * -1 
+    @#~|@#|@ ## FINISH THE BOUNDARY FOR MOUSE AND DELETE THIS DATA
     y = np.asarray(di_list)
     #plt.plot(x,y,"r",alpha=0.05)
     plt.fill_between(x,y,0,where=y<=0,facecolor="red",alpha=0.01,interpolate=True)
