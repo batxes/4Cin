@@ -86,7 +86,9 @@ Go to Installing dependencies(https://github.com/batxes/4Cin/blob/master/README.
 
 3 - Do the modeling.
 
->Example: python 4Cin.py /path/to/data/ Name_of_your_locus
+>Example: 
+
+    python 4Cin.py /path/to/data/ Name_of_your_locus
 
     
      
@@ -94,14 +96,18 @@ Optional Steps:
 
 11 - run "paint_model.py". It will map epigenetic marks in a model of our choice. We will set the path of the bed or bam file and the colormap (matplotlib). 
 
->Example: python src/paint_model.py /home/user/4Cin/MyModels/MyModels_final_output/Representative.py 
+>Example: 
+
+          python src/paint_model.py /home/user/4Cin/MyModels/MyModels_final_output/Representative.py 
                                     /home/user/4Cin/data/my_data/  
                                     /home/user/4Cin/data/epigenetic_data.bam 
                                     Blues
 
 12 - run "calculate_boundaries.py". Given the virtual Hi-C matrix it plots the directionality index plot.
 
->Example: python src/calculate_boundaries.py /home/user/4Cin/MyModels/MyModels_final_output/vhic_MyModels.txt
+>Example: 
+    
+    python src/calculate_boundaries.py /home/user/4Cin/MyModels/MyModels_final_output/vhic_MyModels.txt
 
 13 - run "Evo_comp.py". Evolutive comparison. Given two vhics, it creates a hi-c like matrix with the relative positions of both loci. The conserved regions will be set in two primers_evocomp.txt, each under each data directory. 
 >Example primers_evocomp.txt:     
@@ -114,7 +120,9 @@ Optional Steps:
     geneB chr2:439558 darkviolet
     e chr2:468954 lightgreen
 
->Example: python src/Evo_comp.py /home/user/4Cin/data/my_zebra_data/ 
+>Example
+    
+          python src/Evo_comp.py /home/user/4Cin/data/my_zebra_data/ 
                                  Zebra_models 
                                  /home/user/4Cin/Zebra_models/Zebra_models_final_output/vhic_Zebra_models.txt 
                                  max_distance_of_Zebra_models_locus
@@ -125,7 +133,9 @@ Optional Steps:
     
 14 - run "Mut_comp.py". Mutation comparison. The same as Evo_comp.py, but this time the same locus is compared. Useful to study structural genomic variations like inversions, truncations, deletions... primers_vhic.txt will be used to paint positions in the vhic.
 
->Example: python src/Mut_comp.py /home/user/4Cin/data/my_locus/ 
+>Example
+
+          python src/Mut_comp.py /home/user/4Cin/data/my_locus/ 
                                  wt_models 
                                  /home/user/4Cin/wt_models/wt_models_final_output/vhic_wt_models.txt 
                                  max_distance_of_wt_models
@@ -135,7 +145,9 @@ Optional Steps:
 
 15 - Input data can be checked calling data_manager.py. Shows 3 plots for each 4C file, showing read counts, Z scores and the conversion into distance restraints that would be used in the modeling.
 
->Example: python src/data_manager.py /home/user/4Cin/data/my_locus/ [0.2 -0.4 8000]  
+>Example: 
+    
+    python src/data_manager.py /home/user/4Cin/data/my_locus/ [0.2 -0.4 8000]  
 
 ### Installing dependencies
 
