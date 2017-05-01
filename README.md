@@ -35,11 +35,25 @@ Go to Installing dependencies(https://github.com/batxes/4Cin/blob/master/README.
 
 [Optionals]
 ```
-11 - python src/paint_model.py config.ini model.py
-12 - python src/calculate_boundaries.py vhic.txt tad_size
-13 - python src/Evo_comp.py config.ini config2.ini vhic.txt vhic2.txt
-14 - python src/Mut_comp.py config.ini config2.ini vhic.txt vhic2.txt
-15 - python src/data_manager.py config.ini
+1.5 - python src/data_manager.py /path/to/my/data/ Name_of_your_locus
+4 - python src/paint_model.py Representative.py 
+                              /path/to/my/data/ 
+                              epigenetic_data colormap
+5 - python src/calculate_boundaries.py vhic.txt
+6 - python src/Evo_comp.py /path/to/my/data/ 
+                            Name_of_your_locus 
+                            vhic.txt 
+                            max_distance_of_locus
+                            /path/to/my/otherdata/ 
+                            Name_of_your_other_locus 
+                            other_vhic.txt 
+                            max_distance_of_other_locus
+7 - python src/Mut_comp.py /path/to/my/data/ 
+                            locus vhic.txt 
+                            max_distance_of_locus
+                            mutant_locus 
+                            mutant_vhic.txt 
+                            max_distance_of_mutant_locus
 ```
 
 ## Explained Usage
@@ -47,52 +61,81 @@ Go to Installing dependencies(https://github.com/batxes/4Cin/blob/master/README.
 
 1 - run "prepare_data.py" to homogenize the 4C files. All 4C files need to have the same number of fragments and the same length.
 
->Example: python src/prepare_data.py 4C_files
+>Example: python src/prepare_data.py /path/to/data/all_4C_data
 
 2 - Generate primers.txt file, with name of genes and position. Optional, primers_vhic.txt (the same format as in primers.txt) with more positions to paint in the virtual Hi-C. color can be added afterwards.
 
 >Example primers.txt:     
 
-    Six2 chr2:423234
-    Six3 chr2:426351
+    viewpoint1 chr2:423234
+    viewpoint2 chr2:426351
+    viewpoint3 chr2:449584
+    viewpoint4 chr2:501421    
     
 >Example primers_vhic.txt:     
-
-    Six2 chr2:423234 red
-    Six3 chr2:426351 cyan
-    gene3 chr2:436451 lightgreen
-    gene4 chr2:443251 darkviolet
-    enhancer1 chr2:468954 
+    
+    viewpoint1 chr2:423234 red
+    viewpoint2 chr2:426351 cyan
+    viewpoint3 chr2:449584
+    viewpoint4 chr2:501421 
+    geneA chr2:526921 lightgreen
+    geneB chr2:439558 darkviolet
+    enhancer1 chr2:468954 lightgreen
     
     if no color stated, default will be yellow.
 
 3 - Do the modeling.
 
->Example: python aske.py 4C_files_dir Name_of_your_locus
+>Example: python 4Cin.py /path/to/data/ Name_of_your_locus
 
     
      
 Optional Steps:
 
-11 - run "paint_model.py". It will map epigenetic marks in a model of our choice. We will set the path of the bed or bam file and the colormap (matplotlib) in the config file under [Painting]. 
+11 - run "paint_model.py". It will map epigenetic marks in a model of our choice. We will set the path of the bed or bam file and the colormap (matplotlib). 
 
->Example: python src/paint_model.py config_ini /home/user/4c2vhic/data/MyModels/MyModels_final_output/model10.py 
+>Example: python src/paint_model.py /home/user/4Cin/MyModels/MyModels_final_output/Representative.py 
+                                    /home/user/4Cin/data/my_data/  
+                                    /home/user/4Cin/data/epigenetic_data.bam 
+                                    Blues
 
-12 - run "calculate_boundaries.py". Given the distance matrix and the the number of beads a TAD has in your virtual HI-C, it plots the directionality index bar plot.
+12 - run "calculate_boundaries.py". Given the virtual Hi-C matrix it plots the directionality index plot.
 
->Example: python src/calculate_boundaries.py vhic.txt tad_size
+>Example: python src/calculate_boundaries.py /home/user/4Cin/MyModels/MyModels_final_output/vhic_MyModels.txt
 
-13 - run "Evo_comp.py". Evolutive comparion. Given two config files and two vhic's generated with calculate_vhic.py of different loci or organisms and the position of Genes/enhancers (beads), it crates a hi-c like matrix with the relative positions of both loci. We will need to set the config file variables under [EvoComp]. Similar to the [VHiC] parameters, we will need to set the viewpoints and the window variable for each of the loci.
-
->Example: python src/Evo_comp.py config.ini config2.ini vhic1.txt vhic2.txt
+13 - run "Evo_comp.py". Evolutive comparison. Given two vhics, it creates a hi-c like matrix with the relative positions of both loci. The conserved regions will be set in two primers_evocomp.txt, each under each data directory. 
+>Example primers_evocomp.txt:     
     
-14 - run "Mut_comp.py". Mutation comparison. The same as Evo_comp.py, but this time the same locus is compared. Useful to study structural genomic variations like inversion, truncation, deletions... Fragments set in the [VHiC] section of config file 1 will be used for the comparison.
+    a chr2:423234 red
+    b chr2:426351 cyan
+    c chr2:449584
+    d chr2:501421 
+    geneA chr2:526921 lightgreen
+    geneB chr2:439558 darkviolet
+    e chr2:468954 lightgreen
 
->Example: python src/Mut_comp.py config.ini config2.ini vhic.txt vhic2.txt
+>Example: python src/Evo_comp.py /home/user/4Cin/data/my_zebra_data/ 
+                                 Zebra_models 
+                                 /home/user/4Cin/Zebra_models/Zebra_models_final_output/vhic_Zebra_models.txt 
+                                 max_distance_of_Zebra_models_locus
+                                 /home/user/4Cin/data/my_mouse_data/ 
+                                 Mouse_models 
+                                 /home/user/4Cin/Mouse_models/Mouse_models_final_output/vhic_Mouse_models.txt 
+                                 max_distance_of_Mouse_models_locus
+    
+14 - run "Mut_comp.py". Mutation comparison. The same as Evo_comp.py, but this time the same locus is compared. Useful to study structural genomic variations like inversions, truncations, deletions... primers_vhic.txt will be used to paint positions in the vhic.
+
+>Example: python src/Mut_comp.py /home/user/4Cin/data/my_locus/ 
+                                 wt_models 
+                                 /home/user/4Cin/wt_models/wt_models_final_output/vhic_wt_models.txt 
+                                 max_distance_of_wt_models
+                                 mutant_models 
+                                 /home/user/4Cin/mutant_models/mutant_models_final_output/vhic_mutant_models.txt 
+                                 max_distance_of_mutant_models
 
 15 - Input data can be checked calling data_manager.py. Shows 3 plots for each 4C file, showing read counts, Z scores and the conversion into distance restraints that would be used in the modeling.
 
->Example: python src/data_manager.py config.ini [0.2 -0.4 8000]  
+>Example: python src/data_manager.py /home/user/4Cin/data/my_locus/ [0.2 -0.4 8000]  
 
 ### Installing dependencies
 
@@ -175,7 +218,7 @@ HiC_comp.py
 
 - If you want to concatenate the beads with a tube, after openning the model in UCSF-Chimera, write this in its command line: "shape tube #X-Y radius Z bandlength 10000" (X and Y being the first and last beads, Z being the thickness of tube in Angstroms.)
 
-- All the data will be stored under a directory with the same name as the prefix 
+- All the data will be stored under a directory with the same name as the prefix, unless we set it under --working_dir parameter 
 
 - bam files need to be sorted and indexed before using. Example: samtools sort mouse_h3k4me3_ES_bingren_rep1.bam mouse_h3k4me3_ES_bingren_rep1.bai 
 
@@ -189,11 +232,14 @@ I have UCSF Chimera installed but it does not work.
     install Swig 3.0.7. For this perhaps u need to install sudo apt-get install libpcre3 libpcre3-dev
   
 matplotlib colors are here:
-    pip install colour
-    : https://pypi.python.org/pypi/colour
+http://matplotlib.org/examples/color/colormaps_reference.html
 
 GenomePainting does not work.
     Check the file generated coloring.cmd and fix the path. Chimera does not like if the first line is something like "open ../myModel.py". Change to something like /home/user/myModel.py.
+    
+Modeling can't find my viewpoints or I can't show positions in the vHi-Cs.
+    Check that your primers files (primers.txt, primers_vhic.txt and primers_evocomp.txt) are as follows:
+    NAME    chrX:position   
 
 ### references
 
