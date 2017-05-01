@@ -3,7 +3,6 @@
 import sys
 import inspect
 import re
-import ConfigParser
 import pysam
 import os
 import numpy as np
@@ -110,7 +109,6 @@ number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
 
 storage_dir = model.split("/")[:-1]
 storage_dir = "/".join(storage_dir)
-#read the config file
 
 bam_or_bed = painting_path[-3:]
 if bam_or_bed != "bam" and bam_or_bed != "bed":
@@ -328,7 +326,6 @@ if dendro_test:
     from os import listdir, remove
     from os.path import isfile, join
     from itertools import combinations
-    import ConfigParser
     import scipy.cluster.hierarchy as sch
     import pylab
     from pylab import plot,show

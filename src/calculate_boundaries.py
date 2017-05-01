@@ -26,15 +26,12 @@ print "!!CARE, IS_REAL_HIC_DATA IS SET TO {}".format(is_real_hi_data)
 
 add_mean_values = True
 
-if len(sys.argv) < 3:
-    print "wrong parameters. Virtual Hi-C Matrix and Tad size (in bins) for the plot are required."
-    print " -Virtual Hi-C Matrix: file generated after calculate_vhic.py."
-    print " -Tad size: expected size of a TAD in the locus (in bins). Check the Virtual Hi-C plot if needed."
-
+if len(sys.argv) < 2:
+    print "wrong parameters. Virtual Hi-C Matrix is required."
+    print " -Virtual Hi-C Matrix: file should be inside the final models directory."
     sys.exit()
 try:
     input_path = sys.argv[1]
-    tad_size = int(sys.argv[2])
 except Exception as e:
     print e
     sys.exit()
@@ -84,134 +81,7 @@ with open(input_path,"r") as INPUT:
 # E = (A+B)/2
 # A = Sum of upstream read counts
 # B = SUm or downstream read counts
-
-
-di_list = []
-for i in range(size):
-    #print "bin {}".format(i)
-    upstream = 0
-    up_cont = 0
-    if ((size-i) + tad_size) > size:
-        from_ = 0
-    else:
-        from_ = i - tad_size
-    to_ = i
-    for j in range(from_ ,to_):
-        if j != i:
- #           print "upstream: [{}][{}]: {}".format(j,i,matrix[j][i])
-            up_cont = up_cont + 1
-#downstream = downstream + matrix[j][i]/(size-i) 
-            upstream = upstream + matrix[j][i]
-    if add_mean_values: 
-        if up_cont < tad_size:
-            #print "added {}".format(mean_value*(tad_size - up_cont))
-            upstream = upstream + mean_value * (tad_size - up_cont)
-    downstream = 0
-    down_cont = 0
-    if i + tad_size < size:
-        to_ = i+tad_size+1 
-    else:
-        to_ = size
-    from_ = i
-    for j in range(from_, to_):
-        if j != i:
-#print "downstream: [{}][{}]:  {}".format(j,i,matrix[j][i])
-#upstream = upstream + matrix[j][i]/i
-            down_cont = down_cont + 1
-            downstream = downstream + matrix[j][i]
-    if add_mean_values: 
-        if down_cont < tad_size:
-            #print "added {}".format(mean_value*(tad_size - down_cont))
-            downstream = downstream + mean_value * (tad_size - down_cont)
-    #apply the equation
-    E = (downstream + upstream)/2
-    #print "{}: {}+{}/2".format(i,downstream,upstream)
-    if E != 0:
-        di1 = ((downstream-upstream)/(abs(downstream-upstream)))
-        di2 = ((((upstream-E)**2)/E)+((((downstream-E)**2)/E)))
-        di = di1 * di2
-    else:
-        di = 0
-    #print "{} di: {} ".format(i,di)
-#print "total= u - d    {}={} - {}".format(total, upstream, downstream)
-    di_list.append(di)
-
-#for i in range(len(di_list)):
-#    print "{}: {}".format(i,di_list[i])
-
-###PLOTTING
-
-#we apply log2 so we have a smaller plotting
-positive = False
-boundary = False
-#print di_list
-print "Boundaries found in the plot (Tad size: {}):".format(tad_size)
-boundaries = []
-for i in di_list:
-    if i <= 0: #----
-        if positive:
-            positive = False 
-            #boundary = True 
-    if i > 0: #+++
-        if positive == False:
-            positive = True
-            boundary = True 
-    if boundary:
-        boundaries.append(di_list.index(i))
-        boundary = False
-        
-for b in boundaries:
-    if b != 0:
-        print "Boundary: {}".format(b)
 index = np.arange(size)
-di_list_pos = []
-di_list_neg = []
-for x in di_list:
-    if x < 0:
-        di_list_neg.append(x)
-    else:
-        di_list_neg.append(0)
-        
-for x in di_list:
-    if x > 0:
-        di_list_pos.append(x)
-    else:
-        di_list_pos.append(0)
-fig = plt.figure()
-plt.title("Differential Analysis.")
-ax = fig.add_subplot(111)
-ax.set_xlim(-0.5,size)
-#limits will be 3/4 of maximum data
-lim = [abs(x) for x in di_list]
-ax.set_ylim(-1*max(lim)*3/4,max(lim)*3/4)
-#ax.set_ylim(-20000,20000)
-#for real Hi-C
-#ax.set_ylim(-100,100)
-ax.set_facecolor('white')
-
-if is_real_hi_data:
-    di_list_neg = [i * -1 for i in di_list_neg] 
-    di_list_pos = [i * -1 for i in di_list_pos] 
-    plt.bar(index,di_list_neg,facecolor='#9999ff')
-    plt.bar(index,di_list_pos,facecolor='#ff9999')
-
-else:
-    plt.bar(index,di_list_pos,facecolor='#9999ff')
-    plt.bar(index,di_list_neg,facecolor='#ff9999')
-
-try:
-    saved_in = input_path.split("/")
-    add_string = "/".join(saved_in[:-1])
-    fig.savefig("{}/Hi-C_DI_plot.png".format(add_string))
-    print "----\nPlot saved in {}/Hi-C_DI_plot.png\n----".format(add_string)
-except:
-    pass
-
-plt.show()
-
-
-
-
 ### Many times to find the boundaries:
 boundaries = defaultdict(int)
 complete_di_list = []
@@ -265,6 +135,8 @@ for tad_size in range(tad_from,tad_to):
 
     ###############
     #we apply log2 so we have a smaller plotting
+    positive = False
+    boundary = False
     for i in di_list:
         if i <= 0: #----
             if positive:
@@ -298,14 +170,8 @@ ax.set_facecolor('white')
 
 #create a color array depending on Below 0 or not
 
-#for mouse #@@#
-#delete after paper
-
-
 for di_list in complete_di_list:
     x = np.asarray(index)
-    di_list * -1 
-    @#~|@#|@ ## FINISH THE BOUNDARY FOR MOUSE AND DELETE THIS DATA
     y = np.asarray(di_list)
     #plt.plot(x,y,"r",alpha=0.05)
     plt.fill_between(x,y,0,where=y<=0,facecolor="red",alpha=0.01,interpolate=True)

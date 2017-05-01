@@ -35,11 +35,11 @@ group1.add_argument("VHiC", action="store",help='Virtual Hi-C of the first model
 group1.add_argument("distance", type=int, action="store",help='Maximum distance used in the first models')
 group1.add_argument("--fragments_in_each_bead", type= int, default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead in the first model to compare')
 
+group2.add_argument("data_dir2", action="store",help='Directory with the 4C files of the second modeling')
 group2.add_argument("prefix2", action="store",help='Name of the other models')
 group2.add_argument("VHiC2", action="store",help='Virtual Hi-C of the other models')
 group2.add_argument("distance2", type=int, action="store",help='Maximum distance used in the other models')
 group2.add_argument("--fragments_in_each_bead2", type= int, default=0, dest="fragments_in_each_bead2" ,action="store",help='Number of fragments that will be represented with each bead in the second model to compare')
-group2.add_argument("data_dir2", action="store",help='Directory with the 4C files of the second modeling')
 
 parser.add_argument("--storage_dir", action="store",default=working_dir, dest="storage_dir",help='location where the comparison pdf will be generated')
 parser.add_argument("--maximum_hic_value",type=float,  action="store",default=1.0, dest="maximum_hic_value",help='The maximum value to plot in the virtual Hi-C comparison')

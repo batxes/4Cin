@@ -1286,7 +1286,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     
 
     ################################ CODE OF SHH STUFF. DELETE AFTERWARDS
-    if False:
+    if True:
         #### Exteriorness enhancers
         #all regions
         #red= [26,24,37,44] #outside
@@ -1423,6 +1423,8 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
         bp3 = plt.boxplot(box_plot_dataset_3,patch_artist = True)
         for box, color in zip(bp3['boxes'], bcolor):
             box.set(facecolor = color)
+        #plt.grid(False)
+        ax.set_axis_bgcolor('white')
         pp = PdfPages('{}{}_boxplot3.pdf'.format(root,prefix))
         pp.savefig(fig)
         pp.close()
