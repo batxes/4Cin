@@ -21,14 +21,16 @@ pysam (for paint_model.py)
 Go to Installing dependencies(https://github.com/batxes/4Cin/blob/master/README.md#installing-dependencies) to install them.
 
 
-## Fast Usage (run this commands)
+## Fast Usage
 
-```
-1 - python src/prepare_data.py 4C_files
+```  
+1 - python src/prepare_data.py /path/to/data/all_4C_data
 2 - Provide a primers.txt file with name of primers and position:
-    Six2 chr2:423234
-    Six3 chr2:426351
-3 - python 4Cin.py 4C_files_dir Name_of_your_locus
+    viewpoint1 chr2:423234
+    viewpoint2 chr2:426351
+    viewpoint3 chr2:449584
+    viewpoint4 chr2:501421    
+3 - python 4Cin.py /path/to/data/ Name_of_your_locus
 ```
 
 [Optionals]
