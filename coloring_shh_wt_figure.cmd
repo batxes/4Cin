@@ -1,4 +1,4 @@
-open SHH_WT_models/SHH_WT_models_final_output_0.1_-0.1_11000/Representative.py
+open /home/ibai/4Cin/SHH_WT_models/SHH_WT_models_final_output_0.1_-0.1_11000/Representative.py
 color #b3b3b3 #0  
 color #b3b3b3 #1
 color #b3b3b3 #2
@@ -81,10 +81,10 @@ shape sphere radius 300 center #7 color #819602
 shape sphere radius 300 center #9 color #8f12dd
 shape sphere radius 300 center #54 color #f08500
 shape sphere radius 300 center #58 color #f5143d
-shape cone radius 500 height 600 center #6 color #000000 caps false
+#shape cone radius 500 height 600 center #6 color #000000 caps false
 shape cone radius 500 height 600 center #8 color #000000 caps false
 shape cone radius 500 height 600 center #57 color #000000 caps false
-shape cone radius 500 height 600 center #53 color #000000 caps false
+shape cone radius 500 height 600 center #61 color #000000 caps false
 ~show #0-100 
 
 background solid white

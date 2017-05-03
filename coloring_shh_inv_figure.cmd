@@ -1,4 +1,4 @@
-open /home/ibai/4c2vhic/SHH_INV_models/SHH_INV_models_final_output_0.2_-0.1_10000/Representative.py
+open /home/ibai/4Cin/SHH_INV_models/SHH_INV_models_final_output_0.2_-0.1_10000/Representative.py
 color #b3b3b3 #0  
 color #b3b3b3 #1
 color #b3b3b3 #2
@@ -80,10 +80,10 @@ shape sphere radius 300 center #9 color #8f12dd
 shape sphere radius 300 center #45 color #f08500
 shape sphere radius 300 center #41 color #f5143d
 
-shape cone radius 500 height 600 center #6 color #000000 caps false
+#shape cone radius 500 height 600 center #6 color #000000 caps false
 shape cone radius 500 height 600 center #8 color #000000 caps false
+shape cone radius 500 height 600 center #38 color #000000 caps false
 shape cone radius 500 height 600 center #42 color #000000 caps false
-shape cone radius 500 height 600 center #47 color #000000 caps false
 
 ~show #0-100 
 background solid white

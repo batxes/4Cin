@@ -180,9 +180,8 @@ with open(root2, 'r') as f2:
 # beads 35 to 63 will be now 63 to 35
 print "We are Inverting bins 35-64 of one matrix. Shh experiment."
 guide = range(number_of_spheres)
-print guide
-guide[35:64] = guide[63:34:-1]
-print guide
+#delete this, only for INVERSION
+guide[35:64] = guide[64:35:-1]
 aux_matrix = np.zeros((number_of_spheres,number_of_spheres))
 for line in range(number_of_spheres):
     for col in range(number_of_spheres):
@@ -234,10 +233,10 @@ vmin = -1.0
 #cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.35 / vmax, 'white'),(0.36 / vmax, 'white',(0.5 / vmax, 'white')),(0.64 / vmax, 'white'),(0.65 / vmax, 'white'),(1 / vmax, 'red')])
 
 #RED BLUE gradient with less white
-#cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.40 / vmax, 'white'),(0.41 / vmax, 'white',(0.5 / vmax, 'white')),(0.59 / vmax, 'white'),(0.60 / vmax, 'white'),(1 / vmax, 'red')])
+cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.40 / vmax, 'white'),(0.41 / vmax, 'white',(0.5 / vmax, 'white')),(0.59 / vmax, 'white'),(0.60 / vmax, 'white'),(1 / vmax, 'red')])
 
 #RED BLUE gradient with almost no white
-cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.50 / vmax, 'white'),(1 / vmax, 'red')])
+#cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.50 / vmax, 'white'),(1 / vmax, 'red')])
 
 c = plt.pcolor(z,cmap=cmap,vmax=vmax, vmin=vmin)
 ax.set_frame_on(False)

@@ -1031,18 +1031,43 @@ def run_clustering(models_subset):
     print "\n\nmatrix.txt written! in {}".format(root)
     print "This is the whole RMSD matrix (all models vs all models)"
 
+    #compute and plot dendogram
     D = matrix
-
-    #compute dendogram
+    fig = plt.figure(figsize=(8,8))
+    ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
     Y = sch.linkage(D, method='average')
     Z1 = sch.dendrogram(Y, orientation='right')
+    ax1.set_xticks([])
+    ax1.set_yticks([])
+    dendogra_colors = Z1['color_list']
+
+    # Plot dendrogram.
+    ax2 = fig.add_axes([0.3,0.71,0.6,0.2])
     Y = sch.linkage(D, method='average')
     Z2 = sch.dendrogram(Y,orientation='top')
+    ax2.set_xticks([])
+    ax2.set_yticks([])
+
+    # Plot distance matrix.
+    axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
     idx1 = Z1['leaves']
-    dendogra_colors = Z1['color_list']
     idx2 = Z2['leaves']
     D = D[idx1,:]
     D = D[:,idx2]
+    plt.xlabel("RMSD matrix in Angstroms.")
+    im = axmatrix.matshow(D, aspect='auto', origin='lower', cmap=plt.cm.YlGnBu)
+    axmatrix.set_xticks([])
+    axmatrix.set_yticks([])
+
+    # Plot colorbar.
+    axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
+    plt.colorbar(im, cax=axcolor)
+
+    try:
+        fig.savefig('{}{}_heatmap.png'.format(root,prefix))
+        print "\n clusters can be checked here: {}{}_heatmap.png".format(root,prefix)
+    except:
+        pass
 
     # Code to retrieve the clusters
     n = subset
@@ -1123,33 +1148,7 @@ def run_clustering(models_subset):
             if num_lines > lines_in_file:
                 biggest_matrix = m
                 lines_in_file = num_lines
-                
-
-    # Plot dendrogram.
-    fig = plt.figure(figsize=(8,8))
-    ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
-    ax1.set_xticks([])
-    ax1.set_yticks([])
-    ax2 = fig.add_axes([0.3,0.71,0.6,0.2])
-    ax2.set_xticks([])
-    ax2.set_yticks([])
-
-    # Plot distance matrix.
-    axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
-    plt.xlabel("RMSD matrix in Angstroms.")
-    im = axmatrix.matshow(D, aspect='auto', origin='lower', cmap=plt.cm.YlGnBu)
-    axmatrix.set_xticks([])
-    axmatrix.set_yticks([])
-
-    # Plot colorbar.
-    axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
-    plt.colorbar(im, cax=axcolor)
-
-    try:
-        fig.savefig('{}{}_heatmap.png'.format(root,prefix))
-        print "\n clusters can be checked here: {}{}_heatmap.png".format(root,prefix)
-    except:
-        pass
+    
         
 
     return n_clusters, biggest_matrix
@@ -1963,6 +1962,7 @@ if not jump_step[2]:
     #    print "Redoing the clustering expecting {} clusters.".format(n_clusters)
     #    n_clusters,biggest_matrix = run_clustering(models_subset)
     print "Clustering finished"
+    sys.exit()
 if maximum_hic_value == 0: #set a default value
     maximum_hic_value = max_distance*0.8
 

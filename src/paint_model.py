@@ -224,6 +224,11 @@ for min_value in bead_values:
 #for dnamet, h3k27ac,atac
 #print "min value = ",vmin
 #print "max value = ",vmax
+
+
+#ONLY FOR INVERSION
+bead_values[35:64] = bead_values[64:35:-1]
+
 norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
 
 
@@ -246,7 +251,6 @@ fig = pylab.figure(figsize=(8,8))
 fig.suptitle("Epigenetic Marks")
 pylab.xlabel("Bead Number")
 pylab.ylabel("Score")
-#pylab.plot(bead_values)
 h = pylab.bar(range(len(bead_values)),bead_values,color=cmap(norm(bead_values)),width=1,linewidth=0)
 #for i in range(len(bead_values)-1):
     #pylab.vlines(i,0,bead_values[i],color=cmap(norm(bead_values[i])),linewidth=6)
@@ -254,6 +258,7 @@ h = pylab.bar(range(len(bead_values)),bead_values,color=cmap(norm(bead_values)),
 
 axes = pylab.gca()
 axes.set_xlim([0-0.5,len(bead_values)-0.5])
+axes.set_axis_bgcolor('white')
 try:
         fig.savefig('{}/genome_painting_stats_plot_{}.png'.format(storage_dir,prefix))
         print "Plot painted in {}/".format(storage_dir,prefix)
