@@ -232,8 +232,9 @@ HiC_comp.py
 
 - All the data will be stored under a directory with the same name as the prefix, unless we set it under --working_dir parameter 
 
-- bam files need to be sorted and indexed before using. Example: samtools sort mouse_h3k4me3_ES_bingren_rep1.bam mouse_h3k4me3_ES_bingren_rep1.bai 
-
+- bam files need to be sorted and indexed before using. 
+ - --: samtools sort mouse_h3k4me3_ES_bingren_rep1.bam mouse_h3k4me3_ES_bingren_rep1.sorted 
+ - --: samtools index mouse_h3k4me3_ES_bingren_rep1.sorted 
 # FAQ
 
 I have UCSF Chimera installed but it does not work.
