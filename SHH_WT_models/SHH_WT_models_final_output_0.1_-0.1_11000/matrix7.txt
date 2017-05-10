@@ -1,0 +1,4 @@
+	SHH_WT_models10615.py	SHH_WT_models3827.py	SHH_WT_models40786.py	
+SHH_WT_models10615.py	0.0	602.432	3937.837	
+SHH_WT_models3827.py	602.432	0.0	3788.879	
+SHH_WT_models40786.py	3937.837	3788.879	0.0	
