@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J modeling.batxes
+#SBATCH -J IrxA
 #SBATCH --ntasks=20
 
-python run_genome_maxdV3.py /home/ibai/4c2vhic/data/Shh_mouse/temp/ Test_models --cpu 20
+python 4Cin.py /home/ibai/4Cin/data/IrxA/finales/ IrxA_new --cpu 20 --fragments_in_each_bead 90
