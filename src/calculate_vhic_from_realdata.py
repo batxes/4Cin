@@ -23,7 +23,6 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 
-
 number_of_arguments = len(sys.argv)
 if number_of_arguments != 2: #Or all parameters, or no parameters 
     print "Not enought parameters. Matrix file (absolute path) is required. You passed: ",sys.argv[1:]

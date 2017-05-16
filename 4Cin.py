@@ -53,6 +53,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from math import fabs
 from scipy.stats.stats import spearmanr
+start_time = time.time()
 
 # realpath() will make your script run, even if you symlink it :)
 cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
@@ -152,7 +153,6 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
     ###################################### ###################################### 
     ###################################### ###################################### 
     ###################################### THE REAL DEAL!
-    start_time = time.time()
     for sample in range(starting_point, starting_point+number_of_models):
         
         movers = []
@@ -579,13 +579,11 @@ def calculate_best_maxd():
     if os.path.isfile(aux_file):
         os.remove(aux_file)
         os.remove(aux_file+"c")
-    print "Log writen in: {}".format(results_path)
+    print "Log written in: {}".format(results_path)
 
     output_results.close()
     ####calculate best maxd
     locus_size_mbp = locus_size/1000000.0
-    print locus_size_mbp
-    print size_list
     best_value = min(size_list, key=lambda x:abs(x-locus_size_mbp))
     best_maxd = maxd_list[size_list.index(best_value)]
 
@@ -897,7 +895,7 @@ def run_analysis(std_dev,cut_off_percentage):
                     print "Error copying best models."				
                 not_analyzed = False
             else:
-                print "\n ! Can not get {} models. Relaxing the std_dev and cut_off_percentage.\n ".format(subset)	
+                print "! Can not get {} models. Relaxing the std_dev and cut_off_percentage...\n ".format(subset)	
                 #Modify the cutoffs
                 if increase_dev_or_cutoff == 0:
                     std_dev = std_dev + max_distance*0.01 #increase std_def
@@ -906,7 +904,7 @@ def run_analysis(std_dev,cut_off_percentage):
                     cut_off_percentage = cut_off_percentage+2 #increase #cut_off
                     increase_dev_or_cutoff = 0	 
         else:
-            print "\n ! Can not get {} models. Relaxing the std_dev and cut_off_percentage.\n ".format(subset)	
+            print "! Can not get {} models. Relaxing the std_dev and cut_off_percentage...\n ".format(subset)	
             #Modify the cutoffs
             if increase_dev_or_cutoff == 0:
                 std_dev = std_dev + max_distance*0.01 #increase std_def
@@ -1011,7 +1009,6 @@ def run_clustering(models_subset):
 
     #leave only the name of the file
     only_python_files = [f.split("/")[-1] for f in only_python_files]
-    print only_python_files
 
     for p_file in only_python_files:
         matrixtxt.write(p_file)
@@ -1160,6 +1157,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     path = "{}vhic_{}.txt".format(root,prefix)
     start_time = time.time()
     if calculate_the_matrix:
+        print "Calculating in chimera..."       
         models = []
             ## we get a file that (cmd) that we are gonna use it in chimera. It will write all distances in the model
         with open("{}".format(matrix_path), "r") as mtx:
@@ -1172,7 +1170,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
         p = Pool(number_of_cpus)
 
         for model in models:
-            print "{} - {}".format(counter,model)
+            verboseprint ("{} - {}".format(counter,model))
             chimera_files = []
             combi = combinations(range(0,number_of_fragments),2)
             instruction_list = []
@@ -1194,7 +1192,6 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
                     chimera_files.append(dis_file)
 
                 
-            print "Calculating in chimera..."       
             distance_output = p.map(chimera_worker_vhic,chimera_files)
 
             
@@ -1219,7 +1216,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
                     matrix[int(distance.group(2))][int(distance.group(1))][counter] = float(distance.group(3))
              
             counter += 1        
-            print "{} seconds needed.".format(time.time() - start_time)
+            verboseprint ("{} seconds needed.".format(time.time() - start_time))
 
 
 
@@ -1255,8 +1252,6 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     ax = plt.subplot(1,1,1)
     z = np.array(matrix_mean)
 
-
-
     #c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=maximum_hic_value, vmin=0)
     cmap = plt.cm.get_cmap(colormap)
     c = plt.pcolor(z,cmap=cmap,vmax=maximum_hic_value, vmin=0)
@@ -1285,7 +1280,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     
 
     ################################ CODE OF SHH STUFF. DELETE AFTERWARDS
-    if True:
+    if False:
         #### Exteriorness enhancers
         #all regions
         #red= [26,24,37,44] #outside
@@ -1635,7 +1630,7 @@ def calculate_representative_model(biggest_matrix):
         out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
         out.write("close #0-{}\n".format(number_of_beads))
     with open ("{}LeastRepresentative_tubes.cmd".format(root), "w") as out:
-        out.write("open {}Representative.py\n".format(root,i))
+        out.write("open {}LeastRepresentative.py\n".format(root,i))
         out.write("shape tube #0-{} radius 300 bandlength 10000\n".format(number_of_beads))
         out.write("close #0-{}\n".format(number_of_beads))
     print "Representative_tube.cmd and LeastRepresentative_tubes.cmd models saved in: {}".format(root)
@@ -1654,7 +1649,7 @@ lZ = 0 #updated in calculate_best_zscores
 
 parser = argparse.ArgumentParser(
 description='''Program that generates 3D models and a virtual Hi-C of your favourite region.''',
-epilog= """Apart from the 4C data, a primers.txt file is needed in that folder, which has 4C file name and position of the gene. Optionaly, a primers_vhic.txt file can be also created to paint interesting positions in the virtual Hi-C. File needs to be like this: gene_name chrN:position color. Color writen as yellow, red, green or other colors.""")
+epilog= """Apart from the 4C data, a primers.txt file is needed in that folder, which has 4C file name and position of the gene. Optionaly, a primers_vhic.txt file can be also created to paint interesting positions in the virtual Hi-C. File needs to be like this: gene_name chrN:position color. Color written as yellow, red, green or other colors.""")
 
 group1 = parser.add_argument_group('Pre-modeling', 'Parameters used in the pre-modeling')
 group2 = parser.add_argument_group('Modeling', 'Parameters used in the modeling')
@@ -1664,7 +1659,7 @@ group5 = parser.add_argument_group('Global', 'Global parameters used in the mode
 
 group1.add_argument("--preNmodels",type=int, default=50, action="store", dest="pre_number_of_models",help='number of models that will be generated in the pre-modeling phase')
 group1.add_argument("--from_dist",type=int, default=5000, action="store", dest="from_dist",help='minimum max-distance that will be used in the pre-modeling phase')
-group1.add_argument("--to_dist",type=int, default=12000, action="store", dest="to_dist",help='maximum max-distance that will be used in the pre-modeling phase')
+group1.add_argument("--to_dist",type=int, default=15000, action="store", dest="to_dist",help='maximum max-distance that will be used in the pre-modeling phase')
 group1.add_argument("--dist_bins",type=int, default=1000, action="store", dest="dist_bins",help='size of jump between from_dist and to_dist')
 group1.add_argument("--from_zscore",type=float, default=0.1, action="store", dest="from_zscore",help='minimum Z-score that will be used in the pre-modeling phase')
 group1.add_argument("--to_zscore",type=float, default=1.2, action="store", dest="to_zscore",help='maximum Z-score that will be used in the pre-modeling phase')
@@ -1932,6 +1927,9 @@ if not jump_step[0]:
     print "Pre-modeling finished"
     
     
+pre_modeling_time = time.time() - start_time         
+print "Pre-modeling took: {}".format(pre_modeling_time)
+
 ######### Modeling 	
 if not jump_step[1]:
     print "Modeling started, modeling {} models...".format(total_number_of_models)
@@ -1942,6 +1940,8 @@ if not jump_step[1]:
     p.map(modeling,execute)
     execute = []
     print "Modeling finished"
+modeling_time = time.time() - pre_modeling_time         
+print "Modeling took: {}".format(modeling_time)
 
 
 ######### Analysis of models
@@ -1962,12 +1962,14 @@ if not jump_step[2]:
     #    print "Redoing the clustering expecting {} clusters.".format(n_clusters)
     #    n_clusters,biggest_matrix = run_clustering(models_subset)
     print "Clustering finished"
-    sys.exit()
-if maximum_hic_value == 0: #set a default value
-    maximum_hic_value = max_distance*0.8
+
+analysis_time = time.time() - modeling_time         
+print "Analysis took: {}".format(analysis_time)
 
 
 ######### vhic calculation
+if maximum_hic_value == 0: #set a default value
+    maximum_hic_value = max_distance*0.8
 if not jump_step[3]:
     print "Generating Virtual Hi-C"
     calculate_vhic(biggest_matrix,True)
@@ -1976,11 +1978,15 @@ if repaint_vhic and jump_step[3]:
     print "RePainting Virtual Hi-C"
     calculate_vhic(biggest_matrix,False)
     print "Virtual Hi-C RePainted"
+vhic_time = time.time() - analysis_time
+print "Virtual Hi-C generation took: {}".format(vhic_time)
 
 ######### getting representative model
 if not jump_step[4]:
     print "Calculating representative model..."
     calculate_representative_model(biggest_matrix)
+representative_time = time.time() - vhic_time 
+print "Representative modeling calculation took: {}".format(representative_time)
 
     
 print """##################################################################################################################
@@ -1989,18 +1995,18 @@ print """#######################################################################
  -If the virtual Hi-C is too red or white, rerun with --repaint_vhic, modify --maximum_hic_value and set --uZ, --lZ and --max_distance.
 
  -To paint a model with epigenetic marks (bam/bed file required):
-    'python src/paint_model.py {} your_model.py '
+    'python src/paint_model.py Representative_model.py data_dir bam/bed_file colormap'
 
  -To call the TAD boundaries, run:
-    'python src/calculate_boundaries.py vhic tad_size'
+    'python src/calculate_boundaries.py vhic'
 
 #todo
  -To compare conserved regions between 2 virtual Hi-Cs (Different species or homolog regions), run:
-    'python src/Evo_comp.py {} config_file2 {} vhic2'
+    'python src/Evo_comp.py data_dir prefix VHiC distance data_dir2 prefix2 VHiC2 distance2'
 
 #todo
  -To compare this virtual Hi-C to another one of the same region (Mutants), run:
-    'python src/Mut_comp {} config_file2 {} vhic2'
+    'python src/Mut_comp.py data_dir prefix VHiC distance prefix2 VHiC2 distance2'
 \n##################################################################################################################
 """  
     

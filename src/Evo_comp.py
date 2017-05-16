@@ -240,11 +240,25 @@ for bead1 in viewpoints2:
                     break
 
 matrix_diff = np.zeros((n_viewpoints,n_viewpoints))
+list_pos = []
+list_neg = []
+list_total = []
 for i in range(n_viewpoints):
     for j in range(n_viewpoints):
         matrix_final[i][j] = matrix[i][j]
         matrix_final[j][i] = matrix2[i][j]
         matrix_diff[i][j] = matrix_diff[j][i] = matrix[i][j] - matrix2[i][j]
+        d = matrix[i][j] - matrix2[i][j]
+        if (d > 0):
+            list_pos.append(d)
+        if (d < 0):
+            list_neg.append(d)
+        list_total.append(np.abs(d))
+print "HOLAAAAAAAAA"
+print "Media Positivos: {}. Hay {}".format(np.mean(list_pos),len(list_pos))
+print "Media Negativos: {}. Hay {}".format(np.mean(list_neg),len(list_neg))
+print "Media Total : {}. Hay {}".format(np.sum(list_total)/306,len(list_total))
+
 
 
 
@@ -320,6 +334,8 @@ cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.4 / vm
 fig = plt.figure()
 plt.title("Similarity between conserved regions vhic")
 ax = plt.subplot(1,1,1)
+
+
 z = np.array(matrix_diff)
 
 #c = plt.pcolor(z,cmap=plt.cm.PRGn,vmax=1,vmin=-1)

@@ -2,7 +2,6 @@
 
 # script to compare virtual and original Hi-c's
 
-## CREATE THE CMD TO USE IN CHIMERA
 import re
 import os
 import sys
@@ -19,113 +18,141 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from scipy.stats.stats import pearsonr
 from scipy.stats.stats import spearmanr
-
-
-
-
-number_of_arguments = len(sys.argv)
-if number_of_arguments != 3: #Or all parameters, or no parameters 
-    print "Not enought parameters. virtual Hi-c matrix and Original Hi-C matrix are required. You passed: ",sys.argv[1:]
-    sys.exit()
-if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
-    matrix_path = sys.argv[1]
-    matrix_path2 = sys.argv[2]
-    
-n_viewpoints = 74
-max_distance = 10000
-#read the config file
-matrix = np.zeros((n_viewpoints,n_viewpoints))
-matrix2 = np.zeros((n_viewpoints,n_viewpoints))
-matrix_final = np.zeros((n_viewpoints,n_viewpoints))
-
-count1 = -1
-print "Filling first half..."
-for bead1 in range(n_viewpoints):
-    count1 += 1
-    count2 = -1
-    for bead2 in range(n_viewpoints):
-        count2 += 1
-        with open("{}".format(matrix_path), "r") as mtx:
-            for line in mtx:
-                values = re.split(",", line)
-                if int(values[0]) ==  bead1 and int(values[1]) == bead2:
-                    matrix[count1][count2] = 1/(float(values[2])+1) / 0.00298806386879 #KNOWN VALUE with max(array1)
-                    matrix[count2][count1] = 1/(float(values[2])+1) / 0.00298806386879 #KNOWN VALUE with max(array1)
-                    break
+if True:
+    number_of_arguments = len(sys.argv)
+    if number_of_arguments != 3: #Or all parameters, or no parameters 
+        print "Not enought parameters. virtual Hi-c matrix and Original Hi-C matrix are required. You passed: ",sys.argv[1:]
+        sys.exit()
+    if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
+        matrix_path = sys.argv[1]
+        matrix_path2 = sys.argv[2]
         
+    n_viewpoints = 70
+    max_distance = 5000
+    #read the config file
+    matrix = np.zeros((n_viewpoints,n_viewpoints))
+    matrix2 = np.zeros((n_viewpoints,n_viewpoints))
+    matrix_final = np.ones((n_viewpoints,n_viewpoints))
 
-print "Filling the other half..."
-count1 = -1
-for bead1 in range(n_viewpoints):
-    count1 += 1
-    count2 = -1
-    for bead2 in range(n_viewpoints):
-        count2 += 1
-        with open("{}".format(matrix_path2), "r") as mtx2:
-            for line in mtx2:
-                values = re.split(",", line)
-                if int(values[0]) ==  bead1 and int(values[1]) == bead2:
-                    matrix2[count2][count1] = float(values[2])/65.001709121   #KNOWN VALUE with max(array2)
-                    matrix2[count1][count2] = float(values[2])/65.001709121   #KNOWN VALUE with max(array2)
-                    break
+    count1 = -1
+    print "Filling first half..."
+    for bead1 in range(n_viewpoints):
+        count1 += 1
+        count2 = -1
+        for bead2 in range(n_viewpoints):
+            count2 += 1
+            with open("{}".format(matrix_path), "r") as mtx:
+                for line in mtx:
+                    values = re.split(",", line)
+                    if int(values[0]) ==  bead1 and int(values[1]) == bead2:
+                        matrix[count1][count2] = float(values[2])
+                        matrix[count2][count1] = float(values[2])
+                        break
+            
+    print "Filling the other half..."
+    count1 = -1
+    for bead1 in range(n_viewpoints):
+        count1 += 1
+        count2 = -1
+        for bead2 in range(n_viewpoints):
+            count2 += 1
+            with open("{}".format(matrix_path2), "r") as mtx2:
+                for line in mtx2:
+                    values = re.split(",", line)
+                    if int(values[0]) ==  bead1 and int(values[1]) == bead2:
+                        matrix2[count2][count1] = float(values[2])
+                        matrix2[count1][count2] = float(values[2])
+                        break
 
-for i in range(n_viewpoints):
-    for j in range(n_viewpoints):
-        matrix_final[i][j] = matrix[i][j]
-        matrix_final[j][i] = matrix2[i][j]
+    max_list1 = []
+    max_list2 = []
+    for i in range(n_viewpoints):
+        for j in range(n_viewpoints):
+            max_list1.append(matrix[i][j])
+            max_list2.append(matrix2[i][j])
+    print "pearson: "+str(pearsonr(max_list1,max_list2))
+    print "spearman: "+str(spearmanr(max_list1,max_list2))
+    max_value_vhic = max(max_list1)
+    max_value_hic = max(max_list2)
+    print max_value_vhic
+    print max_value_hic
+    max_list1 = []
+    max_list2 = []
+    for i in range(n_viewpoints):
+        for j in range(n_viewpoints):
+            if not j == i:
+                matrix_final[i][j] = 1-matrix[i][j]/max_distance
+                max_list1.append(1-matrix[i][j]/max_distance)
+                matrix_final[j][i] = matrix2[i][j]/max_value_hic
+                max_list2.append(matrix2[i][j]/max_value_hic)
+
+    print max(max_list1)
+    print max(max_list2)
+    print "pearson: "+str(pearsonr(max_list1,max_list2))
+    print "spearman: "+str(spearmanr(max_list1,max_list2))
+
+    print min(max_list1)
+    print min(max_list2)
+    print max(max_list1)
+    print max(max_list2)
+        
+    print matrix_final
 
 
+    fig = plt.figure()
+    ax = plt.subplot(1,1,1)
+    z = np.array(matrix_final)
+    #maximum_hic_value = max(matrix_final)
+    maximum_hic_value = max(max_list2)
+
+    #only for rao
+    #maximum_hic_value = 0.03
+
+    c = plt.pcolor(z,cmap=plt.cm.magma,vmax=maximum_hic_value, vmin=0)
+    #for y in range(z.shape[0]):
+    #    for x in range(z.shape[1]):
+    #        plt.text(x+0.5,y+0.5,'%.2f' % z[y,x],horizontalalignment='center',verticalalignment='center',size=5)
+    #ax.set_frame_on(False)
+    plt.colorbar()
+    plt.tick_params(axis='both', which='major', labelsize=8)
+    plt.xticks(rotation=90)
+
+    plt.axis([0,z.shape[1],0,z.shape[0]])
+
+    fig.set_facecolor('white')
+    plt.show()
+
+    fig.savefig('HiC_comp.png',dpi = 300)
+
+    #pp = PdfPages('HiC_comp.pdf')
+    #pp.savefig(fig)
+    #pp.close()
+else:
+    #supp fig 8
 
 
-array1 = []
-array2 = []
-for i in range(n_viewpoints):
-    for j in range(n_viewpoints):
-        array2.append(matrix2[i][j])
-        if matrix2[i][j] == 0:
-            array1.append(matrix[i][j])
-            array1.append(0)
-        else:
-            array1.append(matrix[i][j])
-
-print "pearson: "+str(pearsonr(array1,array2))
-print "spearman: "+str(spearmanr(array1,array2))
-
-print min(array1)
-print min(array2)
-print max(array1)
-print max(array2)
-    
-print matrix_final
+    matrix_corr = np.zeros((5,5))
+    matrix_corr[0][1] = 0.75187534318386928
+    matrix_corr[0][2] = 0.66754083023667898
+    matrix_corr[0][3] = 0.55333425695285288
+    matrix_corr[0][4] = 0.6635652284316963
+    matrix_corr[1][2] = 0.72785481811649311
+    matrix_corr[1][3] = 0.53935018788718381
+    matrix_corr[1][4] = 0.69158619892835715
+    matrix_corr[2][3] = 0.60221587323595382
+    matrix_corr[2][4] = 0.66368559486847933
+    matrix_corr[3][4] = 0.59119889876050857
 
 
-fig = plt.figure()
-ax = plt.subplot(1,1,1)
-z = np.array(matrix_final)
-#maximum_hic_value = max(matrix_final)
-maximum_hic_value = max(array2)
+    fig = plt.figure()
+    ax = plt.subplot(1,1,1)
+    z = np.array(matrix_corr)
+    c = plt.pcolor(z,cmap=plt.cm.hot_r,vmax=1, vmin=0.5)
+    plt.colorbar()
 
-c = plt.pcolor(z,cmap=plt.cm.PuRd,vmax=maximum_hic_value, vmin=0)
-#for y in range(z.shape[0]):
-#    for x in range(z.shape[1]):
-#        plt.text(x+0.5,y+0.5,'%.2f' % z[y,x],horizontalalignment='center',verticalalignment='center',size=5)
-#ax.set_frame_on(False)
-plt.colorbar()
+    plt.axis([0,z.shape[1],0,z.shape[0]])
 
+    fig.set_facecolor('white')
+    plt.show()
 
-#to set the viewpoints
-#color = [10,5,5,10,10]
-#plt.scatter(genes, genes, s=10, cmap=plt.cm.autumn)
-plt.tick_params(axis='both', which='major', labelsize=8)
-plt.xticks(rotation=90)
-
-plt.axis([0,z.shape[1],0,z.shape[0]])
-
-fig.set_facecolor('white')
-plt.show()
-
-pp = PdfPages('HiC_comp.pdf')
-pp.savefig(fig)
-pp.close()
-#Distance between #1 marker 1  and #10 marker 1 : 2203.213
-
+    fig.savefig('HiC_comp.png',dpi = 300)
