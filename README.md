@@ -435,7 +435,7 @@ cmake ../imp-2.5.0 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LO
 ## Overview 
 ![alt tag](figures/Fig1.png)
 
-Many other marks can be painted
+More Technical figure:
 ![alt tag](figures/Suppfig8.png)
 
 
