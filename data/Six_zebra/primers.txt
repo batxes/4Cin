@@ -1,0 +1,5 @@
+ztm9sf3 NNNNNNN chr13:9240919   yellow
+zsix2arep   NNNNNNN chr13:9797970   yellow
+zsix3a  NNNNNNN chr13:9826837   yellow
+zslac3a NNNNN   chr13:10186394  yellow
+zprepl  NNNNN   chr13:10237450  yellow

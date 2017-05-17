@@ -1,0 +1,53 @@
+Shh_WT.fragscounts_modified	NNNNNNN	chr5:28804534
+ZRS_WT.fragscounts_modified	NNNNNNN	chr5:29637990
+Rbm33_WT.fragscounts_modified	NNNNNNN	chr5:28749055
+Nom1_WT.fragscounts_modified	NNNNN	chr5:29731026
+a chr5:28948195 lightgreen
+b chr5:28993084 yellow
+c chr5:29077184 red
+d chr5:29089727 yellow
+e chr5:29094638 red
+f chr5:29159936 lightgreen
+g chr5:29171252 yellow
+h chr5:29208077 yellow
+i chr5:29209269 yellow
+j chr5:29260046 lightgreen
+k chr5:29297175 red
+l chr5:29390735 yellow
+m chr5:29403806 lightgreen
+n chr5:29405415 lightgreen
+o chr5:29413901 lightgreen
+q chr5:29415912 lightgreen
+r chr5:29420191 lightgreen
+s chr5:29430394 red
+t chr5:29445731 lightgreen
+u chr5:29451881 lightgreen
+v chr5:29452662 lightgreen
+x chr5:29463020 lightgreen
+y chr5:29466562 yellow
+z chr5:29467666 lightgreen
+1 chr5:29470352 lightgreen
+2 chr5:29473391 lightgreen
+3 chr5:29533044 lightgreen
+4 chr5:29550146 lightgreen
+en1 chr5:29641924 violet
+en2 chr5:28889634 violet
+en3 chr5:29577199 violet
+en4 chr5:29202691 violet
+en5 chr5:29219224 violet
+en6 chr5:29111591 violet
+en7 chr5:28803182 violet
+en8 chr5:28786343 violet
+en9 chr5:29412515 violet
+en10 chr5:29473137 violet
+en11 chr5:29514852 violet
+en12 chr5:29538431 violet
+
+
+
+                                       
+
+
+    
+
+

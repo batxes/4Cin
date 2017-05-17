@@ -1,0 +1,5 @@
+Shh_INV.fragscounts_modified NNNNNNN chr5:28804534
+ZRS_INV.fragscounts_modified NNNNNNN chr5:29476620
+Rbm33_INV.fragscounts_modified       NNNNNNN chr5:28749055
+Nom1_INV.fragscounts_modified        NNNNN   chr5:29383581
+                                       

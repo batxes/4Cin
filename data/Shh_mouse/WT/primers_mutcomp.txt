@@ -1,0 +1,5 @@
+Shh_WT.fragscounts_modified	NNNNNNN	chr5:28804534
+ZRS_WT.fragscounts_modified	NNNNNNN	chr5:29637990
+Rbm33_WT.fragscounts_modified	NNNNNNN	chr5:28749055
+Nom1_WT.fragscounts_modified	NNNNN	chr5:29731026
+

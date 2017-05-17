@@ -1,0 +1,9 @@
+Shh_INV chr5:28804534
+ZRS_INV chr5:29476620
+Rbm33_INV chr5:28749055
+Nom1_INV chr5:29383581
+Break1 chr5:29260046 blue
+Break2 chr5:29854584 blue
+
+
+                                       
