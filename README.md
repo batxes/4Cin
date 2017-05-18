@@ -70,6 +70,11 @@ Same as before but generating 10000 models and getting the best 50 models:
 Same as before but jumping the pre-modeling step (we need to set also the max_distance, uZ and lZ:
 
     python 4Cin.py data/Six_zebra/ Six_zebra_models --cpu 10 --Nmodels 10000 --subset 50 --jump_step pre_modeling --max_distance 8000 --uZ 0.2 --lZ -0.5 --fragments_in_each_bead 20 --colormap magma_r
+    
+If we only want to change the virtual Hi-C scale
+    
+    python 4Cin.py data/Six_zebra/ Six_zebra_models --repaint_vhic --maximum_hic_value 5000 --max_distance 8000 --uZ 0.2 --lZ -0.5 --fragments_in_each_bead 20 --colormap magma_r
+    
 
 ## python 4Cin.py --help
 ```
