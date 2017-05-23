@@ -126,8 +126,13 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
     
     exv_values = []
     hub_values = []
-                                                                        # ZebraFish_output_1.0_-1.0_7000
-    if not os.path.exists(storage_folder): os.makedirs(storage_folder)
+
+    try:
+        if not os.path.exists(storage_folder): os.makedirs(storage_folder)
+    except OSError, e:
+        if e.errno != 17:
+            raise
+        pass
 
     #radius_scale = 0.1 
     #radius_scale = 0.021695  #0.01 nm bp occupancy more or less.  #my value 0.04339. Davide = 0.005  #THIS ONE IS BAD
@@ -1137,14 +1142,13 @@ def run_clustering(models_subset):
     n_clusters = len(set(dendogra_colors))-1
     print "\n{} clusters were found in the clustering process.".format(n_clusters)
     if k_mean != n_clusters:
-        print "Number of clusters found and k means value set are different. " 
-    else:
-        lines_in_file = 0
-        for m in cluster_number:
-            num_lines = sum(1 for line in open('{}matrix{}.txt'.format(root,m)))
-            if num_lines > lines_in_file:
-                biggest_matrix = m
-                lines_in_file = num_lines
+        print "Number of clusters found (different conformations) and k means value (expected conformations, default is 2) set are different. " 
+    lines_in_file = 0
+    for m in cluster_number:
+        num_lines = sum(1 for line in open('{}matrix{}.txt'.format(root,m)))
+        if num_lines > lines_in_file:
+            biggest_matrix = m
+            lines_in_file = num_lines
     
         
 
