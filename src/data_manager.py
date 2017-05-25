@@ -113,7 +113,8 @@ def calculateNWindowedValues(fragments_in_each_bead, files):
 # Takes the read counts and converts them in distance restraints for the modelling
 
 # Note: EVERY LANE OF 4C DATA WILL BE INDEPENDENT
-def calculateNWindowedDistances(window,uZ,lZ,y2,files,wanna_plot=False,heatmap=False):
+def calculateNWindowedDistances(window,uZ,lZ,max_distance,files,wanna_plot=False,heatmap=False):
+    putative_minimum_size = 0 #normally is 300
     show_z_scores = False  
     plot = wanna_plot
     HEATMAP_DATA = []
@@ -163,8 +164,8 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
             print ""
         x2 = min(reads_normalized)
         x1 = max(reads_normalized)
-        y1 = 300  #Angstroms width of chromatin 
-        slope = (y2-y1) / (x2-x1)
+        y1 = putative_minimum_size  #Angstroms width of chromatin 
+        slope = (max_distance-y1) / (x2-x1)
         inside_window = False #when we are inside the 4C good values window, set True
         window_start = 0
         window_end = 0
@@ -241,48 +242,75 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
 #test ###############################################################################################################################
 
 if __name__ == "__main__":
-    import ConfigParser
-    number_of_arguments = len(sys.argv)
-    print "TESTING READS "
-    if number_of_arguments == 5:
-        config_file = sys.argv[1]
-        uZ = float(sys.argv[2])
-        lZ = float(sys.argv[3])
-        y2 = int(sys.argv[4])
-    elif number_of_arguments == 2:
-        config_file = sys.argv[1]
-        uZ = 0.1
-        lZ = -0.1
-        y2 = 7000
-    else:
-        print "Not enough parameters. Config file is needed. uZ, lZ and max distance can also be passed. Default: uZ = 0.1, lZ = -0.1, max distance = 7000"
-        sys.exit()
+    import argparse
 
-    #read the config file
-    config = ConfigParser.ConfigParser()
-    try:
-        config.read(config_file)
-        prefix = config.get("Modeling", "prefix")
-        fragments_in_each_bead = float(config.get("Modeling", "fragments_in_each_bead"))
-        data_dir = config.get("Modeling", "data_dir")
-        file_names = config.get("Modeling", "file_names")
-        file_names = re.sub('[\n\s\t]','',file_names)
-        file_names = file_names.split(",")    
-        files = [data_dir+f for f in file_names]
+    parser = argparse.ArgumentParser(
+            description='''Script that shows information about the 4C-seq data.''')
+    parser.add_argument("data_dir", action="store",help='location of the 4C data. primers.txt needs tobe in there also')
+    parser.add_argument("--fragments_in_each_bead", type= int, default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
 
-        viewpoint_fragments = config.get("Modeling", "viewpoint_positions")
-        viewpoint_fragments = re.sub('[\n\s\t]','',viewpoint_fragments)
-        viewpoint_fragments = viewpoint_fragments.split(",")
-        viewpoint_fragments = [ int(i) for i in viewpoint_fragments]
-        viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
-        number_of_fragments = int(config.get("Modeling", "number_of_fragments"))
-        number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
-    except:
-        print "\nError reading the configuration file.\n"
-        e = sys.exc_info()[1]
-        print e
-        sys.exit()
-    calculateNWindowedDistances(fragments_in_each_bead, uZ, lZ, y2, files, True, False)
+    parser.add_argument("--uZ",type=float, default= 0.1, action="store",dest="uZ", help='Upper bound Z score (Only needed if jumping pre-modeling steps)')
+    parser.add_argument("--lZ", type=float, default=-0.1, action="store",dest="lZ", help='Lower bound Z score (Only needed if jumping pre-modeling steps)')
+    parser.add_argument("--max_distance", type=int, default=7000, action="store",dest="max_distance", help='Maximum distance (Only needed if jumping pre-modeling steps)')
+    args = parser.parse_args()
+    max_distance = args.max_distance 
+    uZ = args.uZ
+    lZ = args.lZ
+    fragments_in_each_bead = args.fragments_in_each_bead
+    data_dir = args.data_dir
+
+    # get the name and position from primers.txt
+    #primers.txt:  name chrN:position
+    primers = {}
+    viewpoint_positions = []
+    primers_file = fileCheck(data_dir+"primers.txt")
+    for line in primers_file:
+        m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+        try:
+            primers[m.group(1)] = int(m.group(2))
+        except:
+            break
+    print "\nPrimers.txt. These are the viewpoints that will be used in the modeling:"
+    for k,v in primers.iteritems():
+        print "Viewpoint:{}\tposition:{}".format(k,v)
+        viewpoint_positions.append(v)
+    print 
+        
+    file_names = primers.keys()
+    files = [data_dir+f for f in file_names]
+
+    # read one of the files and get number of fragments and default fragments_in_each_bead
+    # a_4c_file: chrN start end value
+    start_frag = 0
+    end_frag = 0
+
+    number_of_fragments = 0
+
+    a_4c_file = fileCheck(data_dir+primers.keys()[0])
+    for line in a_4c_file:
+        values = line.split()
+        if len(values) != 4:
+            continue
+        if start_frag == 0:
+            start_frag = int(values[1])
+        end_frag = int(values[2])
+        number_of_fragments += 1
+
+    locus_size = end_frag - start_frag
+    viewpoint_fragments = calculate_fragment_number(viewpoint_positions,files[0])
+
+
+    #default, we want 100 beads in each model
+    if fragments_in_each_bead == 0:
+        fragments_in_each_bead = int(number_of_fragments / 100)
+
+    viewpoint_fragments = [int(i/fragments_in_each_bead) for i in viewpoint_fragments]
+    are_genes = viewpoint_fragments
+
+    # now get number of beads
+    number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
+
+    calculateNWindowedDistances(fragments_in_each_bead, uZ, lZ, max_distance, files, True, False)
 
 
     

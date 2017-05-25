@@ -53,6 +53,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from math import fabs
 from scipy.stats.stats import spearmanr
+
+putative_minimum_size = 0 #300A is the consensus but has no meaning when we have a big resolution
 start_time = time.time()
 
 # realpath() will make your script run, even if you symlink it :)
@@ -91,7 +93,7 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
     ###################################### CHANGE DEPENDING ON MODELING VARIABLES
 
     rmf_video = False #If we wanna create a video of the IMP optimization
-    evaluation = False #If we wanna evaluate the restraints 
+    evaluation = False #If we wanna see the evaluation of the restraints 
     RESTRAINTS = [True,False,True,False] #4c counts, EV, HUB(connectivity), HLB(connectivity)
     RESTRAINTS_QUANTITY = [0,0,0,0]
     radius = 0
@@ -258,38 +260,32 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
                 for i in range(n_fragments):
                     counter += 1
                     if i != viewpoint_fragments[j]:
-                        if reads_value[i] != 0: #aplying the Z Score lower bound and upper bound (see calculate10WindowedDistances)
+                        if reads_value[i] != 0: 
                             if i not in ignore_beads:
-
-                                p2 = genome[i]
-                                
-                                #We add the diameters of the beads to the distance
-                                # the real distance is not from the core, we need to add the diameter, all the dna sequence
-    #                         distance = bead_radii[j] + bead_radii[i] + float(reads_value[i])
-                                
-                                
-                                distance = float(reads_value[i])
-                                
-
-                                if distance != float(y2):
-    #                             if True:
-                                    #if distance < y2: #if maximum distance is reached, don't set a restraint, because it can be further in genomic distance
-                                    kk2 = fabs(reads_weight[i])
-                                    #if it is not in the window of the 4C interactome
-                                    if (start_windows[j] > counter or end_windows[j] < counter):
-                                        f = IMP.core.HarmonicLowerBound(distance, k*kk2)#don't give very good score?
-                                        #f = IMP.core.Harmonic(distance, k*kk2)
-                                        #harmonicLoweBound of max distance, so that they can not enter in a diameter of MAXDIS
-                                    else:     
-                                        f = IMP.core.Harmonic(distance, k*kk2) #)  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now                  
-                #                     f = IMP.core.Harmonic(float(reads_value[i]), k*fabs(reads_weight[i])) #)  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now
-                                    s = IMP.core.DistancePairScore(f)
-                                    r = IMP.core.PairRestraint(s, (p1, p2))  #this is the restraint
-                                    restraints.append(r)
-                                    m.add_restraint(r)
-                                    r_count += 1
-
-                  
+                                #now, we dont set distance restraints for the beads near the viewpoint (if stated, default = 0)
+                                if i < viewpoint_fragments[j]-ignore_viewpoint_beads or i > viewpoint_fragments[j]+ignore_viewpoint_beads:  
+                                    p2 = genome[i]
+                                    #We add the diameters of the beads to the distance
+                                    # the real distance is not from the core, we need to add the diameter, all the dna sequence
+        #                         distance = bead_radii[j] + bead_radii[i] + float(reads_value[i])
+                                    distance = float(reads_value[i])
+                                    if distance != float(y2):
+        #                             if True:
+                                        #if distance < y2: #if maximum distance is reached, don't set a restraint, because it can be further in genomic distance
+                                        kk2 = fabs(reads_weight[i])
+                                        #if it is not in the window of the 4C interactome
+                                        if (start_windows[j] > counter or end_windows[j] < counter):
+                                            f = IMP.core.HarmonicLowerBound(distance, k*kk2)#don't give very good score?
+                                            #f = IMP.core.Harmonic(distance, k*kk2)
+                                            #harmonicLoweBound of max distance, so that they can not enter in a diameter of MAXDIS
+                                        else:     
+                                            f = IMP.core.Harmonic(distance, k*kk2) #)  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now                  
+                    #                     f = IMP.core.Harmonic(float(reads_value[i]), k*fabs(reads_weight[i])) #)  #this is the harmonic score. I think second parameter is weight. it was 1.0 until now
+                                        s = IMP.core.DistancePairScore(f)
+                                        r = IMP.core.PairRestraint(s, (p1, p2))  #this is the restraint
+                                        restraints.append(r)
+                                        m.add_restraint(r)
+                                        r_count += 1
         n_restraints.append(r_count)  
         RESTRAINTS_QUANTITY[0] = r_count 
     # # # # # # # # # # # # # # # # # # # # # # # # # excluded volume
@@ -304,7 +300,7 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
             if mode == 2:
                 # this container lists all pairs that are close at the time of evaluation
                 nbl= IMP.container.ClosePairContainer(genome, 0,2)
-                h= IMP.core.HarmonicLowerBound(300,1)
+                h= IMP.core.HarmonicLowerBound(putative_minimum_size,1)
                 sd= IMP.core.DistancePairScore(h)
                 #sd= IMP.core.SphereDistancePairScore(h)
                 # use the lower bound on the inter-sphere distance to push the spheres apart
@@ -335,7 +331,7 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
     # # # # # # # # # # # # # # # # # # # # # # # # # String of beads lower bound 
         if (RESTRAINTS[3]): 
             res_count = 0 
-            hlb = IMP.core.HarmonicLowerBound(300,k)
+            hlb = IMP.core.HarmonicLowerBound(putative_minimum_size,k)
             for h in range(len(genome)):
                 p1 = genome[h]
                 for i in range(len(genome)):
@@ -620,7 +616,7 @@ def calculate_heatdifference(path, n_files_inside,files,plot):
                 x1 = min(array)
                 x2 = max(array)
                 #y2 = 
-                y1 = 300  
+                y1 = putative_minimum_size  
                 slope = (y2-y1) / (x2-x1)
                 array_modified = [slope*(read-x1)+y1 for read in array]
 
@@ -665,7 +661,7 @@ def calculate_heatdifference(path, n_files_inside,files,plot):
     # max reads = 0 distance
         x1 = max(array)
         x2 = min(array)
-        y1 = 300  
+        y1 = putative_minimum_size  
         slope = (y2-y1) / (x2-x1)
         array_modified = [slope*(read-x1)+y1 for read in array]
         heatmap_data_modified.append(array_modified)
@@ -1662,15 +1658,16 @@ group4 = parser.add_argument_group('Virtual Hi-C', 'Parameters used in the gener
 group5 = parser.add_argument_group('Global', 'Global parameters used in the modeling')
 
 group1.add_argument("--preNmodels",type=int, default=50, action="store", dest="pre_number_of_models",help='number of models that will be generated in the pre-modeling phase')
-group1.add_argument("--from_dist",type=int, default=5000, action="store", dest="from_dist",help='minimum max-distance that will be used in the pre-modeling phase')
-group1.add_argument("--to_dist",type=int, default=15000, action="store", dest="to_dist",help='maximum max-distance that will be used in the pre-modeling phase')
+group1.add_argument("--from_dist",type=int, metavar = "minimum_distance", default=5000, action="store", dest="from_dist",help='minimum max-distance that will be used in the pre-modeling phase')
+group1.add_argument("--to_dist",type=int, metavar = "maximum_distance", default=15000, action="store", dest="to_dist",help='maximum max-distance that will be used in the pre-modeling phase')
 group1.add_argument("--dist_bins",type=int, default=1000, action="store", dest="dist_bins",help='size of jump between from_dist and to_dist')
-group1.add_argument("--from_zscore",type=float, default=0.1, action="store", dest="from_zscore",help='minimum Z-score that will be used in the pre-modeling phase')
-group1.add_argument("--to_zscore",type=float, default=1.2, action="store", dest="to_zscore",help='maximum Z-score that will be used in the pre-modeling phase')
+group1.add_argument("--from_zscore",type=float, metavar = "minimum_Zscore", default=0.1, action="store", dest="from_zscore",help='minimum Z-score that will be used in the pre-modeling phase')
+group1.add_argument("--to_zscore",type=float, metavar = "maximum_Zscore",default=1.2, action="store", dest="to_zscore",help='maximum Z-score that will be used in the pre-modeling phase')
 group1.add_argument("--zscore_bins",type=float, default=0.1, action="store", dest="zscore_bins",help='size of jump between from_zscore and to_zscore')
 
 group2.add_argument("--Nmodels",type=int, default=50000, action="store", dest="number_of_models",help='number of models that will be generated in the modeling phase')
-group2.add_argument("--ignore_beads",type=int, action="store",nargs="+",default=[], dest="ignore_beads",help='Beads that are not gonna have distance restraints. Also usable in the pre-modeling')
+group2.add_argument("--ignore_beads",type=int, action="store",nargs="+",default=[], dest="ignore_beads",help='Beads that are not gonna have distance restraints. E.g. Beads that correspond to repetitive regions impossible to map. If many, separate with commas. Also affects the pre-modeling')
+group2.add_argument("--number_of_beads_to_ignore_near_viewpoint", "-iv",type=int, action="store",default=0, dest="ignore_viewpoint_beads",help='Number of beads upstream and downstream of the viewpoint that will be ignored. E.g. Our 4C data is corrected near the viewpoint to normalize the reads biased by the PCR. Also affects the pre-modeling')
 
 group3.add_argument("--subset",type=int, action="store",default=200, dest="subset",help='Number of best models out of the Modeling process')
 group3.add_argument("--std_dev", type=int,action="store",default=0, dest="std_dev",help='Standard deviation of the distances between beads, to be considered fulfilled')
@@ -1690,7 +1687,7 @@ group5.add_argument("--fragments_in_each_bead", type= int, default=0, dest="frag
 group5.add_argument("--jump_step", action="store",choices=['pre_modeling', 'modeling', 'analysis', 'vhic','representative'], default= "None", dest="jump_step",help='Jump the step and the previous ones. The steps in order are: Pre-Modeling, Modeling, Analysis & Clustering, virtual Hi-C calculation, most representative model')
 group5.add_argument("--uZ",type=float, action="store",dest="uZ", help='Upper bound Z score (Only needed if jumping pre-modeling steps)')
 group5.add_argument("--lZ", type=float, action="store",dest="lZ", help='Lower bound Z score (Only needed if jumping pre-modeling steps)')
-group5.add_argument("--max_distance", type=int, action="store",dest="max_distance", help='Maximum distance (Only needed if jumping pre-modeling steps)')
+group5.add_argument("--max_distance","-max", metavar="distance", type=int, action="store",dest="max_distance", help='Maximum distance (Only needed if jumping pre-modeling steps)')
 #parser.add_argument("--matrix_number", type=int, action="store",dest="biggest_matrix", help='number of the biggest matrix after the clustering, in case we want to only generate the virtual Hi-C')
 
 
@@ -1719,6 +1716,7 @@ std_dev = args.std_dev
 cut_off_percentage = args.cut_off_percentage
 maximum_hic_value = args.maximum_hic_value
 ignore_beads = args.ignore_beads
+ignore_viewpoint_beads = args.ignore_viewpoint_beads
 biggest_matrix = 0
 repaint_vhic = args.repaint_vhic
 colormap = args.colormap
@@ -2013,4 +2011,5 @@ print """#######################################################################
     'python src/Mut_comp.py data_dir prefix VHiC distance prefix2 VHiC2 distance2'
 \n##################################################################################################################
 """  
-    
+needed_time = time.time() - start_time
+print "Total time spent: {}".format(needed_time)
