@@ -288,7 +288,7 @@ apt-get install python-scipy
 apt-get install python-numpy
 ```
 To install Chimera:
-
+Download from: https://www.cgl.ucsf.edu/chimera/download.html
 make it executable: 
 >chmod +x chimera-installer.bin
 run it
