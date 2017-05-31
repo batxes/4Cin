@@ -1468,7 +1468,7 @@ primers = {}
 viewpoint_positions = []
 primers_file = fileCheck(data_dir+"primers.txt")
 for line in primers_file:
-    m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+    m = re.search('([^\s\t]+).*\w*:(\d+)', line) #
     try:
         primers[m.group(1)] = int(m.group(2))
     except:
@@ -1510,7 +1510,7 @@ vhic_colors = {}
 try:
     vhic_primers_file = open (data_dir+"primers_vhic.txt", 'r')
     for line in vhic_primers_file:
-        m = re.search('([^\s\t]+).*chr\w+:(\d+)\s*(\w+)?', line)
+        m = re.search('([^\s\t]+).*\w*:(\d+)\s*(\w+)?', line)
         try:
             vhic_primers[m.group(1)] = int(m.group(2))
             if m.group(3) == None:
