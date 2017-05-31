@@ -77,6 +77,11 @@ def chimera_worker_vhic(chimera_file):
     distance_output = subprocess.check_output(["chimera", "--nogui", chimera_file])
     return distance_output
 
+def convert_time(seconds):
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    return "%d:%02d:%02d" % (h, m, s)
+
 def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
     y2 = maxDis
     if not big_sampling:
@@ -1574,7 +1579,7 @@ if not jump_step[0]:
     print "uZ and lZ calculated: Optimal values are {} and {}.".format(uZ,lZ)
     print "Pre-modeling finished"
 pre_modeling_time = time.time() - start_time         
-print "Pre-modeling took: {}".format(pre_modeling_time)
+print "Pre-modeling took: {}".format(convert_time(pre_modeling_time))
 ######### Modeling 	
 if not jump_step[1]:
     print "Modeling started, modeling {} models...".format(total_number_of_models)
@@ -1586,7 +1591,7 @@ if not jump_step[1]:
     execute = []
     print "Modeling finished"
 modeling_time = time.time() - pre_modeling_time         
-print "Modeling took: {}".format(modeling_time)
+print "Modeling took: {}".format(convert_time(modeling_time))
 ######### Analysis of models
 ############################################# anterior score files should be deleted
 if not jump_step[2]:
@@ -1604,7 +1609,7 @@ if not jump_step[2]:
     #    n_clusters,biggest_matrix = run_clustering(models_subset)
     print "Clustering finished"
 analysis_time = time.time() - modeling_time         
-print "Analysis took: {}".format(analysis_time)
+print "Analysis took: {}".format(convert_time(analysis_time))
 ######### vhic calculation
 if maximum_hic_value == 0: #set a default value
     maximum_hic_value = max_distance*0.8
@@ -1617,17 +1622,17 @@ if repaint_vhic and jump_step[3]:
     calculate_vhic(biggest_matrix,False)
     print "Virtual Hi-C RePainted"
 vhic_time = time.time() - analysis_time
-print "Virtual Hi-C generation took: {}".format(vhic_time)
+print "Virtual Hi-C generation took: {}".format(convert_time(vhic_time))
 ######### getting representative model
 if not jump_step[4]:
     print "Calculating representative model..."
     calculate_representative_model(biggest_matrix)
 representative_time = time.time() - vhic_time 
-print "Representative modeling calculation took: {}".format(representative_time)
+print "Representative modeling calculation took: {}".format(convert_time(representative_time))
 print """##################################################################################################################
 \n What do you want to do now?:
 
- -If the virtual Hi-C is too red or white, rerun with --repaint_vhic, modify --maximum_hic_value and set --uZ, --lZ and --max_distance.
+ -If the virtual Hi-C is too red or white, rerun the script setting --repaint_vhic, modifying --maximum_hic_value and settting --uZ, --lZ and --max_distance to the best values.
 
  -To paint a model with epigenetic marks (bam/bed file required):
     'python src/paint_model.py Representative_model.py data_dir bam/bed_file colormap'
@@ -1635,14 +1640,12 @@ print """#######################################################################
  -To call the TAD boundaries, run:
     'python src/calculate_boundaries.py vhic'
 
-#todo
  -To compare conserved regions between 2 virtual Hi-Cs (Different species or homolog regions), run:
     'python src/Evo_comp.py data_dir prefix VHiC distance data_dir2 prefix2 VHiC2 distance2'
 
-#todo
  -To compare this virtual Hi-C to another one of the same region (Mutants), run:
     'python src/Mut_comp.py data_dir prefix VHiC distance prefix2 VHiC2 distance2'
 \n##################################################################################################################
 """  
 needed_time = time.time() - start_time
-print "Total time spent: {}".format(needed_time)
+print "Total time spent: {}".format(convert_time(needed_time))
