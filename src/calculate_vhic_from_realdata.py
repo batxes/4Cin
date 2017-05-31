@@ -33,9 +33,10 @@ if len(sys.argv) > 1:  #if we pass the arguments (in the cluster)
     root = matrix_path.split("/")[0:-1]
     root = '/'.join(root)
     root = root+"/"
-    print root
+root = "/home/ibai/4Cin/"
+print root
     
-prefix = "pax3"
+prefix = "vHiC_from_Real"
 distance_file = "get_genome_distance_{}".format(prefix)
 path = "{}distances_of_current_model_{}".format(root,prefix)
 start_time = time.time()
@@ -51,7 +52,7 @@ with open(matrix_path, 'r') as std_in:
     matrix_mean = np.zeros((NFRAGMENTS,NFRAGMENTS))
     for line in std_in:
         values = line.split(",")
-        print values
+        #print values
         matrix_mean[int(values[0])][int(values[1])] = float(values[2])
 
 max_list = []
@@ -67,7 +68,7 @@ z = np.array(matrix_mean)
 
 
 vmax = max(max_list)
-#vmax = 80 #foxo1 real hic human
+vmax = 50 #foxo1 real hic human
 c = plt.pcolor(z,cmap=plt.cm.PuRd,vmax=vmax, vmin=0)
 ax.set_frame_on(False)
 plt.colorbar()

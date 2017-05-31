@@ -206,7 +206,6 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
             fig = plt.figure(figsize=(10, 10)) 
             plt.subplot(3,1,1)
             bar_list = plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
-            bar_list = plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
             bar_list[viewpoint_fragments[i]].set_color('r')
             bar_list[viewpoint_fragments[i]].set_edgecolor('w')
             plt.xlim(0,len(HEATMAP_DATA[i]))  
@@ -265,7 +264,7 @@ if __name__ == "__main__":
     viewpoint_positions = []
     primers_file = fileCheck(data_dir+"primers.txt")
     for line in primers_file:
-        m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+        m = re.search('([^\s\t]+).*\w*:(\d+)', line)
         try:
             primers[m.group(1)] = int(m.group(2))
         except:
@@ -278,6 +277,7 @@ if __name__ == "__main__":
         
     file_names = primers.keys()
     files = [data_dir+f for f in file_names]
+    print files
 
     # read one of the files and get number of fragments and default fragments_in_each_bead
     # a_4c_file: chrN start end value
@@ -309,6 +309,7 @@ if __name__ == "__main__":
 
     # now get number of beads
     number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
+    print number_of_fragments
 
     calculateNWindowedDistances(fragments_in_each_bead, uZ, lZ, max_distance, files, True, False)
 

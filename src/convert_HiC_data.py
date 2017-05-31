@@ -8,7 +8,7 @@
 import sys
 import numpy as np
 
-resolution = 4 #downgrade resolution data by number
+resolution = 1 #downgrade resolution data by number
 
 if len(sys.argv) != 3:
     print "Not enough arguments: It needs the file to convert and the number of bins between fragments"

@@ -78,13 +78,11 @@ def chimera_worker_vhic(chimera_file):
     return distance_output
 
 def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
-
     y2 = maxDis
     if not big_sampling:
         number_of_models = pre_number_of_models
     else:
         number_of_models = total_number_of_models/number_of_cpus
-
     rmf_video = False #If we wanna create a video of the IMP optimization. Not checked since 2015
     evaluation = False #If we wanna see the evaluation of the restraints. 
     RESTRAINTS = [True,False,True,False] #4c counts, EV, HUB(connectivity), HLB(connectivity)
@@ -95,7 +93,6 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
         std_dev = y2*0.2 #300 A #for evaluation #set a percentage of max distance. 20%
     if rmf_video:
         frames = 5000
-        
     #optimization variables
     LSTEPS = 5
     STEPS = 1
@@ -105,7 +102,6 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
     endLoopValue = 0.00001
     hightemp = int (0.025 * NROUNDS )
     alpha = 1.0 * number_of_fragments #the weight of the fragments
-
     if big_sampling:
         storage_folder = working_dir+prefix+"/"+prefix+"_output_"+str(uZ)+"_"+str(lZ)+"_"+str(y2) #the dir where the data will be saved
     else:
@@ -121,7 +117,6 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
             raise
         pass
     radius_scale = 0.0423 #Radius of 1 bp in A. for the IrxB models. It's the canonical value for 30 nm chromatin
-
     # radius_scale = 0.00055 #depending my calculations
     ## nucleosome = 200 bp. 30nm fiber -> 6-7 nucleosomes = 11 nm. -> then 1bp = 0.00846nm.
     ## string of beads  11nm = 200bp. 1bp = 0.055nm. 
@@ -132,8 +127,6 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
     #http://www.pnas.org/content/84/22/7802.full.pdf
     # dsDNA_1bp_size = 34 #Angstrom Double strand DNA 1 bp size
     ####### FACT: 10 NUCLEOTIDES = 34 aNGSTROMS IN LENGTH
-
-
 
     #to get the size of the fragments, we read any file
     reads_size = sizeReader(fileCheck(files[0]))
@@ -157,10 +150,8 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
         m = IMP.Model()
         if rmf_video:
             hierarqy= IMP.atom.Hierarchy.setup_particle(IMP.Particle(m))
-
         ##########################    REPRESENTATION ##########################    REPRESENTATION
         for i in range(number_of_fragments):
-            
                 # Create "untyped" Particles
                 p = IMP.kernel.Particle(m,"particle_"+str(i))
                 radius_sum = 0
@@ -784,7 +775,7 @@ def run_clustering(models_subset):
     for model_number in models_subset:
         only_python_files.append(root+prefix+str(model_number[0])+".py") #took out root+
     if len(only_python_files) != subset:
-        print "There are no {} models in {}. \nOnly {} models were found in the directory. Redo the analysis.".format(subset,root,len(only_python_files))
+        print "There are no {} models in {}. \nOnly {} models were found in the directory. Redo the analysis with a smaller subset or generate more models.".format(subset,root,len(only_python_files))
         sys.exit()
     # generate a chimera file with match. Chimera when matched, it calculates the RMSD 
     number_of_beads = number_of_beads -1
@@ -969,7 +960,109 @@ def run_clustering(models_subset):
             biggest_matrix = m
             lines_in_file = num_lines
     return n_clusters, biggest_matrix
-
+    
+def calculate_vhic(biggest_matrix,calculate_the_matrix):
+    root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+    matrix_path = "{}matrix{}.txt".format(root,biggest_matrix)
+    distance_file = "get_genome_distance_{}".format(prefix)
+    path = "{}vhic_{}.txt".format(root,prefix)
+    start_time = time.time()
+    if calculate_the_matrix:
+        print "Calculating in chimera..."       
+        models = []
+            ## we get a file that (cmd) that we are gonna use it in chimera. It will write all distances in the model
+        with open("{}".format(matrix_path), "r") as mtx:
+            for line in mtx:
+                models = re.split("\t", line)
+                break
+        models = models[1:-1]
+        counter = 0
+        matrix = np.zeros((number_of_fragments,number_of_fragments,len(models)))
+        p = Pool(number_of_cpus)
+        for model in models:
+            verboseprint ("{} - {}".format(counter,model))
+            chimera_files = []
+            combi = combinations(range(0,number_of_fragments),2)
+            instruction_list = []
+            for pair in combi:
+                instruction_list.append("rc(\"distance #"+str(pair[0])+" #"+str(pair[1])+"\")\n")
+            for cpu in range(number_of_cpus):
+                instru_start = (cpu) * (len(instruction_list)/number_of_cpus) 
+                if cpu == number_of_cpus-1:
+                    instru_end =  len(instruction_list)
+                else:
+                    instru_end =  (cpu+1) * (len(instruction_list)/number_of_cpus) 
+                dis_file = distance_file+"cpu"+str(cpu)+".py"
+                with open (dis_file,'w') as output:
+                    output.write("import os\nfrom chimera import runCommand as rc\nfrom chimera import replyobj\nos.chdir(\"{}\")\n".format(root))
+                    output.write("rc(\"open {}\")\n".format(model))
+                    for instru in instruction_list[instru_start:instru_end]:
+                        output.write(instru)
+                    chimera_files.append(dis_file)                
+            distance_output = p.map(chimera_worker_vhic,chimera_files)
+            final_distance_output = []
+            for cha in range(len(distance_output)):   
+                final_distance_output = chain(final_distance_output,distance_output[cha])
+            string = ""
+            lista = []
+            for line2 in final_distance_output:
+                string = string + line2
+                if line2 == "\n":
+                    lista.append(string)
+                    string = ""
+            #Distance between #209:1@ and #210:1@: 512.326
+            for line2 in lista:
+                distance = re.search(r'#(\d*).*#(\d*).*:\s?(\d*\.\d*)',line2)  
+                if (distance):
+                    matrix[int(distance.group(1))][int(distance.group(2))][counter] = float(distance.group(3))
+                    matrix[int(distance.group(2))][int(distance.group(1))][counter] = float(distance.group(3))
+            counter += 1        
+            verboseprint ("{} seconds needed.".format(time.time() - start_time))
+        f= open(path, 'w') #store the data in file
+        matrix_mean = np.zeros((number_of_fragments,number_of_fragments))
+        for line in range(number_of_fragments):
+            for column in range(number_of_fragments):
+                mean_value = np.mean(matrix[line][column])
+	        #print "[{}][{}] = {}".format(line,column,mean_value)
+                matrix_mean[line][column] = mean_value
+		#matrix_mean[column][line] = mean_value
+                f.write(str(line)+","+str(column)+","+str(mean_value))   
+                f.write("\n")
+        f.close()
+        print "\nThe virtual Hi-C data is in {}.".format(path)
+        for chi_file in chimera_files:
+            os.remove(chi_file)
+            os.remove(chi_file+"c")
+    else:
+        with open(path, 'r') as std_in:
+            matrix_mean = np.zeros((number_of_fragments,number_of_fragments))
+            for line in std_in:
+                values = line.split(",")
+                matrix_mean[int(values[0])][int(values[1])] = float(values[2])
+    print "Generating virtual Hi-C plot..."     
+    show_fragments_in_vhic_shifted = [c+0.5 for c in show_fragments_in_vhic] #to match the name_of_fragments in the matrix Since the ticks don't match with the heatmap.
+    fig = plt.figure()
+    plt.title("Virtual Hi-C")
+    ax = plt.subplot(1,1,1)
+    z = np.array(matrix_mean)
+    cmap = plt.cm.get_cmap(colormap)
+    c = plt.pcolor(z,cmap=cmap,vmax=maximum_hic_value, vmin=0)
+    ax.set_frame_on(False)
+    cb = plt.colorbar()
+    cb.solids.set_edgecolor("face")
+    plt.scatter(show_fragments_in_vhic_shifted, show_fragments_in_vhic_shifted, s=20, c=color_of_fragments,cmap=plt.cm.autumn)
+    ax.set_yticks(show_fragments_in_vhic_shifted)
+    ax.set_yticklabels(name_of_fragments, minor=False)
+    plt.tick_params(axis='both', which='major', labelsize=8)
+    plt.axis([0,z.shape[1],0,z.shape[0]])
+    fig.set_facecolor('white')
+    #to get pdf instead of png
+    #pp = PdfPages('{}{}_vHiC.pdf'.format(root,prefix))
+    #pp.savefig(fig)
+    #pp.close()
+    plt.savefig('{}{}_vHiC.png'.format(root,prefix),dpi=1000)
+    print '\nVirtual HiC.pdf written in {}{}_HiC.pdf'.format(root,prefix)
+    
 def calculate_representative_model(biggest_matrix):
     number_of_beads = number_of_fragments
     root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
