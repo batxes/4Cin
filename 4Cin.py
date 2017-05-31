@@ -1473,6 +1473,9 @@ for line in primers_file:
         primers[m.group(1)] = int(m.group(2))
     except:
         break
+if len(primers) == 0:
+    print "Primers.txt is not correctly written. Check before launching again."
+    sys.exit()
 print "\nPrimers.txt. These are the viewpoints that will be used in the modeling:"
 for k,v in primers.iteritems():
     print "Viewpoint:{}\tposition:{}".format(k,v)
