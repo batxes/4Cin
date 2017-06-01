@@ -326,10 +326,10 @@ Move into the IMP directory and compile the code (Note: the -j option stands for
 
 Once the compilation has finished, open the file setup_environment.sh in your IMP directory and copy the first lines into your >~/.bashrc file (if this file in not present in your home directory, create it). These lines should look like:
 
->LD_LIBRARY_PATH="/SOMETHING/imp-2.5.0/lib:/SOMETHING/imp-2.5.0/lib:/SOMETHING/imp-2.5.0/src/dependency/RMF/:$LD_LIBRARY_PATH"
+>LD_LIBRARY_PATH="/path/to/IMP/lib:/path/to/IMP/src/dependency/RMF/:$LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH
 
->PYTHONPATH="/SOMETHING/imp-2.5.0/lib:/SOMETHING/imp-2.5.0/lib:/SOMETHING/imp-2.5.0/src/dependency/RMF/:$PYTHONPATH"
+>PYTHONPATH="/path/to/IMP/lib:/path/to/IMP/src/dependency/RMF/:$PYTHONPATH"
 export PYTHONPATH
 
 Important note: Do not copy the lines above, copy them from setup_environment.sh, where SOMETHING is replaced by your real path to IMP. 
