@@ -18,8 +18,7 @@ IMP 2.5, 2.4 (newer versions crash) (Download from http://integrativemodeling.or
 pysam (for paint_model.py)
 ```
 
-Go to Installing dependencies(https://github.com/batxes/4Cin/blob/master/README.md#installing-dependencies) to install them.
-
+Go to Installing dependencies(https://github.com/batxes/4Cin/blob/master/README.md#installing-dependencies) to install them. If you have no sudo, go to Installing without SUDO(https://github.com/batxes/4Cin/blob/master/README.md#installing-without-sudo).
 
 ## Fast Usage
 
@@ -291,16 +290,18 @@ To install Chimera:
 Download from: https://www.cgl.ucsf.edu/chimera/download.html
 make it executable: 
 >chmod +x chimera-installer.bin
-run it
-make link: >ln -s CHIMERA/bin/chimera /usr/local/bin/chimera 
+run it: 
+>./chimera-installer.bin
+#in the installation process, set a symbolic link wherever you want. If it was not set, you can generate one afterwards, for example: 
+>ln -s /path/toCHIMERA/bin/chimera /usr/local/bin/chimera 
 if problems visit: https://www.cgl.ucsf.edu/chimera/data/downloads/1.11.2/linux.html
 
 Install IMP from source:
 ```
 sudo apt-get install cmake
-sudo apt-get install libboost1.49-all-dev
+sudo apt-get install libboost-all-dev
 sudo apt-get install libhdf5-dev
-sudo apt-get install swig
+~~~ sudo apt-get install swig. Swig needs to be installed from source. Swig 3.0.12 is the last version.
 sudo apt-get install libcgal-dev
 sudo apt-get install python-dev
 ```
@@ -338,6 +339,7 @@ Installation process of IMP taken from: https://3dgenomes.github.io/TADbit/insta
 
 
 Install pysam (only for paint_model.py)
+>sudo apt-get install python-pip
 >pip install pysam. 
 
 If does not work:
@@ -346,6 +348,49 @@ If does not work:
     >python setup.py install (libcurl4-gnutls-dev )
     
     !if u get an error saying regcompA was not found, rename regex.h from the boost library (in my case /usr/local/include/regex.h) to something else before building. The change it back!
+
+### Installing without SUDO
+
+###cmake install###
+###Download latest cmake (currently 3.8.0) and unpack it###
+tar xvf cmake-3.8.0-rc1.tar.gz
+cd cmake-3.8.0-rc1
+./configure --prefix=/path/to/cmake
+make & make install
+###Include cmake in the $PATH environment variable
+export PATH=$PATH:/path/to/cmake/bin
+
+
+###install latest boost C++ (currently 1.63.0)###
+tar xvf boost_1_63_0.tar.gz
+cd boost_1_63_0
+./bootstrap.sh
+./b2 install --prefix=/path/to/boost
+
+
+###install latest swig currently(3.0.12)
+tar xvf swig-3.0.12.tar.gz
+cd swig-3.0.12
+./configure --prefix=/path/to/swig
+make & make install
+
+
+###install latest hdf5 currently (1.8.18)
+tar xf hdf5-1.8.18.tar
+cd hdf5-1.8.18
+./configure --prefix=/path/to/hdf5
+make & make install
+
+
+###Download IMP 2.5.0 and unpack ##
+tar xvf imp-2.5.0.tar.gz 
+mkdir IMP
+cd IMP 
+####Prepare the environmental variables with paths to boost, swig and hdf5
+export BOOST_ROOT=/path/to/boost_dir
+export HDF5_ROOT=/path/to/hdf5_dir
+####COMPILE IMP ####
+cmake ../imp-2.5.0 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT -DSWIG_EXECUTABLE=/path/to/swig/bin/swig-3.0.12
 
 ### Additional scripts
 Getting 4C data like from Hi-C
@@ -397,45 +442,7 @@ ref2. Bystricky K, Heun P, Gehlen L, Langowski J, Gasser SM. Long-range compacti
     then take chr2 and chr13 separately and apply prepare_data.py
     then concatenate them and double the value of the aberrant 2+13 chromosome
 
-Installing without SUDO:
-###cmake install###
-###Download latest cmake (currently 3.8.0) and unpack it###
-tar xvf cmake-3.8.0-rc1.tar.gz
-cd cmake-3.8.0-rc1
-./configure --prefix=/path/to/cmake
-make & make install
-###Include cmake in the $PATH environment variable
-export PATH=$PATH:/path/to/cmake/bin
 
-
-###install latest boost C++ (currently 1.63.0)###
-tar xvf boost_1_63_0.tar.gz
-cd boost_1_63_0
-./bootstrap.sh
-./b2 install --prefix=/path/to/boost
-
-
-###install latest swig currently(3.0.12)
-tar xvf swig-3.0.12.tar.gz
-cd swig-3.0.12
-./configure --prefix=/path/to/swig
-make & make install
-
-###install latest hdf5 currently (1.8.18)
-tar xf hdf5-1.8.18.tar
-cd hdf5-1.8.18
-./configure --prefix=/path/to/hdf5
-make & make install
-
-###Download IMP 2.5.0 and unpack ##
-tar xvf imp-2.5.0.tar.gz 
-mkdir IMP
-cd IMP 
-####Prepare son environmental variables with paths to boost, swig and hdf5
-export BOOST_ROOT=/path/to/boost
-export HDF5_ROOT=/path/to/hdf5
-####COMPILE IMP ####
-cmake ../imp-2.5.0 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT -DSWIG_EXECUTABLE=/path/to/swig/bin/swig-3.0.12
 
 ## Overview 
 ![alt tag](figures/Fig1.png)
