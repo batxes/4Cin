@@ -5,6 +5,28 @@
 
 Used in Acemel RD, Tena JJ, Irastorza-Azcarate I, Marletaz F, Gomez-Marin C, de la Calle-Mustienes E, Bertrand S, Diaz SG, Aldea D, Aury JM et al.: A single three-dimensional chromatin compartment in amphioxus indicates a stepwise evolution of vertebrate Hox bimodal regulation. Nat Genet 2016, 48: 336-341. (http://www.nature.com/ng/journal/v48/n3/full/ng.3497.html)
 
+## Docker file
+Docker image can be downloaded from Docker Hub with everything ready to work. Steps are:
+
+Install Docker: https://docs.docker.com/engine/installation/
+Pull the image: 
+```
+docker pull batxes/4cin_ubuntu
+```
+Run a terminal with : 
+```
+sudo docker run -it -v /path/to/a/directory:/data/ batxes/4cin_ubuntu /bin/bash
+```
+(The /path/to/a/directory would be location to share the data with your computer.)
+
+Clone 4Cin repository in /data/:
+```
+cd /data
+git clone http://github.com/batxes/4Cin
+```
+Ready to work!
+
+
 ## Dependencies
 
 Note: Tested only in Linux, of course.
