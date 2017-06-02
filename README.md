@@ -399,6 +399,7 @@ export HDF5_ROOT=/path/to/hdf5_dir
 COMPILE IMP 
 ```
 cmake ../imp-2.5.0 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT -DSWIG_EXECUTABLE=/path/to/swig-3.0.12/swig
+make -j4
 ```
 
 ### Additional scripts
