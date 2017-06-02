@@ -306,51 +306,49 @@ sudo apt-get install libhdf5-dev
 ~~~ sudo apt-get install swig. Swig needs to be installed from source. Swig 3.0.12 is the last version.
 sudo apt-get install libcgal-dev
 sudo apt-get install python-dev
-
+```
 Note: For Ubuntu 13.10 libboost1.53-all-dev should be installed instead. 
       For Ubuntu 14.04 libboost1.54-all-dev should be installed instead.
 
 Download the IMP tarball file from http://salilab.org/imp/ and uncompress it:
-
->wget https://integrativemodeling.org/2.5.0/download/imp-2.5.0.tar.gz -O imp-2.5.0.tar.gz
->tar xzvf imp-2.5.0.tar.gz
-
+```
+wget https://integrativemodeling.org/2.5.0/download/imp-2.5.0.tar.gz -O imp-2.5.0.tar.gz
+tar xzvf imp-2.5.0.tar.gz
+```
 Create a directory for the IMP instalation.
-
->mkdir IMP
-
+```
+mkdir IMP
+```
 Move into the IMP directory and compile the code (Note: the -j option stands for the number of CPUs you want to assign to the compiler; the higher the faster).
-
->cd IMP
-
->cmake ../imp-2.5.0 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
-
->make -j4
-
+```
+cd IMP
+cmake ../imp-2.5.0 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
+make -j4
+```
 Once the compilation has finished, open the file setup_environment.sh in your IMP directory and copy the first lines into your >~/.bashrc file (if this file in not present in your home directory, create it). These lines should look like:
-
->LD_LIBRARY_PATH="/path/to/IMP/lib:/path/to/IMP/src/dependency/RMF/:$LD_LIBRARY_PATH"
+```
+LD_LIBRARY_PATH="/path/to/IMP/lib:/path/to/IMP/src/dependency/RMF/:$LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH
-
->PYTHONPATH="/path/to/IMP/lib:/path/to/IMP/src/dependency/RMF/:$PYTHONPATH"
+PYTHONPATH="/path/to/IMP/lib:/path/to/IMP/src/dependency/RMF/:$PYTHONPATH"
 export PYTHONPATH
-
+```
 Important note: Do not copy the lines above, copy them from setup_environment.sh, where SOMETHING is replaced by your real path to IMP. 
 
 Installation process of IMP taken from: https://3dgenomes.github.io/TADbit/install.html#imp-3d-modeling
-```
+
 Install pysam (only for paint_model.py)
 ```
->sudo apt-get install python-pip
->pip install pysam. 
-
-If does not work:
-    >git clone git@github.com/pysam-developers/pysam
-    >python setup.py build
-    >python setup.py install (libcurl4-gnutls-dev )
-    
-    !if u get an error saying regcompA was not found, rename regex.h from the boost library (in my case /usr/local/include/regex.h) to something else before building. The change it back!
+sudo apt-get install python-pip
+pip install pysam. 
 ```
+If does not work try this:
+```
+git clone git@github.com/pysam-developers/pysam
+python setup.py build
+python setup.py install (libcurl4-gnutls-dev )
+```
+    !if u get an error saying regcompA was not found, rename regex.h from the boost library (in my case /usr/local/include/regex.h) to something else before building (like, "regex.heyho"). Then change it back to "regex.h"!
+
 ### Installing without SUDO
 Note: python and its libraries are not explained how to install. If you are installing these programs in a cluster it is very likely that python and its libraries are already installed.
 
