@@ -51,7 +51,7 @@ from math import fabs
 from scipy.stats.stats import spearmanr
 
 putative_minimum_size = 0 #300A is the consensus but has no meaning when we have a big resolution
-start_time = time.time()
+start_time = time.clock()
 
 # realpath() will make your script run, even if you symlink it :)
 cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
@@ -337,9 +337,8 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
             mc.set_kt(temperature)
             scores.append(mc.optimize(STEPS))
             # verboseprint ("{} {} temp:{}".format(i, scores[-1],mc.get_kt()))
-        needed_time = time.time() - start_time
         lownrj = scores[-1]
-        # verboseprint ("Time for High temp iterations {}".format(needed_time))
+        # verboseprint ("Total time for High temp iterations {}".format(time.clock()-start_time))
         # verboseprint ("Low temp iterations")
         for i in range(hightemp,NROUNDS): 
             temperature = alpha * (1.1 * NROUNDS - i) / NROUNDS
@@ -383,8 +382,7 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
         #verboseprint ("Total: ".format(suma1+suma2+suma3+suma4))
         #verboseprint ("------------------------\n")
         #verboseprint ("Number of restraints: %i" % (len(restraints)))
-        needed_time = time.time() - start_time
-        #verboseprint ("Time for Low temp iterations".format(needed_time))
+        #verboseprint ("Time for Low temp iterations".format(time.clock()-start_time))
         f1 = open (score_file,"a+")
         f1.write(str(sample)+"\t"+str(scores[-1])+"\n")
         f1.close()
@@ -432,7 +430,7 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
         hub_value = suma3/1000000
         hub_values.append(hub_value)
         verboseprint ("HUB: {}".format(hub_value))
-        needed_time = time.time() - start_time         
+        needed_time = time.clock() - start_time         
         verboseprint ("{} seconds.".format(needed_time))       
         verboseprint ("Mean exv for distance {} is: {}".format(y2,np.mean(exv_values))) 
         verboseprint ("Mean hub for distance {} is: {}".format(y2,np.mean(hub_values)))  
@@ -971,7 +969,6 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
     matrix_path = "{}matrix{}.txt".format(root,biggest_matrix)
     distance_file = "get_genome_distance_{}".format(prefix)
     path = "{}vhic_{}.txt".format(root,prefix)
-    start_time = time.time()
     if calculate_the_matrix:
         print "Calculating in chimera..."       
         models = []
@@ -1022,7 +1019,6 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
                     matrix[int(distance.group(1))][int(distance.group(2))][counter] = float(distance.group(3))
                     matrix[int(distance.group(2))][int(distance.group(1))][counter] = float(distance.group(3))
             counter += 1        
-            verboseprint ("{} seconds needed.".format(time.time() - start_time))
         f= open(path, 'w') #store the data in file
         matrix_mean = np.zeros((number_of_fragments,number_of_fragments))
         for line in range(number_of_fragments):
@@ -1578,7 +1574,7 @@ if not jump_step[0]:
     uZ, lZ = calculate_best_zscores()
     print "uZ and lZ calculated: Optimal values are {} and {}.".format(uZ,lZ)
     print "Pre-modeling finished"
-pre_modeling_time = time.time() - start_time         
+pre_modeling_time = time.clock() - start_time         
 print "Pre-modeling took: {}".format(convert_time(pre_modeling_time))
 ######### Modeling 	
 if not jump_step[1]:
@@ -1590,7 +1586,7 @@ if not jump_step[1]:
     p.map(modeling,execute)
     execute = []
     print "Modeling finished"
-modeling_time = time.time() - pre_modeling_time         
+modeling_time = time.clock() - pre_modeling_time         
 print "Modeling took: {}".format(convert_time(modeling_time))
 ######### Analysis of models
 ############################################# anterior score files should be deleted
@@ -1608,7 +1604,7 @@ if not jump_step[2]:
     #    print "Redoing the clustering expecting {} clusters.".format(n_clusters)
     #    n_clusters,biggest_matrix = run_clustering(models_subset)
     print "Clustering finished"
-analysis_time = time.time() - modeling_time         
+analysis_time = time.clock() - modeling_time         
 print "Analysis took: {}".format(convert_time(analysis_time))
 ######### vhic calculation
 if maximum_hic_value == 0: #set a default value
@@ -1621,13 +1617,13 @@ if repaint_vhic and jump_step[3]:
     print "RePainting Virtual Hi-C"
     calculate_vhic(biggest_matrix,False)
     print "Virtual Hi-C RePainted"
-vhic_time = time.time() - analysis_time
+vhic_time = time.clock() - analysis_time
 print "Virtual Hi-C generation took: {}".format(convert_time(vhic_time))
 ######### getting representative model
 if not jump_step[4]:
     print "Calculating representative model..."
     calculate_representative_model(biggest_matrix)
-representative_time = time.time() - vhic_time 
+representative_time = time.clock() - vhic_time 
 print "Representative modeling calculation took: {}".format(convert_time(representative_time))
 print """##################################################################################################################
 \n What do you want to do now?:
@@ -1647,5 +1643,5 @@ print """#######################################################################
     'python src/Mut_comp.py data_dir prefix VHiC distance prefix2 VHiC2 distance2'
 \n##################################################################################################################
 """  
-needed_time = time.time() - start_time
+needed_time = time.clock() - start_time
 print "Total time spent: {}".format(convert_time(needed_time))
