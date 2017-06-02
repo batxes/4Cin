@@ -287,6 +287,7 @@ apt-get install python-scipy
 apt-get install python-numpy
 ```
 To install Chimera:
+```
 Download from: https://www.cgl.ucsf.edu/chimera/download.html
 make it executable: 
 >chmod +x chimera-installer.bin
@@ -294,6 +295,7 @@ run it:
 >./chimera-installer.bin
 #in the installation process, set a symbolic link wherever you want. If it was not set, you can generate one afterwards, for example: 
 >ln -s /path/toCHIMERA/bin/chimera /usr/local/bin/chimera 
+```
 if problems visit: https://www.cgl.ucsf.edu/chimera/data/downloads/1.11.2/linux.html
 
 Install IMP from source:
@@ -309,88 +311,95 @@ Note: For Ubuntu 13.10 libboost1.53-all-dev should be installed instead.
       For Ubuntu 14.04 libboost1.54-all-dev should be installed instead.
 
 Download the IMP tarball file from http://salilab.org/imp/ and uncompress it:
-
->wget https://integrativemodeling.org/2.5.0/download/imp-2.5.0.tar.gz -O imp-2.5.0.tar.gz
->tar xzvf imp-2.5.0.tar.gz
-
+```
+wget https://integrativemodeling.org/2.5.0/download/imp-2.5.0.tar.gz -O imp-2.5.0.tar.gz
+tar xzvf imp-2.5.0.tar.gz
+```
 Create a directory for the IMP instalation.
-
->mkdir IMP
-
+```
+mkdir IMP
+```
 Move into the IMP directory and compile the code (Note: the -j option stands for the number of CPUs you want to assign to the compiler; the higher the faster).
-
->cd IMP
-
->cmake ../imp-2.5.0 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
-
->make -j4
-
+```
+cd IMP
+cmake ../imp-2.5.0 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
+make -j4
+```
 Once the compilation has finished, open the file setup_environment.sh in your IMP directory and copy the first lines into your >~/.bashrc file (if this file in not present in your home directory, create it). These lines should look like:
-
->LD_LIBRARY_PATH="/path/to/IMP/lib:/path/to/IMP/src/dependency/RMF/:$LD_LIBRARY_PATH"
+```
+LD_LIBRARY_PATH="/path/to/IMP/lib:/path/to/IMP/src/dependency/RMF/:$LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH
-
->PYTHONPATH="/path/to/IMP/lib:/path/to/IMP/src/dependency/RMF/:$PYTHONPATH"
+PYTHONPATH="/path/to/IMP/lib:/path/to/IMP/src/dependency/RMF/:$PYTHONPATH"
 export PYTHONPATH
-
+```
 Important note: Do not copy the lines above, copy them from setup_environment.sh, where SOMETHING is replaced by your real path to IMP. 
 
 Installation process of IMP taken from: https://3dgenomes.github.io/TADbit/install.html#imp-3d-modeling
 
-
 Install pysam (only for paint_model.py)
->sudo apt-get install python-pip
->pip install pysam. 
-
-If does not work:
-    >git clone git@github.com/pysam-developers/pysam
-    >python setup.py build
-    >python setup.py install (libcurl4-gnutls-dev )
-    
-    !if u get an error saying regcompA was not found, rename regex.h from the boost library (in my case /usr/local/include/regex.h) to something else before building. The change it back!
+```
+sudo apt-get install python-pip
+pip install pysam. 
+```
+If does not work try this:
+```
+git clone git@github.com/pysam-developers/pysam
+python setup.py build
+python setup.py install (libcurl4-gnutls-dev )
+```
+    !if u get an error saying regcompA was not found, rename regex.h from the boost library (in my case /usr/local/include/regex.h) to something else before building (like, "regex.heyho"). Then change it back to "regex.h"!
 
 ### Installing without SUDO
+Note: python and its libraries are not explained how to install. If you are installing these programs in a cluster it is very likely that python and its libraries are already installed.
 
-###cmake install###
-###Download latest cmake (currently 3.8.0) and unpack it###
+#### install latest cmake (currently 3.8.0)
+```
 tar xvf cmake-3.8.0-rc1.tar.gz
 cd cmake-3.8.0-rc1
 ./configure --prefix=/path/to/cmake
 make & make install
-###Include cmake in the $PATH environment variable
+```
+Include cmake in the $PATH environment variable
+```
 export PATH=$PATH:/path/to/cmake/bin
-
-
-###install latest boost C++ (currently 1.63.0)###
+```
+#### install latest boost C++ (currently 1.63.0)
+```
 tar xvf boost_1_63_0.tar.gz
 cd boost_1_63_0
 ./bootstrap.sh
 ./b2 install --prefix=/path/to/boost
-
-
-###install latest swig currently(3.0.12)
+```
+#### install latest swig currently(3.0.12)
+```
 tar xvf swig-3.0.12.tar.gz
 cd swig-3.0.12
 ./configure --prefix=/path/to/swig
 make & make install
-
-
-###install latest hdf5 currently (1.8.18)
+```
+#### install latest hdf5 currently (1.8.18)
+```
 tar xf hdf5-1.8.18.tar
 cd hdf5-1.8.18
 ./configure --prefix=/path/to/hdf5
 make & make install
+```
 
-
-###Download IMP 2.5.0 and unpack ##
+#### Download IMP 2.5.0 and unpack
+```
 tar xvf imp-2.5.0.tar.gz 
 mkdir IMP
 cd IMP 
-####Prepare the environmental variables with paths to boost, swig and hdf5
+```
+Prepare the environmental variables with paths to boost and hdf5
+```
 export BOOST_ROOT=/path/to/boost_dir
 export HDF5_ROOT=/path/to/hdf5_dir
-####COMPILE IMP ####
-cmake ../imp-2.5.0 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT -DSWIG_EXECUTABLE=/path/to/swig/bin/swig-3.0.12
+```
+COMPILE IMP 
+```
+cmake ../imp-2.5.0 -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT -DSWIG_EXECUTABLE=/path/to/swig-3.0.12/swig
+```
 
 ### Additional scripts
 Getting 4C data like from Hi-C
@@ -434,15 +443,6 @@ Modeling can't find my viewpoints or I can't show positions in the vHi-Cs.
 ref1. Tjong H, Gong K, Chen L, Alber F. Physical tethering and volume exclusion determine higher-order ge- nome organization in budding yeast. Genome Res. 2012; 22: 1295–1305. doi: 10.1101/gr.129437.111 PMID: 22619363
 
 ref2. Bystricky K, Heun P, Gehlen L, Langowski J, Gasser SM. Long-range compaction and flexibility of inter- phase chromatin in budding yeast analyzed by high-resolution imaging techniques. Proc Natl Acad Sci U S A. 2004; 101: 16495–16500. PMID: 15545610
-
-
-###### writeee
-    we modified the windows so the beads represent the same in SIX comparison    
-    Pax3 data -> take our locus
-    then take chr2 and chr13 separately and apply prepare_data.py
-    then concatenate them and double the value of the aberrant 2+13 chromosome
-
-
 
 ## Overview 
 ![alt tag](figures/Fig1.png)
