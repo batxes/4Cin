@@ -3,44 +3,48 @@
 
 4Cin is a suite of scripts that lets you generate 3D models of the chromatin of your favourite locus, using 4C data as the only input. These 3D models are openned with UCSF Chimera. The pipeline creates Hi-C-like contact maps (or virtual Hi-C) of these 3D models and additional scripts are provided to analyze the region further. 
 
-Used in Acemel RD, Tena JJ, Irastorza-Azcarate I, Marletaz F, Gomez-Marin C, de la Calle-Mustienes E, Bertrand S, Diaz SG, Aldea D, Aury JM et al.: A single three-dimensional chromatin compartment in amphioxus indicates a stepwise evolution of vertebrate Hox bimodal regulation. Nat Genet 2016, 48: 336-341. (http://www.nature.com/ng/journal/v48/n3/full/ng.3497.html)
-
-## Docker file
-Docker image can be downloaded from Docker Hub with everything ready to work. Steps are:
+## Using Docker to execute 4Cin
+A docker image can be downloaded from Docker Hub with all dependencies installed and ready to work. Steps are:
 
 Install Docker: https://docs.docker.com/engine/installation/
+
 Pull the image: 
 ```
 docker pull batxes/4cin_ubuntu
 ```
-Run a terminal with : 
+Now, you can use all the scripts like this:
 ```
-sudo docker run -it -v /path/to/a/directory:/data/ batxes/4cin_ubuntu /bin/bash
+docker run -it batxes/4cin_ubuntu 4Cin.py
+docker run -it batxes/4cin_ubuntu Mut_comp.py
+docker run -it batxes/4cin_ubuntu calculate_boundaries.py
+...
 ```
-(The /path/to/a/directory would be location to share the data with your computer.)
+These scripts are available now:
+>4Cin.py
 
-Clone 4Cin repository in /data/:
-```
-cd /data
-git clone http://github.com/batxes/4Cin
-```
-Ready to work!
+>data_manager.py
+
+>paint_model.py
+
+>prepare_data.py
+
+>calculate_boundaries.py
+
+>prepare_data.py
+
+>calculate_vhic_from_realdata.py
+
+>Mut_comp.py
+
+>Evo_comp.py
+
+>HiC_comp.py
 
 
-## Dependencies
+If you want to use it in your system or cluster without docker, go to https://github.com/batxes/4Cin/blob/master/README.md#dependencies.
 
-Note: Tested only in Linux, of course.
-```
-python 2.7
-matplotlib
-scipy
-numpy
-UCSF Chimera (Download from https://www.cgl.ucsf.edu/chimera/download.html)
-IMP 2.5, 2.4 (newer versions crash) (Download from http://integrativemodeling.org/old-versions.html)
-pysam (for paint_model.py)
-```
 
-Go to Installing dependencies(https://github.com/batxes/4Cin/blob/master/README.md#installing-dependencies) to install them. If you have no sudo, go to Installing without SUDO(https://github.com/batxes/4Cin/blob/master/README.md#installing-without-sudo).
+
 
 ## Fast Usage
 
@@ -300,6 +304,22 @@ Optional Steps:
     
     python src/data_manager.py /home/user/4Cin/data/my_locus/ [0.2 -0.4 8000]  
 
+## Dependencies
+
+Note: Tested only in Linux, of course.
+```
+python 2.7
+matplotlib
+scipy
+numpy
+UCSF Chimera (Download from https://www.cgl.ucsf.edu/chimera/download.html)
+IMP 2.5, 2.4 (newer versions crash) (Download from http://integrativemodeling.org/old-versions.html)
+pysam (for paint_model.py)
+```
+
+Go to Installing dependencies(https://github.com/batxes/4Cin/blob/master/README.md#installing-dependencies) to install them. If you have no sudo, go to Installing without SUDO(https://github.com/batxes/4Cin/blob/master/README.md#installing-without-sudo).
+
+
 ### Installing dependencies
 
 Matplotlib, scipy and numpy:
@@ -309,14 +329,20 @@ apt-get install python-scipy
 apt-get install python-numpy
 ```
 To install Chimera:
-```
+
 Download from: https://www.cgl.ucsf.edu/chimera/download.html
+
 make it executable: 
->chmod +x chimera-installer.bin
+```
+chmod +x chimera-installer.bin
+```
 run it: 
->./chimera-installer.bin
+```
+./chimera-installer.bin
+```
 #in the installation process, set a symbolic link wherever you want. If it was not set, you can generate one afterwards, for example: 
->ln -s /path/toCHIMERA/bin/chimera /usr/local/bin/chimera 
+```
+ln -s /pathtoCHIMERAfiles/bin/chimera /usr/local/bin/chimera 
 ```
 if problems visit: https://www.cgl.ucsf.edu/chimera/data/downloads/1.11.2/linux.html
 
@@ -325,13 +351,17 @@ Install IMP from source:
 sudo apt-get install cmake
 sudo apt-get install libboost-all-dev
 sudo apt-get install libhdf5-dev
-~~~ sudo apt-get install swig. Swig needs to be installed from source. Swig 3.0.12 is the last version.
 sudo apt-get install libcgal-dev
 sudo apt-get install python-dev
+sudo apt-get install libpcre3-dev
 ```
-Note: For Ubuntu 13.10 libboost1.53-all-dev should be installed instead. 
-      For Ubuntu 14.04 libboost1.54-all-dev should be installed instead.
-
+Swig needs to be installed from source. Swig 3.0.12 is the last version. Check in: http://swig.org/
+```
+tar xvf swig-3.0.12.tar.gz
+cd swig-3.0.12
+./configure --prefix=/path/to/swig
+make & make install
+```
 Download the IMP tarball file from http://salilab.org/imp/ and uncompress it:
 ```
 wget https://integrativemodeling.org/2.5.0/download/imp-2.5.0.tar.gz -O imp-2.5.0.tar.gz
