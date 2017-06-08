@@ -45,8 +45,8 @@ with open(input_path,"r") as INPUT:
         values = line.split(",")
         size = int(values[0])
         aux_list.append(float(values[2][:-1]))
-tad_to = size
-tad_from = 1
+tad_to = size 
+tad_from = 1 
 if not is_real_hi_data:
     max_value = max(aux_list)
     aux_list = []
@@ -55,8 +55,8 @@ if not is_real_hi_data:
             values = line.split(",")
             aux_list.append(max_value - float(values[2][:-1]))
 mean_value = np.mean(aux_list)
-print len(aux_list)
-print mean_value
+#print len(aux_list)
+#print mean_value
 size += 1
 #size = int(np.sqrt(lines))
 
@@ -151,14 +151,6 @@ for tad_size in range(tad_from,tad_to):
             boundaries[di_list.index(i)] += 1
             boundary = False
     complete_di_list.append(di_list)
-sorted_x = sorted(boundaries.items(), key=operator.itemgetter(1), reverse=True)
-print "\nCalculating Tad boundaries, with TAD sizes ranging between {} and {}.".format(tad_from, tad_to)
-print "Number of times a boundary was found: "
-tad_list = [0]*len(index)
-for i in sorted_x:
-    if i[0] != 0:
-        print "Boundary: {} -  found {} times out of {}".format(i[0],i[1],tad_to-tad_from)
-        tad_list[i[0]]=i[1]
 
 print "\nReminder: boundaries are found between bins that change from negative to positive values."
 
@@ -166,18 +158,71 @@ fig = plt.figure()
 plt.title("TAD calling")
 ax = fig.add_subplot(111)
 ax.set_xlim(-0.5,size)
-ax.set_facecolor('white')
+#ax.set_ylim(-20000,20000)
+fig.set_facecolor('white')
 
+sorted_x = sorted(boundaries.items(), key=operator.itemgetter(1), reverse=True)
+print "\nCalculating Tad boundaries, with TAD sizes ranging between {} and {}.".format(tad_from, tad_to)
+print "Number of times a boundary was found: "
+tad_list = [0]*len(index)
+black_b1 = []
+black_b2 = []
+black_b3 = []
+black_b4 = []
+black_b5 = []
+for i in sorted_x:
+    if i[0] != 0:
+        print "Boundary: {} -  found {} times out of {}".format(i[0],i[1],tad_to-tad_from)
+        tad_list[i[0]]=i[1]
+        #set the boundaries that appear more than 50% of the time
+        percen = i[1]/float((tad_to-tad_from))
+        if percen >= 0.5:
+            if percen >=0.5 and percen <= 0.6:
+                label1="0.5 >= x <= 0.6"
+                black_b1.append(i[0])
+            elif percen >0.6 and percen <= 0.7:
+                label2="0.6 > x <= 0.7"
+                black_b2.append(i[0])
+            elif percen >0.7 and percen <= 0.8:
+                label3="0.7 > x <= 0.8"
+                black_b3.append(i[0])
+            elif percen >0.8 and percen <= 0.9:
+                label4="0.8 > x <= 0.9"
+                black_b4.append(i[0])
+            elif percen >0.9 and percen <= 1.0:
+                label5="0.9 > x <= 1.0"
+                black_b5.append(i[0])
+if len(black_b1) > 0:
+    arrayx_1 = np.asarray(black_b1)
+    arrayy_1 = np.zeros((len(arrayx_1)))
+    legend = plt.plot(arrayx_1,arrayy_1,'ko',ms=3,mfc='k',mew=2,mec='k',label=label1)
+if len(black_b2) > 0:
+    arrayx_2 = np.asarray(black_b2)
+    arrayy_2 = np.zeros((len(arrayx_2)))
+    legend = plt.plot(arrayx_2,arrayy_2,'ko',ms=5,mfc='k',mew=2,mec='k',label=label2)
+if len(black_b3) > 0:
+    arrayx_3 = np.asarray(black_b3)
+    arrayy_3 = np.zeros((len(arrayx_3)))
+    legend = plt.plot(arrayx_3,arrayy_3,'ko',ms=7,mfc='k',mew=2,mec='k',label=label3)
+if len(black_b4) > 0:
+    arrayx_4 = np.asarray(black_b4)
+    arrayy_4 = np.zeros((len(arrayx_4)))
+    legend = plt.plot(arrayx_4,arrayy_4,'ko',ms=9,mfc='k',mew=2,mec='k',label=label4)
+if len(black_b5) > 0:
+    arrayx_5 = np.asarray(black_b5)
+    arrayy_5 = np.zeros((len(arrayx_5)))
+    legend = plt.plot(arrayx_5,arrayy_5,'ko',ms=11,mfc='k',mew=2,mec='k',label=label5)
+print "Boundaries that appear more than 50% of the time are depicted as black spheres."
+plt.legend()
+alpha = 1.0/len(complete_di_list)
 #create a color array depending on Below 0 or not
-
 for di_list in complete_di_list:
     x = np.asarray(index)
     y = np.asarray(di_list)
-    #plt.plot(x,y,"r",alpha=0.05)
-    plt.fill_between(x,y,0,where=y<=0,facecolor="red",alpha=0.01,interpolate=True)
-    plt.fill_between(x,y,0,where=y>0,facecolor="blue",alpha=0.01,interpolate=True)
-    #plt.scatter(index,di_list,facecolor='#ff0000',alpha =0.05 )
-    #plt.bar(index,di_list,facecolor='#ff0000',alpha =0.05 )
+    plt.fill_between(x,y,0,where=y<=0,facecolor="red",alpha=alpha,interpolate=True)
+    plt.fill_between(x,y,0,where=y>0,facecolor="blue",alpha=alpha,interpolate=True)
+    #plt.bar(index,di_list,facecolor='#ff0000',alpha =alpha )
+    #plt.show()
 
 try:
     saved_in = input_path.split("/")
