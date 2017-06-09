@@ -45,8 +45,9 @@ with open(input_path,"r") as INPUT:
         values = line.split(",")
         size = int(values[0])
         aux_list.append(float(values[2][:-1]))
-tad_to = size 
-tad_from = 1 
+quarter = size/4
+tad_to = size - quarter
+tad_from = 1 + quarter
 if not is_real_hi_data:
     max_value = max(aux_list)
     aux_list = []
@@ -134,31 +135,40 @@ for tad_size in range(tad_from,tad_to):
 
 
     ###############
-    #we apply log2 so we have a smaller plotting
     positive = False
     boundary = False
+    counter = 0
     for i in di_list:
         if i <= 0: #----
             if positive:
                 positive = False 
-                #boundary = True  
         if i > 0: #+++
             if positive == False:
                 positive = True
-                boundary = True  
+                try:
+                    if di_list[counter+1] > 0: #I check also that next value is positive, to filter out false positives
+                        boundary = True  
+                except:
+                    pass
         if boundary:
             #print "Boundary: {}".format(di_list.index(i))
             boundaries[di_list.index(i)] += 1
             boundary = False
+        counter += 1
     complete_di_list.append(di_list)
 
 print "\nReminder: boundaries are found between bins that change from negative to positive values."
 
-fig = plt.figure() 
+fig = plt.figure(figsize=(15,10)) 
 plt.title("TAD calling")
 ax = fig.add_subplot(111)
 ax.set_xlim(-0.5,size)
-#ax.set_ylim(-20000,20000)
+#find max min values form list of lists and set half of it as plot limits
+max_di_list = [max(l) for l in complete_di_list]
+max_di = max(max_di_list) 
+min_di_list = [min(l) for l in complete_di_list]
+min_di = min(min_di_list)
+ax.set_ylim(min_di/2,max_di/2) 
 fig.set_facecolor('white')
 
 sorted_x = sorted(boundaries.items(), key=operator.itemgetter(1), reverse=True)
@@ -211,7 +221,7 @@ if len(black_b4) > 0:
 if len(black_b5) > 0:
     arrayx_5 = np.asarray(black_b5)
     arrayy_5 = np.zeros((len(arrayx_5)))
-    legend = plt.plot(arrayx_5,arrayy_5,'ko',ms=11,mfc='k',mew=2,mec='k',label=label5)
+    legend = plt.plot(arrayx_5,arrayy_5,'wo',ms=11,mfc='w',mew=2,mec='k',label=label5)
 print "Boundaries that appear more than 50% of the time are depicted as black spheres."
 plt.legend()
 alpha = 1.0/len(complete_di_list)
@@ -221,7 +231,9 @@ for di_list in complete_di_list:
     y = np.asarray(di_list)
     plt.fill_between(x,y,0,where=y<=0,facecolor="red",alpha=alpha,interpolate=True)
     plt.fill_between(x,y,0,where=y>0,facecolor="blue",alpha=alpha,interpolate=True)
-    #plt.bar(index,di_list,facecolor='#ff0000',alpha =alpha )
+    #for one on one checking
+    #plt.bar(index,di_list,facecolor='#ff0000',alpha = 1 )
+    #print di_list[40],di_list[41]
     #plt.show()
 
 try:

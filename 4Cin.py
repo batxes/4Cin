@@ -204,6 +204,7 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
         for j in range(len(files)):
             reads_weight = reads_weights[j]
             reads_value = reads_values[j]
+            print j
             #get the number of reads and their size from our files
             f = fileCheck(files[j])
             reads_size = sizeReader(f)
