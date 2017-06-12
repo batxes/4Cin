@@ -5,25 +5,22 @@
 
 #Main script: check github.io/batxes/4Cin
 
-import sys, os, re, inspect, glob
-import getopt
-import ConfigParser
+##### Dependencies
+import sys, os, re, inspect
 import subprocess
-from multiprocessing import Process, Lock, Pool, current_process
+from multiprocessing import Pool, current_process
 import argparse
 import warnings
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore",category=DeprecationWarning)
-    import IMP.kernel
-    import IMP.algebra
-    import IMP.core
-    import IMP.display
-    import IMP.base
-    import IMP.atom
-    import IMP.rmf
-    import IMP.container
-    import RMF
-#warnings.filterwarnings("ignore")
+import IMP
+#import IMP.kernel
+import IMP.algebra
+import IMP.core
+import IMP.display
+#import IMP.base
+import IMP.atom
+import IMP.rmf
+import IMP.container
+import RMF
 import time
 from random import randint
 import numpy as np
@@ -34,8 +31,6 @@ from os import listdir, remove
 from os.path import isfile, join
 from itertools import combinations,izip, chain
 import scipy.cluster.hierarchy as sch
-from numpy import vstack,array
-from numpy.random import rand
 import matplotlib
 try: 
     matplotlib.use('Agg')
@@ -50,9 +45,6 @@ from matplotlib.backends.backend_pdf import PdfPages
 from math import fabs
 from scipy.stats.stats import spearmanr
 
-putative_minimum_size = 0 #300A is the consensus but has no meaning when we have a big resolution
-start_time = time.clock()
-
 # realpath() will make your script run, even if you symlink it :)
 cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
 if cmd_folder not in sys.path:
@@ -64,6 +56,12 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
     
 from data_manager import fileCheck, sizeReader,  calculateNWindowedDistances, calculate_fragment_number
+
+##### Functions
+
+putative_minimum_size = 0 #300A is the consensus but has no meaning when we have a big resolution
+start_time = time.clock()
+IMP.base.set_log_level(IMP.SILENT)
 
 def worker(instructions):
     p = subprocess.Popen(instructions)
@@ -204,7 +202,6 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
         for j in range(len(files)):
             reads_weight = reads_weights[j]
             reads_value = reads_values[j]
-            print j
             #get the number of reads and their size from our files
             f = fileCheck(files[j])
             reads_size = sizeReader(f)
@@ -602,7 +599,7 @@ def calculate_best_zscores():
                     best_score = score
         output_results.write("Max: {}".format(max(all_scores)))   
     if plot:
-        print "\nFigures comparing raw data vs modeling were created in {}{}/".format(working_dir,prefix)
+        print "Figures comparing raw data vs modeling were created in {}{}/".format(working_dir,prefix)
     return best_uZ,best_lZ
 
 def run_analysis(std_dev,cut_off_percentage):
@@ -713,14 +710,16 @@ def run_analysis(std_dev,cut_off_percentage):
             forced_break = False
             if (analized_models) % 1000 == 0:
                 sys.stdout.write("\r{}%".format( analized_models*100/total_number_of_models))
-        print	
         if not forced_break:	
+            #backup models in case of not enough:
+            #aux_models = defaultdict(list)
+            aux_models = dict(models)
             #take out models from dict
             for number in delete_models_list:
                 try:
                     del models[number]
                 except:
-                    print "Can't delete model number {}. Are you working with the correct models? ".format(i)
+                    print "Can't delete model number {}. Are you working with the correct models? ".format(number)
                     sys.exit()
             #order the dictionary by score
             sorted_models = sorted(models.items(), key=operator.itemgetter(1))
@@ -742,6 +741,8 @@ def run_analysis(std_dev,cut_off_percentage):
                 not_analyzed = False
             else:
                 print "! Can not get {} models. Relaxing the std_dev and cut_off_percentage...\n ".format(subset)	
+                #getting all models back:
+                models = dict(aux_models)
                 #Modify the cutoffs
                 if increase_dev_or_cutoff == 0:
                     std_dev = std_dev + max_distance*0.01 #increase std_def
@@ -886,7 +887,7 @@ def run_clustering(models_subset):
     plt.colorbar(im, cax=axcolor)
     try:
         fig.savefig('{}{}_heatmap.png'.format(root,prefix))
-        print "\n clusters can be checked here: {}{}_heatmap.png".format(root,prefix)
+        print "\nclusters can be checked here: {}{}_heatmap.png".format(root,prefix)
     except:
         pass
     # Code to retrieve the clusters
@@ -939,7 +940,6 @@ def run_clustering(models_subset):
             counter_line += 1
             matrixtxt.write("\n") 
         matrixtxt.close()
-        print "\n------"
         print "\nmatrix{}.txt written! in {}".format(i,root)
         print "This is one of the clusters. These models are more similar between them." 
         # create the file to open in chimera
@@ -1031,7 +1031,7 @@ def calculate_vhic(biggest_matrix,calculate_the_matrix):
                 f.write(str(line)+","+str(column)+","+str(mean_value))   
                 f.write("\n")
         f.close()
-        print "\nThe virtual Hi-C data is in {}.".format(path)
+        print "The virtual Hi-C data is in {}.".format(path)
         for chi_file in chimera_files:
             os.remove(chi_file)
             os.remove(chi_file+"c")
@@ -1148,7 +1148,7 @@ def calculate_representative_model(biggest_matrix):
             square_d = np.sqrt(d)
             d_sum = d_sum + square_d
         sum_of_distances.append(d_sum)  
-    print "\nModel closest to average (Representative):"
+    print "Model closest to average (Representative):"
     # print sum_of_distances.index(min(sum_of_distances))
     print pdbFiles[sum_of_distances.index(min(sum_of_distances))][:-2]+"y"
     print "Most different model to average:"
@@ -1434,6 +1434,12 @@ try:
 except:
     print "Since you are jumping the pre-modeling step, --max_distance, --uZ and --lZ flags are needed" 
     sys.exit()
+if subset < 10:
+    print "Subset must be 10 or bigger."
+    sys.exit()
+if total_number_of_models < 20:
+    print "Do at least 20 models, not less than tha."
+    sys.exit()
 # getting biggest_matrix
 try:
     if jump_step[2] and (not jump_step[3] or not jump_step[4]):
@@ -1552,7 +1558,7 @@ execute = []
 ########################################  Pipeline
 ######### pre-modeling 
 if not jump_step[0]:
-    print "Doing the pre-modeling..."
+    print "########## Pre-modeling ##########"
     print "Modeling with variable max_distance ranging {}:{}".format(from_dist,to_dist)
     for dist in range(from_dist,to_dist+dist_bins,dist_bins):
         instructions = (0.1 ,-0.1, dist,0 ,False)
@@ -1560,7 +1566,7 @@ if not jump_step[0]:
     p.map(modeling,execute)
     execute = []
     ######### max distance calculation
-    print "Calculating optimal max_dist parameter for the modeling...\n"
+    print "Calculating optimal max_dist parameter for the modeling..."
     max_distance = calculate_best_maxd()
     print "maxD calculated: Optimal max_distance value is: {}".format(max_distance)
     print "Modeling with variables uZ and lZ ranging {}:{} and -{}:-{}".format(from_zscore,to_zscore,from_zscore,to_zscore)
@@ -1571,15 +1577,26 @@ if not jump_step[0]:
     p.map(modeling,execute)
     execute = []
     ######### z_scores calculation
-    print "Now calculating best uz and lz"
+    print "Now calculating best uz and lz."
     uZ, lZ = calculate_best_zscores()
     print "uZ and lZ calculated: Optimal values are {} and {}.".format(uZ,lZ)
     print "Pre-modeling finished"
 pre_modeling_time = time.clock() - start_time         
-print "Pre-modeling took: {}".format(convert_time(pre_modeling_time))
+if not jump_step[0]:
+    print "Pre-modeling took: {}\n".format(convert_time(pre_modeling_time))
 ######### Modeling 	
 if not jump_step[1]:
-    print "Modeling started, modeling {} models...".format(total_number_of_models)
+    print "########## Modeling ##########"
+    #First delete the score files that could be generated from a previous modeling"
+    folder = "{}{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
+    for any_file in os.listdir(folder):
+        try:
+            if any_file.startswith("score"):
+                file_path = os.path.join(folder,any_file)
+                os.remove(file_path)
+        except:
+            print "Cant delete {}.".format(file_path)
+    print "Modeling {} models...".format(total_number_of_models)
     number_of_models = total_number_of_models/number_of_cpus
     for cpu in range(number_of_cpus):
         instructions = ( uZ,lZ, max_distance, cpu*number_of_models ,True)
@@ -1588,11 +1605,12 @@ if not jump_step[1]:
     execute = []
     print "Modeling finished"
 modeling_time = time.clock() - pre_modeling_time         
-print "Modeling took: {}".format(convert_time(modeling_time))
+if not jump_step[1]:
+    print "Modeling took: {}\n".format(convert_time(modeling_time))
 ######### Analysis of models
 ############################################# anterior score files should be deleted
 if not jump_step[2]:
-    print "Analysis started"
+    print "########## Analysis and Clustering ##########"
     std_dev, cut_off_percentage, models_subset = run_analysis(std_dev,cut_off_percentage)
     print "Final analysis thresholds: "
     print "Std_dev: {}".format(std_dev)
@@ -1606,12 +1624,13 @@ if not jump_step[2]:
     #    n_clusters,biggest_matrix = run_clustering(models_subset)
     print "Clustering finished"
 analysis_time = time.clock() - modeling_time         
-print "Analysis took: {}".format(convert_time(analysis_time))
+if not jump_step[2]:
+    print "Analysis and Clustering took: {}\n".format(convert_time(analysis_time))
 ######### vhic calculation
 if maximum_hic_value == 0: #set a default value
     maximum_hic_value = max_distance*0.8
 if not jump_step[3]:
-    print "Generating Virtual Hi-C"
+    print "########## Virtual Hi-C ##########"
     calculate_vhic(biggest_matrix,True)
     print "Virtual Hi-C generated"
 if repaint_vhic and jump_step[3]: 
@@ -1619,17 +1638,53 @@ if repaint_vhic and jump_step[3]:
     calculate_vhic(biggest_matrix,False)
     print "Virtual Hi-C RePainted"
 vhic_time = time.clock() - analysis_time
-print "Virtual Hi-C generation took: {}".format(convert_time(vhic_time))
+if not jump_step[3]:
+    print "Virtual Hi-C generation took: {}\n".format(convert_time(vhic_time))
 ######### getting representative model
 if not jump_step[4]:
+    print "########## Representative model  ##########"
     print "Calculating representative model..."
     calculate_representative_model(biggest_matrix)
 representative_time = time.clock() - vhic_time 
-print "Representative modeling calculation took: {}".format(convert_time(representative_time))
+if not jump_step[4]:
+    print "Representative modeling calculation took: {}".format(convert_time(representative_time))
+
+# Generate a log with all the values used:
+with open ("{}{}/log.txt".format(working_dir,prefix),"w") as stdout:
+    stdout.write("Modeling parameters:\n")
+    stdout.write("Prefix name: {}\n".format(prefix))
+    stdout.write("uZ: {}\n".format(uZ))
+    stdout.write("lZ: {}\n".format(lZ))
+    stdout.write("max_distance: {}\n".format(max_distance))
+    stdout.write("Number of models: {}\n".format(number_of_models))
+    stdout.write("Number of beads: {}\n".format(number_of_fragments))
+    stdout.write("Fragments in each bead: {}\n".format(fragments_in_each_bead))
+    stdout.write("Maxmum vHiC value: {}\n".format(maximum_hic_value))
+    stdout.write("Subset to analyze: {} models\n".format(subset))
+    stdout.write("Standard deviation: {}\n".format(std_dev))
+    stdout.write("Cut off percentage: {}\n".format(cut_off_percentage))
+    stdout.write("Biggest Matrix: {}\n".format(biggest_matrix))
+    stdout.write("K-means value: {}\n".format(k_mean))
+    stdout.write("Clusters found: {}\n".format(n_clusters))
+
+    counter = 0
+    for k,v in vhic_primers.iteritems():
+        stdout.write("Name:{}\tposition:{}\tcolor:{}\tbead:{} \n".format(k,v,vhic_colors[k],show_fragments_in_vhic[counter]))
+        counter += 1
+    storage_folder = working_dir+prefix+"/"+prefix+"_final_output_"+str(uZ)+"_"+str(lZ)+"_"+str(max_distance)+"/" #the dir where the data will be saved
+    stdout.write("\nLocations:\n")
+    stdout.write("Data dir: {}\n".format(data_dir))
+    stdout.write("Working dir: {}\n".format(working_dir))
+    stdout.write("Virtual Hi-C: {}/vhic_{}.txt\n".format(storage_folder,prefix))
+    stdout.write("Virtual Hi-C heatmap: {}/{}_vHiC.png\n".format(storage_folder,prefix))
+    stdout.write("Representative model: {}/Representative.py\n".format(storage_folder))
+
+print "Log.txt file with all the parameters used in the modeling was generated in {}{}/log.txt.".format(working_dir,prefix)
+
 print """##################################################################################################################
 \n What do you want to do now?:
 
- -If the virtual Hi-C is too red or white, rerun the script setting --repaint_vhic, modifying --maximum_hic_value and settting --uZ, --lZ and --max_distance to the best values.
+ -If you want to "burn" or "clean" the virtual Hi-C, rerun the script setting --repaint_vhic, modifying --maximum_hic_value and settting --uZ, --lZ and --max_distance to the best values.
 
  -To paint a model with epigenetic marks (bam/bed file required):
     'python src/paint_model.py Representative_model.py data_dir bam/bed_file colormap'

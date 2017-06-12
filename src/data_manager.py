@@ -57,24 +57,28 @@ def calculate_fragment_number(positions,guide_file):
 # reads the file and extracts the values every N lines
 
 def valueReaderNWindow(f,window):
-    counter = 0
-    aux = 0
-    arrayList = []
-    for line in f:
-        counter += 1
-        values = re.split('\t',line)
-        values[3] = values[3].strip() #remove \n from the list
-        if (values[3] is '-'):
-            read = 0 + 1 # +1 to counter log10
-        else:
-            read = float(values[3]) + 1 # +1 to counter log10
-        aux += read
-        if counter == window:
-            counter = 0
-            aux = aux / window
-            arrayList.append(aux)
-            aux = 0
-    return arrayList
+    try:
+        counter = 0
+        aux = 0
+        arrayList = []
+        for line in f:
+            counter += 1
+            values = re.split('\t',line)
+            values[3] = values[3].strip() #remove \n from the list
+            if (values[3] is '-'):
+                read = 0 + 1 # +1 to counter log10
+            else:
+                read = float(values[3]) + 1 # +1 to counter log10
+            aux += read
+            if counter == window:
+                counter = 0
+                aux = aux / window
+                arrayList.append(aux)
+                aux = 0
+        return arrayList
+    except:
+        print "Check the data files if they are well formed. Check also first line. Is it CHR\tpos1\tpos2\tvalue?"
+        sys.exit()
 
 # function Size Reader
 #
