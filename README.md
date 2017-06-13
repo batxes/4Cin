@@ -19,6 +19,11 @@ docker run -it batxes/4cin_ubuntu Mut_comp.py
 docker run -it batxes/4cin_ubuntu calculate_boundaries.py
 ...
 ```
+Generate a "volume" to access the data from the docker container:
+```
+docker run -it -v /path/in/my/computer/to/4C/data:/data/ batxes/4cin_ubuntu data_manager.py
+docker run -it -v /home/user/4Cin/data/Six_zebra/:/data/Six_zebra batxes/4cin_ubuntu 4Cin.py /data/Six_zebra/ Six_zebra_models --cpu 10 --fragments_in_each_bead 20 --colormap magma_r
+```
 These scripts are available now:
 >4Cin.py
 
