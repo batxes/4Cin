@@ -957,6 +957,7 @@ def run_clustering(models_subset):
     print "\n{} clusters were found in the clustering process.".format(n_clusters)
     if k_mean != n_clusters:
         print "Number of clusters found (different conformations) and k means value (expected conformations, default is 2) set are different. " 
+        print "Tip: try to get a bigger subset."
     lines_in_file = 0
     for m in cluster_number:
         num_lines = sum(1 for line in open('{}matrix{}.txt'.format(root,m)))
@@ -1656,17 +1657,17 @@ with open ("{}{}/log.txt".format(working_dir,prefix),"w") as stdout:
     stdout.write("uZ: {}\n".format(uZ))
     stdout.write("lZ: {}\n".format(lZ))
     stdout.write("max_distance: {}\n".format(max_distance))
-    stdout.write("Number of models: {}\n".format(number_of_models))
+    stdout.write("Number of models: {}\n".format(number_of_models*number_of_cpus))
     stdout.write("Number of beads: {}\n".format(number_of_fragments))
     stdout.write("Fragments in each bead: {}\n".format(fragments_in_each_bead))
     stdout.write("Maxmum vHiC value: {}\n".format(maximum_hic_value))
     stdout.write("Subset to analyze: {} models\n".format(subset))
     stdout.write("Standard deviation: {}\n".format(std_dev))
     stdout.write("Cut off percentage: {}\n".format(cut_off_percentage))
-    stdout.write("Biggest Matrix: {}\n".format(biggest_matrix))
+    stdout.write("Biggest Matrix: matrix{}.txt\n".format(biggest_matrix))
     stdout.write("K-means value: {}\n".format(k_mean))
     stdout.write("Clusters found: {}\n".format(n_clusters))
-
+    stdout.write("\nDepicted points in the virtual Hi-C: \n")
     counter = 0
     for k,v in vhic_primers.iteritems():
         stdout.write("Name:{}\tposition:{}\tcolor:{}\tbead:{} \n".format(k,v,vhic_colors[k],show_fragments_in_vhic[counter]))
@@ -1675,9 +1676,13 @@ with open ("{}{}/log.txt".format(working_dir,prefix),"w") as stdout:
     stdout.write("\nLocations:\n")
     stdout.write("Data dir: {}\n".format(data_dir))
     stdout.write("Working dir: {}\n".format(working_dir))
-    stdout.write("Virtual Hi-C: {}/vhic_{}.txt\n".format(storage_folder,prefix))
-    stdout.write("Virtual Hi-C heatmap: {}/{}_vHiC.png\n".format(storage_folder,prefix))
-    stdout.write("Representative model: {}/Representative.py\n".format(storage_folder))
+    stdout.write("Virtual Hi-C: {}vhic_{}.txt\n".format(storage_folder,prefix))
+    stdout.write("Virtual Hi-C heatmap: {}{}_vHiC.png\n".format(storage_folder,prefix))
+    stdout.write("Representative model: {}Representative.py\n".format(storage_folder))
+    stdout.write("Representative model with tubes: {}Representative_tubes.cmd (open with UCSF chimera)\n".format(storage_folder))
+    stdout.write("Superposition of best models: {}{}\{}_superposition_{}.py\n".format(working_dir,prefix,prefix,biggest_matrix))
+    stdout.write("Superposition of best models with tubes: {}/mtx1_models/superposition.cmd (open wich UCSF chimera)\n".format(storage_folder))
+    stdout.write("Clustering figure: {}{}_heatmap.png\n".format(storage_folder,prefix))
 
 print "Log.txt file with all the parameters used in the modeling was generated in {}{}/log.txt.".format(working_dir,prefix)
 
