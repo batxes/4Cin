@@ -1590,13 +1590,16 @@ if not jump_step[1]:
     print "########## Modeling ##########"
     #First delete the score files that could be generated from a previous modeling"
     folder = "{}{}/{}_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)
-    for any_file in os.listdir(folder):
-        try:
-            if any_file.startswith("score"):
-                file_path = os.path.join(folder,any_file)
-                os.remove(file_path)
-        except:
-            print "Cant delete {}.".format(file_path)
+    try:
+        for any_file in os.listdir(folder):
+            try:
+                if any_file.startswith("score"):
+                    file_path = os.path.join(folder,any_file)
+                    os.remove(file_path)
+            except:
+                print "Cant delete {}.".format(file_path)
+    except:
+        pass
     print "Modeling {} models...".format(total_number_of_models)
     number_of_models = total_number_of_models/number_of_cpus
     for cpu in range(number_of_cpus):
