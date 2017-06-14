@@ -1613,6 +1613,7 @@ if not jump_step[1]:
     print "Modeling took: {}\n".format(convert_time(modeling_time))
 ######### Analysis of models
 ############################################# anterior score files should be deleted
+n_clusters = 0
 if not jump_step[2]:
     print "########## Analysis and Clustering ##########"
     std_dev, cut_off_percentage, models_subset = run_analysis(std_dev,cut_off_percentage)
@@ -1621,7 +1622,6 @@ if not jump_step[2]:
     print "cut_off_percentage: {}".format(cut_off_percentage)
     ######### cluster models
     print "Running clustering..."
-    n_clusters = 0
     n_clusters,biggest_matrix = run_clustering(models_subset)
     #if n_clusters != k_mean:
     #    print "Redoing the clustering expecting {} clusters.".format(n_clusters)
@@ -1660,7 +1660,7 @@ with open ("{}{}/log.txt".format(working_dir,prefix),"w") as stdout:
     stdout.write("uZ: {}\n".format(uZ))
     stdout.write("lZ: {}\n".format(lZ))
     stdout.write("max_distance: {}\n".format(max_distance))
-    stdout.write("Number of models: {}\n".format(number_of_models*number_of_cpus))
+    stdout.write("Number of models: {}\n".format(total_number_of_models))
     stdout.write("Number of beads: {}\n".format(number_of_fragments))
     stdout.write("Fragments in each bead: {}\n".format(fragments_in_each_bead))
     stdout.write("Maxmum vHiC value: {}\n".format(maximum_hic_value))
