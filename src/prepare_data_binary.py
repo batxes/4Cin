@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 #plt.style.use('ggplot')
 
 #############################################################################################################
-# This script takes the raw 4C-seq data. Then for each file it creates another one with some changes. For readcounts above 10, it will call it hit, and then it will be calculated the ammount of hits in a window of 51.
+# This script takes the raw 4C-seq data. Then for each file it creates another one with some changes. For readcounts above "hit_threshold", it will call it hit, and then it will be calculated the ammount of hits in a window of "window".
 # 
 #
 # Parameters: 4cfiles
@@ -24,8 +24,13 @@ def fileCheck(f):
 #MAIN
 ####
 
-window = 51
+#common windows 25,51,101
+#common hits 1, 10, 100
+window = 25
 hit_threshold = 1
+
+show_plot = False
+
 
 if len(sys.argv) < 2:
     print "Usage: prepare_data.py 4c-seq_files. Files need to be in this format: \nchromosome start_fragment end_fragment score"
@@ -64,10 +69,11 @@ for i in sys.argv[1:]:
         output.write("{}\t{}\t{}\t{}\n".format(chrom,start_frag,end_frag,hit_percentage[line_n]))
         line_n += 1
     output.close()
-    fig = plt.figure()
-    bar_list = plt.bar(range(len(hit_percentage)),hit_percentage,width=0.5)
-    plt.xlabel(i)
-    plt.ylim(ymax=1,ymin=0)
+    if show_plot:
+        fig = plt.figure()
+        bar_list = plt.bar(range(len(hit_percentage)),hit_percentage,width=0.5)
+        plt.xlabel(i)
+        plt.ylim(ymax=1,ymin=0)
 
-    plt.show()
+        plt.show()
 

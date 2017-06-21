@@ -1278,7 +1278,7 @@ group2.add_argument("--ignore_beads",
         nargs="+",
         default=[], 
         dest="ignore_beads",
-        help='Beads that are not gonna have distance restraints. E.g. Beads that correspond to repetitive regions impossible to map. If many, separate with commas. Also affects the pre-modeling')
+        help='Beads that are not gonna have distance restraints. E.g. Beads that correspond to repetitive regions impossible to map. If many, separate with spaces. Also affects the pre-modeling')
 group2.add_argument("--number_of_beads_to_ignore_near_viewpoint", "-iv",
         type=int, 
         action="store",
