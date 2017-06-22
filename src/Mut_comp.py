@@ -17,13 +17,14 @@ from matplotlib.backends.backend_pdf import PdfPages
 from data_manager import fileCheck, sizeReader,  calculateNWindowedDistances, calculate_fragment_number
 import argparse
 
-working_dir = (os.path.realpath(__file__)).split("/")[:-1]
+working_dir = (os.path.realpath(__file__)).split("/")[:-2]
 working_dir = "/".join(working_dir)+"/"
 
 parser = argparse.ArgumentParser(
 description='''Program that compares two virtual Hi-C's.''',
 epilog= """primers.txt will be used to highlight beads if primers_vhic.txt is not provided. """)
 group1 = parser.add_argument_group('First Models', 'Parameters of the first models')
+group1.add_argument("--colormap",action="store",dest="colormap",default = "PuRd_r",help='The colormap of the virtual Hi-C. Matplotlib colormap.')
 group2 = parser.add_argument_group('Second Models', 'Parameters of the second models')
 parser.add_argument("data_dir", action="store",help='Directory with the 4C files')
 group1.add_argument("prefix", action="store",help='Name of the models')
@@ -34,11 +35,12 @@ group2.add_argument("prefix2", action="store",help='Name of the other models')
 group2.add_argument("VHiC2", action="store",help='Virtual Hi-C of the other models')
 group2.add_argument("distance2", type=int, action="store",help='Maximum distance used in the other models')
 
+
 parser.add_argument("--storage_dir", action="store",default=working_dir, dest="storage_dir",help='location where the comparison pdf will be generated')
 parser.add_argument("--fragments_in_each_bead", type= int, default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
 
 args = parser.parse_args()
-print args
+#print args
 
 root = args.VHiC
 root2 = args.VHiC2
@@ -49,6 +51,7 @@ data_dir = args.data_dir
 window = args.fragments_in_each_bead
 distance = args.distance
 distance2 = args.distance2
+colormap = args.colormap
 
 
 
@@ -106,7 +109,7 @@ for k,v in mut_primers.iteritems():
 	print "Viewpoint:{}\tposition:{}".format(k,v)
 	viewpoint_positions.append(v)
 
-print files
+#print files
 viewpoint_fragments = calculate_fragment_number(viewpoint_positions,files[0])
 
 fragments_in_each_bead = 0
@@ -176,12 +179,12 @@ with open(root2, 'r') as f2:
             if read > max_distance2:
                 max_distance2 = read
 
+guide = range(number_of_spheres)
 #we modify positions of inverted genome
 # beads 35 to 63 will be now 63 to 35
-print "We are Inverting bins 35-64 of one matrix. Shh experiment."
-guide = range(number_of_spheres)
+#print "We are Inverting bins 35-64 of one matrix. Shh experiment."
 #delete this, only for INVERSION
-guide[35:64] = guide[64:35:-1]
+#guide[35:64] = guide[64:35:-1]
 aux_matrix = np.zeros((number_of_spheres,number_of_spheres))
 for line in range(number_of_spheres):
     for col in range(number_of_spheres):
@@ -262,14 +265,15 @@ fig.set_facecolor('white')
 pp = PdfPages('{}.pdf'.format(root3))
 pp.savefig(fig)
 pp.close()
-print '{} vs {} Mutant vHi-C similarity comparison written in {}.pdf'.format(prefix,prefix2,root3)
+print '{} vs {} vHi-C comparison written in {}.pdf'.format(prefix,prefix2,root3)
 
 #Now generate the raw comparison figure
 fig = plt.figure()
 plt.title("Virtual Hi-C comparison between mutants.")
 ax = plt.subplot(1,1,1)
 z = np.array(matrix_final)
-c = plt.pcolor(z,cmap=plt.cm.PuRd_r,vmax=0.85, vmin=0)
+cmap = plt.cm.get_cmap(colormap)
+c = plt.pcolor(z,cmap=cmap,vmax=0.85, vmin=0)
 plt.colorbar()
 #viewpoints = [c+0.5 for c in viewpoints] #to match the gene_names in the matrix Since the ticks don't match with the heatmap.
 plt.scatter(show_fragments_in_vhic,show_fragments_in_vhic, s=20, c=color,cmap=plt.cm.autumn)
@@ -288,7 +292,7 @@ fig.set_facecolor('white')
 pp = PdfPages('{}.pdf'.format(root4))
 pp.savefig(fig)
 pp.close()
-print '{} vs {} Mutant vHi-C raw comparison written in {}.pdf'.format(prefix,prefix2,root4)
+print '{} vs {} vHi-C raw comparison written in {}.pdf'.format(prefix,prefix2,root4)
 
 #Distance between #1 marker 1  and #10 marker 1 : 2203.213
             
