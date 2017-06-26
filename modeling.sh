@@ -21,10 +21,26 @@ echo "Job started"
 #python 4Cin.py data/IrxBa/final/ IrxBa_new_models --fragments_in_each_bead 30  --colormap magma_r --cpu 20 --Nmodels 50000 
 #Irx Strigamia
 #python 4Cin.py data/Strigamia_IRX_data/final/ Irx_strigamia_models --fragments_in_each_bead 2  --colormap magma_r --cpu 20 --Nmodels 50000 --from_dist 1000 --to_dist 8000
+
+#WT2_MYF
+#python 4Cin.py data/myf5/wt_final2 Myf5_WT2_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
+#PAE2_Myf
+#python 4Cin.py data/myf5/pae_final2 Myf5_PAE2_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
+#WT_MYF_no56
+#python 4Cin.py data/myf5/wt_final_no56 Myf5_WT_no56_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
+#muT_MYF_no56
+#python 4Cin.py data/myf5/mut_final_no56 Myf5_MUT_no56_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
+#PAE_Myf_no56
+#python 4Cin.py data/myf5/pae_final_no56 Myf5_PAE_no56_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
 #WT_MYF
-python 4Cin.py data/myf5/wt_final Myf5_WT_models --fragments_in_each_bead 5  --colormap magma_r --cpu 20 --Nmodels 50000 --ignore_beads 43 44 45 46 47 48 49
+#python 4Cin.py data/myf5/wt_final Myf5_WT_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
 #muT_MYF
-python 4Cin.py data/myf5/mut_final Myf5_MUT_models --fragments_in_each_bead 5  --colormap magma_r --cpu 20 --Nmodels 50000 --ignore_beads 43 44 45 46 47 48 49
+#python 4Cin.py data/myf5/mut_final Myf5_MUT_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
 #PAE_Myf
-python 4Cin.py data/myf5/pae_final Myf5_PAE_models --fragments_in_each_bead 5  --colormap magma_r --cpu 20 --Nmodels 50000 --ignore_beads 43 44 45 46 47 48 49
+#python 4Cin.py data/myf5/pae_final Myf5_PAE_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
+python 4Cin.py data/myf5/wt_final_no5629 Myf5_WT_no5629_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
+#muT_MYF_no56
+python 4Cin.py data/myf5/mut_final_no5629 Myf5_MUT_no5629_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
+#PAE_Myf_no56
+python 4Cin.py data/myf5/pae_final_no5629 Myf5_PAE_no5629_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
 echo "Job finished"

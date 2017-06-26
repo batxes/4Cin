@@ -229,17 +229,14 @@ vmin = -1.0
 # no gradient [1 - 0.3 = RED | 0.3- -0.3 = WHITE | -0.3 - -1 = BLUE]
 #cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.34 / vmax, 'blue'),(0.35 / vmax, 'white',(0.5 / vmax, 'white')),(0.65 / vmax, 'white'),(0.66 / vmax, 'red'),(1 / vmax, 'red')])
 
-#RED BLUE gradient 
-#cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.5 / vmax, 'white'),(1 / vmax, 'red')])
-
 #RED BLUE gradient with more white
 #cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.35 / vmax, 'white'),(0.36 / vmax, 'white',(0.5 / vmax, 'white')),(0.64 / vmax, 'white'),(0.65 / vmax, 'white'),(1 / vmax, 'red')])
 
 #RED BLUE gradient with less white
-cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.40 / vmax, 'white'),(0.41 / vmax, 'white',(0.5 / vmax, 'white')),(0.59 / vmax, 'white'),(0.60 / vmax, 'white'),(1 / vmax, 'red')])
+#cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.40 / vmax, 'white'),(0.41 / vmax, 'white',(0.5 / vmax, 'white')),(0.59 / vmax, 'white'),(0.60 / vmax, 'white'),(1 / vmax, 'red')])
 
 #RED BLUE gradient with almost no white
-#cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.50 / vmax, 'white'),(1 / vmax, 'red')])
+cmap = LinearSegmentedColormap.from_list('mycmap', [(0 / vmax, 'blue'),(0.50 / vmax, 'white'),(1 / vmax, 'red')])
 
 c = plt.pcolor(z,cmap=cmap,vmax=vmax, vmin=vmin)
 ax.set_frame_on(False)

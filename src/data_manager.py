@@ -316,6 +316,3 @@ if __name__ == "__main__":
     print number_of_fragments
 
     calculateNWindowedDistances(fragments_in_each_bead, uZ, lZ, max_distance, files, True, False)
-
-
-    
