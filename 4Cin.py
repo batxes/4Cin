@@ -198,7 +198,7 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
         #Connectivity (HUB and HLB)
         ############################################################################
         r_count = 0
-        reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, y2,files)
+        reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, y2,files, ignore_beads)
         for j in range(len(files)):
             reads_weight = reads_weights[j]
             reads_value = reads_values[j]
@@ -545,7 +545,7 @@ def calculate_heatdifference(path, n_files_inside,files,plot):
         plt.xlabel("Beads")
 
     #NOW CALCULATE THE 4C DATA'S HEATMAP (WITHOUT APLLYING LOG)
-    HEAT_MAP_DATA, HEATMAP_DATA_LOG= calculateNWindowedDistances(fragments_in_each_bead,0,0,y2,files,False,True) #stored in HEATMAP_DATA_LOG
+    HEAT_MAP_DATA, HEATMAP_DATA_LOG= calculateNWindowedDistances(fragments_in_each_bead,0,0,y2,files,ignore_beads,False,True) #stored in HEATMAP_DATA_LOG
     heatmap_data_modified = []
     for array in HEAT_MAP_DATA:
     # without log
@@ -640,7 +640,7 @@ def run_analysis(std_dev,cut_off_percentage):
             if counter == number_of_models:
                 break
     # models = models[:number_of_models]    #take only the first ones 
-    reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, max_distance,files)
+    reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, max_distance,files, ignore_beads)
     ### get all distances from all the models
     print "getting best {} models".format(subset)
     all_distances_all_models = []

@@ -32,15 +32,18 @@ hit_threshold = 1
 show_plot = False
 
 
-if len(sys.argv) < 2:
-    print "Usage: prepare_data.py 4c-seq_files. Files need to be in this format: \nchromosome start_fragment end_fragment score"
+if len(sys.argv) < 4:
+    print "Usage: prepare_data.py window hit_threshold 4c-seq_files. Files need to be in this format: \nchromosome start_fragment end_fragment score"
     sys.exit()
 ### now, take each file, and write a new one with the missing fragments
-for i in sys.argv[1:]:
+window = int(sys.argv[1])
+hit_threshold = int(sys.argv[2])
+print "Window = {}, Hit_threshold = {}.".format(window, hit_threshold)
+for i in sys.argv[3:]:
     hit_percentage = []
     hit_list = []
     fourc_file = fileCheck(i)
-    output = open(i+"_modified", "w")
+    output = open(i+"_modified_W{}H{}".format(window,hit_threshold), "w")
     for line in fourc_file: 
         values = line.split()
         if float(values[3]) > hit_threshold:
@@ -76,4 +79,5 @@ for i in sys.argv[1:]:
         plt.ylim(ymax=1,ymin=0)
 
         plt.show()
+    print "Data generated in {}_modified_W{}H{}".format(i,window,hit_threshold)
 

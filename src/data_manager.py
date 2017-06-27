@@ -54,9 +54,9 @@ def calculate_fragment_number(positions,guide_file):
 
 # function: Value Reader by windows
 #
-# reads the file and extracts the values every N lines
+# reads the file and extracts the values every N lines. The fragments representend by the beads to ignore will be set to the average of the experiment, so they have a 0 Z-score.
 
-def valueReaderNWindow(f,window):
+def valueReaderNWindow(f,window, ignore_beads):
     try:
         counter = 0
         aux = 0
@@ -75,6 +75,15 @@ def valueReaderNWindow(f,window):
                 aux = aux / window
                 arrayList.append(aux)
                 aux = 0
+
+        #now set the fragments to be ignored as the avg value of the experiment after calculating the log.
+
+        arrayList_log = [np.log10(read) for read in arrayList]
+        avg_value = np.mean(arrayList_log)
+        avg_value = pow(10,avg_value)
+        #avg_value = np.mean(arrayList)
+        for ignore_bead in ignore_beads:
+            arrayList[ignore_bead] = avg_value
         return arrayList
     except:
         print "Check the data files if they are well formed. Check also first line. Is it CHR\tpos1\tpos2\tvalue?"
@@ -99,13 +108,13 @@ def sizeReader(f):
 #
 # sums up all the read counts of the inputa data 
 
-def calculateNWindowedValues(fragments_in_each_bead, files):
+def calculateNWindowedValues(fragments_in_each_bead, files, ignore_beads):
     read_sums = []
     factors = []
     for i in range(len(files)):
         reads = []
         f = fileCheck(files[i])
-        reads = valueReaderNWindow(f,fragments_in_each_bead)
+        reads = valueReaderNWindow(f,fragments_in_each_bead, ignore_beads)
         read_sums.append(sum(reads))
     for i in read_sums:
         value = max(read_sums)/i
@@ -117,7 +126,7 @@ def calculateNWindowedValues(fragments_in_each_bead, files):
 # Takes the read counts and converts them in distance restraints for the modelling
 
 # Note: EVERY LANE OF 4C DATA WILL BE INDEPENDENT
-def calculateNWindowedDistances(window,uZ,lZ,max_distance,files,wanna_plot=False,heatmap=False):
+def calculateNWindowedDistances(window,uZ,lZ,max_distance,files,ignore_beads,wanna_plot=False,heatmap=False):
     putative_minimum_size = 0 #normally is 300
     show_z_scores = False  
     plot = wanna_plot
@@ -128,14 +137,14 @@ def calculateNWindowedDistances(window,uZ,lZ,max_distance,files,wanna_plot=False
     final_reads = []
     start_windows = []
     end_windows = []
-    factors = calculateNWindowedValues(1.0,files)
+    factors = calculateNWindowedValues(1.0,files, ignore_beads)
     number_of_genes = len(files)
     if wanna_plot:
         print """Negative skewness shows large proportion of experimental noise. Positive  = population of large structural variability. 
 Kurtosis shows if the distribution is single peaked or not. High kt = many peaks, we need low KT to show a single peak """
     for i in range(number_of_genes):
         f = fileCheck(files[i])
-        reads = valueReaderNWindow(f,window)  
+        reads = valueReaderNWindow(f,window, ignore_beads)  
         reads2 = []
         # We normalize the data depending on the number of reads.
         # We calculated beforehand the numbers of multiplication for the normalization
@@ -249,18 +258,48 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
             description='''Script that shows information about the 4C-seq data.''')
-    parser.add_argument("data_dir", action="store",help='location of the 4C data. primers.txt needs tobe in there also')
-    parser.add_argument("--fragments_in_each_bead", type= int, default=0, dest="fragments_in_each_bead" ,action="store",help='Number of fragments that will be represented with each bead')
+    parser.add_argument("data_dir", 
+            action="store",
+            help='location of the 4C data. primers.txt needs tobe in there also')
+    parser.add_argument("--fragments_in_each_bead", 
+            type= int, 
+            default=0, 
+            dest="fragments_in_each_bead" ,
+            action="store",
+            help='Number of fragments that will be represented with each bead')
+    parser.add_argument("--uZ",
+            type=float, 
+            default= 0.1, 
+            action="store",
+            dest="uZ", 
+            help='Upper bound Z score (Only needed if jumping pre-modeling steps)')
+    parser.add_argument("--lZ", 
+            type=float, 
+            default=-0.1, 
+            action="store",
+            dest="lZ", 
+            help='Lower bound Z score (Only needed if jumping pre-modeling steps)')
+    parser.add_argument("--max_distance", 
+            type=int, 
+            default=7000, 
+            action="store",
+            dest="max_distance", 
+            help='Maximum distance (Only needed if jumping pre-modeling steps)')
+    parser.add_argument("--ignore_beads",                                                                                   
+            type=int, 
+            action="store",
+            nargs="+",
+            default=[],
+            dest="ignore_beads",
+            help='Beads that are not gonna have distance restraints. E.g. Beads that correspond to repetitive regions impossible to map. If many, separate with spaces. Also affects the pre-modeling')
 
-    parser.add_argument("--uZ",type=float, default= 0.1, action="store",dest="uZ", help='Upper bound Z score (Only needed if jumping pre-modeling steps)')
-    parser.add_argument("--lZ", type=float, default=-0.1, action="store",dest="lZ", help='Lower bound Z score (Only needed if jumping pre-modeling steps)')
-    parser.add_argument("--max_distance", type=int, default=7000, action="store",dest="max_distance", help='Maximum distance (Only needed if jumping pre-modeling steps)')
     args = parser.parse_args()
     max_distance = args.max_distance 
     uZ = args.uZ
     lZ = args.lZ
     fragments_in_each_bead = args.fragments_in_each_bead
     data_dir = args.data_dir
+    ignore_beads = args.ignore_beads
 
     # get the name and position from primers.txt
     #primers.txt:  name chrN:position
@@ -281,7 +320,9 @@ if __name__ == "__main__":
         
     file_names = primers.keys()
     files = [data_dir+f for f in file_names]
-    print files
+    print "Files are: "
+    for i in files:
+        print i
 
     # read one of the files and get number of fragments and default fragments_in_each_bead
     # a_4c_file: chrN start end value
@@ -313,6 +354,6 @@ if __name__ == "__main__":
 
     # now get number of beads
     number_of_fragments = int(number_of_fragments/fragments_in_each_bead)
-    print number_of_fragments
+    #print number_of_fragments
 
-    calculateNWindowedDistances(fragments_in_each_bead, uZ, lZ, max_distance, files, True, False)
+    calculateNWindowedDistances(fragments_in_each_bead, uZ, lZ, max_distance, files, ignore_beads, True, False)
