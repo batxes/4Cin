@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#$ -N MYF5
+#$ -N IrxBa_binary
 #$ -pe make 20
 #$ -cwd
 
@@ -19,6 +19,7 @@ echo "Job started"
 #python 4Cin.py data/IrxAa/final/ IrxAa_new_models --fragments_in_each_bead 40  --colormap magma_r --cpu 20 --Nmodels 50000 
 #IrxBa
 #python 4Cin.py data/IrxBa/final/ IrxBa_new_models --fragments_in_each_bead 30  --colormap magma_r --cpu 20 --Nmodels 50000 
+python 4Cin.py data/IrxBa/final_binarized_W51H100/ IrxBa_new_models_binary --fragments_in_each_bead 30  --colormap magma_r --cpu 20 --Nmodels 50000 --binary_data
 #Irx Strigamia
 #python 4Cin.py data/Strigamia_IRX_data/final/ Irx_strigamia_models --fragments_in_each_bead 2  --colormap magma_r --cpu 20 --Nmodels 50000 --from_dist 1000 --to_dist 8000
 
@@ -44,5 +45,5 @@ echo "Job started"
 #PAE_Myf_no56
 #python 4Cin.py data/myf5/pae_final_no5629 Myf5_PAE_no5629_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
 #muT_MYF_no29
-python 4Cin.py data/myf5/mut_final_no29 Myf5_MUT_no29_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
+#python 4Cin.py data/myf5/mut_final_no29 Myf5_MUT_no29_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
 echo "Job finished"

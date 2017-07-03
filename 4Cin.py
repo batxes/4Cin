@@ -55,7 +55,7 @@ cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(insp
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
     
-from data_manager import fileCheck, sizeReader,  calculateNWindowedDistances, calculate_fragment_number
+from data_manager import fileCheck, sizeReader,  calculateNWindowedDistances, calculateNWindowedDistancesBinary, calculate_fragment_number
 
 ##### Functions
 
@@ -198,7 +198,10 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
         #Connectivity (HUB and HLB)
         ############################################################################
         r_count = 0
-        reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, y2,files, ignore_beads)
+        if is_binary_data:
+            reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistancesBinary(int(fragments_in_each_bead),uZ,lZ, y2,files, ignore_beads)
+        else:
+            reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, y2,files, ignore_beads)
         for j in range(len(files)):
             reads_weight = reads_weights[j]
             reads_value = reads_values[j]
@@ -545,7 +548,10 @@ def calculate_heatdifference(path, n_files_inside,files,plot):
         plt.xlabel("Beads")
 
     #NOW CALCULATE THE 4C DATA'S HEATMAP (WITHOUT APLLYING LOG)
-    HEAT_MAP_DATA, HEATMAP_DATA_LOG= calculateNWindowedDistances(fragments_in_each_bead,0,0,y2,files,ignore_beads,False,True) #stored in HEATMAP_DATA_LOG
+    if is_binary_data:
+        HEAT_MAP_DATA, HEATMAP_DATA_LOG= calculateNWindowedDistancesBinary(fragments_in_each_bead,0,0,y2,files,ignore_beads,False,True) #stored in HEATMAP_DATA_LOG
+    else:
+        HEAT_MAP_DATA, HEATMAP_DATA_LOG= calculateNWindowedDistances(fragments_in_each_bead,0,0,y2,files,ignore_beads,False,True) #stored in HEATMAP_DATA_LOG
     heatmap_data_modified = []
     for array in HEAT_MAP_DATA:
     # without log
@@ -640,7 +646,10 @@ def run_analysis(std_dev,cut_off_percentage):
             if counter == number_of_models:
                 break
     # models = models[:number_of_models]    #take only the first ones 
-    reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, max_distance,files, ignore_beads)
+    if is_binary_data:
+        reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistancesBinary(int(fragments_in_each_bead),uZ,lZ, max_distance,files, ignore_beads)
+    else:
+        reads_values,reads_weights,start_windows, end_windows = calculateNWindowedDistances(int(fragments_in_each_bead),uZ,lZ, max_distance,files, ignore_beads)
     ### get all distances from all the models
     print "getting best {} models".format(subset)
     all_distances_all_models = []
@@ -1339,7 +1348,11 @@ group5.add_argument("--cpu",
 group5.add_argument("--verbose", 
         action="store_true", 
         dest="verbose",
-        help='Verbose True for more information while executing the script')
+        help='set --verbose for more information while executing the script')
+group5.add_argument("--binary_data", 
+        action="store_true", 
+        dest="is_binary_data",
+        help='set --binary_data if the 4C data is rangin from 0 to 1.')
 group5.add_argument("--working_dir", 
         action="store",
         default=working_dir, 
@@ -1384,6 +1397,7 @@ from_zscore = args.from_zscore
 to_zscore = args.to_zscore
 zscore_bins = args.zscore_bins
 verbose = args.verbose
+is_binary_data = args.is_binary_data
 data_dir = args.data_dir
 working_dir = args.working_dir
 prefix = args.prefix

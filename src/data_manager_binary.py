@@ -120,7 +120,6 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
     for i in range(number_of_genes):
         f = fileCheck(files[i])
         reads = valueReaderNWindow(f,window)  
-        print('normality =', normaltest(reads))
         reads2 = []
         # get the minimum read counts and swap them with the minimum of all values. 
         min_read = max(reads) #initialization
@@ -132,7 +131,6 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         HEATMAP_DATA.append(reads)
         reads_normalized = reads
 
-        print('normality normalized=', normaltest(reads_normalized))
         HEATMAP_DATA_LOG.append(reads_normalized)
 
         #Z-score calculation

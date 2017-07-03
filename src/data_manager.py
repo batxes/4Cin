@@ -81,6 +81,36 @@ def valueReaderNWindow(f,window):
     except:
         print "Check the data files if they are well formed. Check also first line. Is it CHR\tpos1\tpos2\tvalue?"
         sys.exit()
+        
+# function: Value Reader by windows
+#
+# for the binary processing
+
+def valueReaderNWindowBinary(f,window):
+    try:
+        counter = 0
+        aux = 0
+        arrayList = []
+        for line in f:
+            counter += 1
+            values = re.split('\t',line)
+            values[3] = values[3].strip() #remove \n from the list
+            if (values[3] is '-'):
+                read = 0
+            else:
+                read = float(values[3])
+            aux += read
+            if counter == window:
+                counter = 0
+                aux = aux / window
+                arrayList.append(aux)
+                aux = 0
+
+
+        return arrayList
+    except:
+        print "Check the data files if they are well formed. Check also first line. Is it CHR\tpos1\tpos2\tvalue?"
+        sys.exit()        
 
 # function Size Reader
 #
@@ -138,7 +168,6 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
     for i in range(number_of_genes):
         f = fileCheck(files[i])
         reads = valueReaderNWindow(f,window )  
-        print('normality =', normaltest(reads))
         reads2 = []
         # We normalize the data depending on the number of reads.
         # We calculated beforehand the numbers of multiplication for the normalization
@@ -153,7 +182,6 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
         HEATMAP_DATA.append(reads)
         # apply Log10 to data to normalize it
         reads_normalized = [np.log10(read) for read in reads]
-        print('normality normalized=', normaltest(reads_normalized))
         HEATMAP_DATA_LOG.append(reads_normalized)
 
         #Z-score calculation
@@ -245,6 +273,128 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
             plt.show()
     return final_reads, final_zscores, start_windows, end_windows
 
+# Function: calculate distances from input data
+#
+# For the Binary Processing
+def calculateNWindowedDistancesBinary(window,uZ,lZ,max_distance,files,ignore_beads,wanna_plot=False,heatmap=False):
+    putative_minimum_size = 0 #normally is 300
+    show_z_scores = False  
+    plot = wanna_plot
+    HEATMAP_DATA = []
+    HEATMAP_DATA_LOG = []
+    reads = []
+    final_zscores = []
+    final_reads = []
+    start_windows = []
+    end_windows = []
+    number_of_genes = len(files)
+    if wanna_plot:
+        print """Negative skewness shows large proportion of experimental noise. Positive  = population of large structural variability. 
+Kurtosis shows if the distribution is single peaked or not. High kt = many peaks, we need low KT to show a single peak """
+    for i in range(number_of_genes):
+        f = fileCheck(files[i])
+        reads = valueReaderNWindow(f,window)  
+        reads2 = []
+        # get the minimum read counts and swap them with the minimum of all values. 
+        min_read = max(reads) #initialization
+        for j in reads:
+            if j != 0.0 and j < min_read:
+                min_read = j
+        reads = [min_read if x==0.0 else x for x in reads]
+        # this is the one we want to compare to
+        HEATMAP_DATA.append(reads)
+        reads_normalized = reads
+
+        HEATMAP_DATA_LOG.append(reads_normalized)
+
+        #Z-score calculation
+        mean = np.mean(reads_normalized)
+        std_dev = np.std(reads_normalized)
+        reads_normalized = [(read - mean)/std_dev for read in reads_normalized]
+        #set the ignore beads to a Z-score o 0
+        for k in ignore_beads:
+            reads_normalized[k] = 0.0
+
+        # Skewness shows if data is skewed toward the right or left tail of the normal distributed z scores. 
+        # Negative skewness shows large proportion of experimental noise. Positive  = population of large structural variability.
+        # Kurtosis shows if the distribution is single peaked or not. High kt = many peaks, we need low KT to show a single peak
+        if wanna_plot:
+            print "Skewness of {}: {}. -1 < x < 2.5.".format(i,skew(reads_normalized))
+            print "Kurtosis of {}: {}. -1 < x < 8.".format(i,kurtosis(reads_normalized))
+            print ""
+        x2 = min(reads_normalized)
+        x1 = max(reads_normalized)
+        y1 = putative_minimum_size  #Angstroms width of chromatin 
+        slope = (max_distance-y1) / (x2-x1)
+        inside_window = False #when we are inside the 4C good values window, set True
+        window_start = 0
+        window_end = 0
+        counter = 0
+        for read in reads_normalized:
+            counter += 1
+            #when the z score is above the uZ, the window starts.
+            if read >= uZ and not inside_window:
+                inside_window = True
+                window_start = counter
+            #end of window
+            if read >= uZ and inside_window:
+                window_end = counter
+        start_windows.append(window_start)
+        end_windows.append(window_end)
+        if show_z_scores:
+            print "gene "+ str(i) +"---> window start: " + str(window_start) + "   end: "+str(window_end)
+        for  read in reads_normalized:
+            if read < uZ and read > lZ:  #take out the reads where the z score is between the lz and the uZ
+                reads2.append (0) 
+            else:
+                reads2.append(slope*(read-x1)+y1)
+        final_reads.append(reads2)       
+        final_zscores.append(reads_normalized)
+    if show_z_scores:    
+        mean_tena = []    
+        for i in final_zscores:      
+            mean_tena.append(max(i))
+        if show_z_scores:
+            print "mean of top z scores: "
+            print np.mean(mean_tena)
+    #return data if we are using for the z-score empirical calculations
+    if heatmap:
+        return HEATMAP_DATA, HEATMAP_DATA_LOG
+    # If we want to plot
+    for i in range(number_of_genes):
+        if plot:
+            fig = plt.figure(figsize=(10, 10)) 
+            plt.subplot(3,1,1)
+            bar_list = plt.bar(range(len(HEATMAP_DATA[i])),HEATMAP_DATA[i],width=1)
+            bar_list[viewpoint_fragments[i]].set_color('r')
+            bar_list[viewpoint_fragments[i]].set_edgecolor('w')
+            plt.xlim(0,len(HEATMAP_DATA[i]))  
+            plt.ylim(ymin = 0)
+            plt.ylabel("Number of Reads")
+            plt.xlabel(files[i])
+            plt.tick_params(axis='both', which='major', labelsize=14)
+            plt.subplot(3,1,2)
+            plt.plot(final_zscores[i])
+            plt.xlim(0,len(final_zscores[i]))  
+            plt.axhline(y=uZ)
+            plt.axhline(y=lZ)
+            plt.ylabel("Z score")
+            plt.tick_params(axis='both', which='major', labelsize=14)
+            plt.subplot(3,1,3)
+            bar_list = plt.bar(range(len(final_reads[i])),final_reads[i],width=1)
+            bar_list[viewpoint_fragments[i]].set_color('r')
+            bar_list[viewpoint_fragments[i]].set_edgecolor('w')
+            plt.xlim(0,len(final_reads[i]))
+            plt.ylabel("Distance restraints in Angstroms")
+            plt.xlabel("Beads")
+            plt.tick_params(axis='both', which='major', labelsize=14)
+#             plt.switch_backend('QT4Agg')
+            figManager = plt.get_current_fig_manager()
+            plt.subplots_adjust(bottom=0.05, right=0.98, top=0.98, left=0.1)
+            #figManager.window.showMaximized()
+            #figManager.Maximize(True)
+            plt.show()
+    return final_reads, final_zscores, start_windows, end_windows
         
 
 #test ###############################################################################################################################
