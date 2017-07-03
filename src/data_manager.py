@@ -2,7 +2,7 @@
 
 import sys, re
 import numpy as np
-from scipy.stats import skew,kurtosis
+from scipy.stats import skew,kurtosis,normaltest
 try:
     import matplotlib.pyplot as plt
     plt.style.use('ggplot')
@@ -56,7 +56,7 @@ def calculate_fragment_number(positions,guide_file):
 #
 # reads the file and extracts the values every N lines. The fragments representend by the beads to ignore will be set to the average of the experiment, so they have a 0 Z-score.
 
-def valueReaderNWindow(f,window, ignore_beads):
+def valueReaderNWindow(f,window):
     try:
         counter = 0
         aux = 0
@@ -76,14 +76,7 @@ def valueReaderNWindow(f,window, ignore_beads):
                 arrayList.append(aux)
                 aux = 0
 
-        #now set the fragments to be ignored as the avg value of the experiment after calculating the log.
 
-        arrayList_log = [np.log10(read) for read in arrayList]
-        avg_value = np.mean(arrayList_log)
-        avg_value = pow(10,avg_value)
-        #avg_value = np.mean(arrayList)
-        for ignore_bead in ignore_beads:
-            arrayList[ignore_bead] = avg_value
         return arrayList
     except:
         print "Check the data files if they are well formed. Check also first line. Is it CHR\tpos1\tpos2\tvalue?"
@@ -108,13 +101,13 @@ def sizeReader(f):
 #
 # sums up all the read counts of the inputa data 
 
-def calculateNWindowedValues(fragments_in_each_bead, files, ignore_beads):
+def calculateNWindowedValues(fragments_in_each_bead, files ):
     read_sums = []
     factors = []
     for i in range(len(files)):
         reads = []
         f = fileCheck(files[i])
-        reads = valueReaderNWindow(f,fragments_in_each_bead, ignore_beads)
+        reads = valueReaderNWindow(f,fragments_in_each_bead )
         read_sums.append(sum(reads))
     for i in read_sums:
         value = max(read_sums)/i
@@ -137,14 +130,15 @@ def calculateNWindowedDistances(window,uZ,lZ,max_distance,files,ignore_beads,wan
     final_reads = []
     start_windows = []
     end_windows = []
-    factors = calculateNWindowedValues(1.0,files, ignore_beads)
+    factors = calculateNWindowedValues(1.0,files)
     number_of_genes = len(files)
     if wanna_plot:
         print """Negative skewness shows large proportion of experimental noise. Positive  = population of large structural variability. 
 Kurtosis shows if the distribution is single peaked or not. High kt = many peaks, we need low KT to show a single peak """
     for i in range(number_of_genes):
         f = fileCheck(files[i])
-        reads = valueReaderNWindow(f,window, ignore_beads)  
+        reads = valueReaderNWindow(f,window )  
+        print('normality =', normaltest(reads))
         reads2 = []
         # We normalize the data depending on the number of reads.
         # We calculated beforehand the numbers of multiplication for the normalization
@@ -155,18 +149,20 @@ Kurtosis shows if the distribution is single peaked or not. High kt = many peaks
             if j != 1.0 and j < min_read:
                 min_read = j
         reads = [min_read if x==1.0 else x for x in reads]
-        ## FOR THE SHH WORK
-        reads = [x-1 for x in reads]
         # this is the one we want to compare to
         HEATMAP_DATA.append(reads)
         # apply Log10 to data to normalize it
         reads_normalized = [np.log10(read) for read in reads]
+        print('normality normalized=', normaltest(reads_normalized))
         HEATMAP_DATA_LOG.append(reads_normalized)
 
         #Z-score calculation
         mean = np.mean(reads_normalized)
         std_dev = np.std(reads_normalized)
         reads_normalized = [(read - mean)/std_dev for read in reads_normalized]
+        for k in ignore_beads:
+            reads_normalized[k] = 0.0
+
 
         # Skewness shows if data is skewed toward the right or left tail of the normal distributed z scores. 
         # Negative skewness shows large proportion of experimental noise. Positive  = population of large structural variability.
