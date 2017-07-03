@@ -1,0 +1,10 @@
+perl ../4Cseq_pipeV5.pl -f Amphioxus_IRX_raw_data/ -c primers_real.txt -i IRX_INDEX/braLan71_ScIrx -e enzymes.txt -g amphioxus_Irx_Contig.fa -p 20 -n amphioxus_DnpII_Csp6I
+
+
+
+#So now I have the data, without setting to 0 the highest peaks (PCR bias near viewpoint).
+#go to the data which is in frag_coutns_smoothed and delete the huge peaks.
+
+#no run Smooth.pl
+
+perl ../../smooth.pl -i blaSowah_exon8.fragscounts -w 30 -z
