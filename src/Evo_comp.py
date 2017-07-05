@@ -46,7 +46,6 @@ parser.add_argument("--maximum_hic_value",type=float,  action="store",default=1.
 
 
 args = parser.parse_args()
-print args
 
 matrix_path = args.VHiC
 matrix_path2 = args.VHiC2
@@ -60,6 +59,10 @@ window2 = args.fragments_in_each_bead2
 max_distance = args.distance
 max_distance2 = args.distance2
 maximum_hic_value= args.maximum_hic_value
+if data_dir[-1] != "/":
+    data_dir = data_dir + "/"
+if data_dir2[-1] != "/":
+    data_dir2 = data_dir2 + "/"
 
 ### FIRST VHIC TO COMPARE
 
@@ -70,7 +73,7 @@ viewpoint_positions = []
 gene_names = []
 primers_file = fileCheck(data_dir+"primers.txt")
 for line in primers_file:
-	m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+	m = re.search('([^\s\t]+).*\w*:(\d+)', line)
 	try:
 		primers[m.group(1)] = int(m.group(2))
 	except:
@@ -82,7 +85,7 @@ comp_primers = {}
 try:
     primers_file = open (data_dir+"primers_evocomp.txt", 'r')
     for line in primers_file:
-        m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+        m = re.search('([^\s\t]+).*\w*:(\d+)', line)
         try:
             comp_primers[m.group(1)] = int(m.group(2))
             gene_names.append(m.group(1))
@@ -93,7 +96,7 @@ except IOError:
     print "\nError: File "+ data_dir+ " primers_evocomp.txt does not appear to exist. Using primers.txt to paint positions in the virtual Hi-C\n"
     primers_file = fileCheck(data_dir+"primers.txt")
     for line in primers_file:
-        m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+        m = re.search('([^\s\t]+).*\w*:(\d+)', line)
         try:
             comp_primers[m.group(1)] = int(m.group(2))
             gene_names.append(m.group(1))
@@ -138,7 +141,7 @@ gene_names2 = []
 primers_file = fileCheck(data_dir2+"primers.txt")
 
 for line in primers_file:
-    m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+    m = re.search('([^\s\t]+).*\w*:(\d+)', line)
     try:
         primers[m.group(1)] = int(m.group(2))
     except:
@@ -150,8 +153,7 @@ comp_primers = {}
 try:
     primers_file = open (data_dir2+"primers_evocomp.txt", 'r')
     for line in primers_file:
-        print line
-        m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+        m = re.search('([^\s\t]+).*\w*:(\d+)', line)
         try:
             comp_primers[m.group(1)] = int(m.group(2))
             gene_names2.append(m.group(1))
@@ -162,7 +164,7 @@ except IOError:
     print "\nError: File "+ data_dir2+ " primers_evocomp.txt does not appear to exist. Using primers.txt to paint positions in the virtual Hi-C\n"
     primers_file = fileCheck(data_dir2+"primers.txt")
     for line in primers_file:
-        m = re.search('([^\s\t]+).*chr\w+:(\d+)', line)
+        m = re.search('([^\s\t]+).*\w*:(\d+)', line)
         try:
             comp_primers[m.group(1)] = int(m.group(2))
             gene_names2.append(m.group(1))
@@ -196,8 +198,6 @@ if window2 == 0:
 	window2 = int(number_of_fragments / 100)
 viewpoints2 = [int(i/window2) for i in viewpoints2]
     
-print viewpoints
-print viewpoints2
 
 
 if n_viewpoints != n_viewpoints2:
@@ -240,27 +240,11 @@ for bead1 in viewpoints2:
                     break
 
 matrix_diff = np.zeros((n_viewpoints,n_viewpoints))
-list_pos = []
-list_neg = []
-list_total = []
 for i in range(n_viewpoints):
     for j in range(n_viewpoints):
         matrix_final[i][j] = matrix[i][j]
         matrix_final[j][i] = matrix2[i][j]
         matrix_diff[i][j] = matrix_diff[j][i] = matrix[i][j] - matrix2[i][j]
-        d = matrix[i][j] - matrix2[i][j]
-        if (d > 0):
-            list_pos.append(d)
-        if (d < 0):
-            list_neg.append(d)
-        list_total.append(np.abs(d))
-print "HOLAAAAAAAAA"
-print "Media Positivos: {}. Hay {}".format(np.mean(list_pos),len(list_pos))
-print "Media Negativos: {}. Hay {}".format(np.mean(list_neg),len(list_neg))
-print "Media Total : {}. Hay {}".format(np.sum(list_total)/306,len(list_total))
-
-
-
 
 
 array1 = []

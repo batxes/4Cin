@@ -1564,9 +1564,15 @@ name_of_fragments = [x[:10] for x in name_of_fragments]
 show_fragments_in_vhic = calculate_fragment_number(show_fragments_in_vhic,files[0])
 show_fragments_in_vhic = [int(i/fragments_in_each_bead) for i in show_fragments_in_vhic]
 counter = 0
+
+print_dict = {}
 for k,v in vhic_primers.iteritems():
-    print "VHi-C name:{}\tposition:{}\tcolor:{}\tbead:{} ".format(k,v,vhic_colors[k],show_fragments_in_vhic[counter])
+    #print "VHi-C name:{}\tposition:{}\tcolor:{}\tbead:{} ".format(k,v,vhic_colors[k],show_fragments_in_vhic[counter])
+    print_dict["VHi-C name:{}\tposition:{}\tcolor:{}\tbead: ".format(k,v,vhic_colors[k])] = show_fragments_in_vhic[counter]
     counter += 1
+sorted_dict = sorted(print_dict.items(), key=operator.itemgetter(1))
+for i in sorted_dict:
+    print "{}{}".format(i[0],i[1])
 print
 p = Pool(number_of_cpus)
 execute = []

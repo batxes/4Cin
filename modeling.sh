@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#$ -N IrxBa_binary
+#$ -N Irx_amphi
 #$ -pe make 20
 #$ -cwd
 
@@ -13,13 +13,15 @@ echo "Job started"
 #python 4Cin.py data/AmphiIrx/final/ Amphi_Irx_high_res --from_dist 1000 --to_dist 10000 --fragments_in_each_bead 5 --colormap magma_r --cpu 20 --Nmodels 50000 
 #Irx Amphioxus improved
 #python 4Cin.py data/AmphiIrx/final2/ Amphi_Irx_high_res2 --from_dist 1000 --to_dist 10000 --fragments_in_each_bead 5 --colormap magma_r --cpu 20 --Nmodels 50000 
+python 4Cin.py data/AmphiIrx/final2/ Amphi_Irx_Super_high_res --from_dist 500 --to_dist 5000 --dist_bins 500 --fragments_in_each_bead 2 --colormap magma_r --cpu 20 --Nmodels 50000 
+python 4Cin.py data/AmphiIrx/final2/ Amphi_Irx_SuperUltra_high_res --from_dist 500 --to_dist 5000 --dist_bins 500 --fragments_in_each_bead 1 --colormap magma_r --cpu 20 --Nmodels 50000 
 #Irx Fly
 #python 4Cin.py data/FLY_IRX/4c_virtual/final/ Fly_Irx_high_res --fragments_in_each_bead 1 --from_dist 1000 --colormap magma_r --cpu 20 --Nmodels 50000 
 #IrxAa
 #python 4Cin.py data/IrxAa/final/ IrxAa_new_models --fragments_in_each_bead 40  --colormap magma_r --cpu 20 --Nmodels 50000 
 #IrxBa
 #python 4Cin.py data/IrxBa/final/ IrxBa_new_models --fragments_in_each_bead 30  --colormap magma_r --cpu 20 --Nmodels 50000 
-python 4Cin.py data/IrxBa/final_binarized_W51H100/ IrxBa_new_models_binary --fragments_in_each_bead 30  --colormap magma_r --cpu 20 --Nmodels 50000 --binary_data
+#python 4Cin.py data/IrxBa/final_binarized_W51H100/ IrxBa_new_models_binary --fragments_in_each_bead 30  --colormap magma_r --cpu 20 --Nmodels 50000 --binary_data
 #Irx Strigamia
 #python 4Cin.py data/Strigamia_IRX_data/final/ Irx_strigamia_models --fragments_in_each_bead 2  --colormap magma_r --cpu 20 --Nmodels 50000 --from_dist 1000 --to_dist 8000
 
