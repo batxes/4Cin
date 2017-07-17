@@ -32,6 +32,9 @@ from os.path import isfile, join
 from itertools import combinations,izip, chain
 import scipy.cluster.hierarchy as sch
 import matplotlib
+
+#so the prints are flushed every line. 
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 try: 
     matplotlib.use('Agg')
     plot = True
@@ -782,6 +785,7 @@ def run_analysis(std_dev,cut_off_percentage):
     return std_dev,cut_off_percentage,models_subset
 
 def run_clustering(models_subset):
+    p = Pool(number_of_cpus)
     number_of_beads = number_of_fragments
     root = "{}{}/{}_final_output_{}_{}_{}/".format(working_dir,prefix,prefix,uZ,lZ,max_distance)	
     matrix = np.zeros((subset,subset))
