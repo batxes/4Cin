@@ -79,7 +79,7 @@ def valueReaderNWindow(f,window):
 
         return arrayList
     except:
-        print "Check the data files if they are well formed. Check also first line. Is it CHR\tpos1\tpos2\tvalue?"
+        print "Check the data files if they are well formed. There needs to be a tab between each value. Check also first line. Is it 'CHR\tpos1\tpos2\tvalue' ?"
         sys.exit()
         
 # function: Value Reader by windows

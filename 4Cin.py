@@ -21,7 +21,8 @@ import IMP.atom
 import IMP.rmf
 import IMP.container
 import RMF
-import time
+#import time
+import datetime
 from random import randint
 import numpy as np
 from collections import defaultdict
@@ -63,7 +64,8 @@ from data_manager import fileCheck, sizeReader,  calculateNWindowedDistances, ca
 ##### Functions
 
 putative_minimum_size = 0 #300A is the consensus but has no meaning when we have a big resolution
-start_time = time.clock()
+#start_time = time.clock()
+start_time = datetime.datetime.now().replace(microsecond=0)
 IMP.base.set_log_level(IMP.SILENT)
 
 def worker(instructions):
@@ -158,42 +160,47 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
             hierarqy= IMP.atom.Hierarchy.setup_particle(IMP.Particle(m))
         ##########################    REPRESENTATION ##########################    REPRESENTATION
         for i in range(number_of_fragments):
-                # Create "untyped" Particles
-                p = IMP.kernel.Particle(m,"particle_"+str(i))
-                radius_sum = 0
+            # Create "untyped" Particles
+            p = IMP.kernel.Particle(m,"particle_"+str(i))
+            radius_sum = 0
+            try:
                 for j in range(int(fragments_in_each_bead)):
                     radius_sum = radius_sum + reads_size[(i*int(fragments_in_each_bead))+j]
-                radius = radius_scale * radius_sum #sphere radius proportional to fragments
-                fragment_bp_quantity.append(radius_sum)
-                #verboseprint ("Fragment number:{} size:{} radius:{}".format(i,radius_sum,radius))
-                #decorator with sphere  
-                #Creating very far away particles (10000) could alter the final result of the beads that are not restrained
-                d = IMP.core.XYZR.setup_particle(p, IMP.algebra.Sphere3D(IMP.algebra.Vector3D(randint(0,int(y2)), randint(0,int(y2)), randint(0,int(y2))), radius)) 
-                bead_radii.append(radius)
-                #Coloring the beads
-                if i in(viewpoint_fragments):
-                    if i in(are_genes):
-                        color = IMP.display.Color(1,0.7,0)
-                    else: 
-                        color = IMP.display.Color(0,1,0)
-                    IMP.display.Colored.setup_particle(p, color)
-                else:
-                    #Coloring rest of beads
-    #               #one theme of color #blue, purple, red (gradient)
-                    #color = IMP.display.Color(1/float(number_of_fragments)*i,0.0,1-1/float(number_of_fragments)*i) 
-                    #another theme (only grey)
-                    color = IMP.display.Color(0.7,0.7,0.7) 
-                    IMP.display.Colored.setup_particle(p, color)
-                d.set_coordinates_are_optimized(True) #tHIS IS FOR Ball Mover. BallMover can't move non-optimized attribute
-                genome.append(p)
-                spheres.append(d)
-                # to use with montecarlo
-                movers.append(IMP.core.BallMover([p], radius*2))
-        #         movers[-1].set_was_used(True) -> #what does this do?
-                if (rmf_video):
-                    IMP.atom.Mass.setup_particle(p,30)
-                    IMP.atom.Diffusion.setup_particle(p)
-                    hierarqy.add_child(IMP.atom.Hierarchy.setup_particle(p))
+            except:
+                e = sys.exc_info()[1]
+                print e
+                print "Are you sure the input 4C files have the same length?"
+            radius = radius_scale * radius_sum #sphere radius proportional to fragments
+            fragment_bp_quantity.append(radius_sum)
+            #verboseprint ("Fragment number:{} size:{} radius:{}".format(i,radius_sum,radius))
+            #decorator with sphere  
+            #Creating very far away particles (10000) could alter the final result of the beads that are not restrained
+            d = IMP.core.XYZR.setup_particle(p, IMP.algebra.Sphere3D(IMP.algebra.Vector3D(randint(0,int(y2)), randint(0,int(y2)), randint(0,int(y2))), radius)) 
+            bead_radii.append(radius)
+            #Coloring the beads
+            if i in(viewpoint_fragments):
+                if i in(are_genes):
+                    color = IMP.display.Color(1,0.7,0)
+                else: 
+                    color = IMP.display.Color(0,1,0)
+                IMP.display.Colored.setup_particle(p, color)
+            else:
+                #Coloring rest of beads
+#               #one theme of color #blue, purple, red (gradient)
+                #color = IMP.display.Color(1/float(number_of_fragments)*i,0.0,1-1/float(number_of_fragments)*i) 
+                #another theme (only grey)
+                color = IMP.display.Color(0.7,0.7,0.7) 
+                IMP.display.Colored.setup_particle(p, color)
+            d.set_coordinates_are_optimized(True) #tHIS IS FOR Ball Mover. BallMover can't move non-optimized attribute
+            genome.append(p)
+            spheres.append(d)
+            # to use with montecarlo
+            movers.append(IMP.core.BallMover([p], radius*2))
+    #         movers[-1].set_was_used(True) -> #what does this do?
+            if (rmf_video):
+                IMP.atom.Mass.setup_particle(p,30)
+                IMP.atom.Diffusion.setup_particle(p)
+                hierarqy.add_child(IMP.atom.Hierarchy.setup_particle(p))
         ##########################  RESTRAINTS ##########################  RESTRAINTS
         #Restraint types:
         #Distances
@@ -328,7 +335,6 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
             print "Optimizing twith Brownian Dynamics for the RMF file (movie)."
             bd.optimize(frames)
 
-        IMP.base.set_log_level(IMP.base.SILENT)
         #verboseprint( "Number of restraints: %i" % (len(restraints)))
         #first score
         scores.append(m.evaluate(False))
@@ -434,8 +440,9 @@ def modeling((uZ, lZ, maxDis, starting_point, big_sampling)):
         hub_value = suma3/1000000
         hub_values.append(hub_value)
         verboseprint ("HUB: {}".format(hub_value))
-        needed_time = time.clock() - start_time         
-        verboseprint ("{} seconds.".format(needed_time))       
+        #needed_time = datetime.datetime.now().replace(microsecond=0) - start_time
+        #needed_time = time.clock() - start_time         
+        #verboseprint ("{} seconds.".format(needed_time))       
         verboseprint ("Mean exv for distance {} is: {}".format(y2,np.mean(exv_values))) 
         verboseprint ("Mean hub for distance {} is: {}".format(y2,np.mean(hub_values)))  
         verboseprint ("\nModel number {} finished.".format(sample))
@@ -1606,9 +1613,11 @@ if not jump_step[0]:
     uZ, lZ = calculate_best_zscores()
     print "uZ and lZ calculated: Optimal values are {} and {}.".format(uZ,lZ)
     print "Pre-modeling finished"
-pre_modeling_time = time.clock() - start_time         
+#pre_modeling_time = time.clock() - start_time   
+pre_modeling_time = datetime.datetime.now().replace(microsecond=0) - start_time
 if not jump_step[0]:
-    print "Pre-modeling took: {}\n".format(convert_time(pre_modeling_time))
+    #print "Pre-modeling took: {}\n".format(convert_time(pre_modeling_time))
+    print "Pre-modeling took: {}\n".format(pre_modeling_time)
 ######### Modeling 	
 if not jump_step[1]:
     print "########## Modeling ##########"
@@ -1632,9 +1641,11 @@ if not jump_step[1]:
     p.map(modeling,execute)
     execute = []
     print "Modeling finished"
-modeling_time = time.clock() - pre_modeling_time         
+#modeling_time = time.clock() - pre_modeling_time         
+modeling_time = datetime.datetime.now().replace(microsecond=0) - start_time - pre_modeling_time
 if not jump_step[1]:
-    print "Modeling took: {}\n".format(convert_time(modeling_time))
+    #print "Modeling took: {}\n".format(convert_time(modeling_time))
+    print "Modeling took: {}\n".format(modeling_time)
 ######### Analysis of models
 ############################################# anterior score files should be deleted
 n_clusters = 0
@@ -1651,9 +1662,11 @@ if not jump_step[2]:
     #    print "Redoing the clustering expecting {} clusters.".format(n_clusters)
     #    n_clusters,biggest_matrix = run_clustering(models_subset)
     print "Clustering finished"
-analysis_time = time.clock() - modeling_time         
+#analysis_time = time.clock() - modeling_time         
+analysis_time = datetime.datetime.now().replace(microsecond=0) - start_time - pre_modeling_time - modeling_time
 if not jump_step[2]:
-    print "Analysis and Clustering took: {}\n".format(convert_time(analysis_time))
+    print "Analysis and Clustering took: {}\n".format(analysis_time)
+    #print "Analysis and Clustering took: {}\n".format(convert_time(analysis_time))
 ######### vhic calculation
 if maximum_hic_value == 0: #set a default value
     maximum_hic_value = max_distance*0.8
@@ -1665,17 +1678,21 @@ if repaint_vhic and jump_step[3]:
     print "RePainting Virtual Hi-C"
     calculate_vhic(biggest_matrix,False)
     print "Virtual Hi-C RePainted"
-vhic_time = time.clock() - analysis_time
+#vhic_time = time.clock() - analysis_time
+vhic_time = datetime.datetime.now().replace(microsecond=0) - start_time - pre_modeling_time - modeling_time - analysis_time
 if not jump_step[3]:
-    print "Virtual Hi-C generation took: {}\n".format(convert_time(vhic_time))
+    #print "Virtual Hi-C generation took: {}\n".format(convert_time(vhic_time))
+    print "Virtual Hi-C generation took: {}\n".format(vhic_time)
 ######### getting representative model
 if not jump_step[4]:
     print "########## Representative model  ##########"
     print "Calculating representative model..."
     calculate_representative_model(biggest_matrix)
-representative_time = time.clock() - vhic_time 
+#representative_time = time.clock() - vhic_time 
+representative_time = datetime.datetime.now().replace(microsecond=0) - start_time - pre_modeling_time - modeling_time - analysis_time - vhic_time
 if not jump_step[4]:
-    print "Representative modeling calculation took: {}".format(convert_time(representative_time))
+    #print "Representative modeling calculation took: {}".format(convert_time(representative_time))
+    print "Representative modeling calculation took: {}".format(representative_time)
 
 # Generate a log with all the values used:
 with open ("{}{}/log.txt".format(working_dir,prefix),"w") as stdout:
@@ -1731,5 +1748,7 @@ print """#######################################################################
     'python src/Mut_comp.py data_dir prefix VHiC distance prefix2 VHiC2 distance2'
 \n##################################################################################################################
 """  
-needed_time = time.clock() - start_time
-print "Total time spent: {}".format(convert_time(needed_time))
+needed_time = datetime.datetime.now().replace(microsecond=0) - start_time 
+#needed_time = time.clock() - start_time
+#print "Total time spent: {}".format(convert_time(needed_time))
+print "Total time spent: {}".format(needed_time)

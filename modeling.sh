@@ -1,10 +1,11 @@
 #!/bin/bash
 
-#$ -N Irx_amphi
+#$ -N Drome_Strig
 #$ -pe make 20
 #$ -cwd
 
 echo "Job started"
+############# IRX
 #IrxA
 #python 4Cin.py /home/ibai/4Cin/data/IrxA/finales/ IrxA_new --cpu 20 --fragments_in_each_bead 90 --colormap magma_r  --from_dist 12000 --to_dist 20000 --from_zscore 0.1 --to_zscore 0.5 
 #IrxB
@@ -13,10 +14,10 @@ echo "Job started"
 #python 4Cin.py data/AmphiIrx/final/ Amphi_Irx_high_res --from_dist 1000 --to_dist 10000 --fragments_in_each_bead 5 --colormap magma_r --cpu 20 --Nmodels 50000 
 #Irx Amphioxus improved
 #python 4Cin.py data/AmphiIrx/final2/ Amphi_Irx_high_res2 --from_dist 1000 --to_dist 10000 --fragments_in_each_bead 5 --colormap magma_r --cpu 20 --Nmodels 50000 
-python 4Cin.py data/AmphiIrx/final2/ Amphi_Irx_Super_high_res --from_dist 500 --to_dist 5000 --dist_bins 500 --fragments_in_each_bead 2 --colormap magma_r --cpu 20 --Nmodels 50000 
-python 4Cin.py data/AmphiIrx/final2/ Amphi_Irx_SuperUltra_high_res --from_dist 500 --to_dist 5000 --dist_bins 500 --fragments_in_each_bead 1 --colormap magma_r --cpu 20 --Nmodels 50000 
+#python 4Cin.py data/AmphiIrx/final2/ Amphi_Irx_Super_high_res --from_dist 500 --to_dist 5000 --dist_bins 500 --fragments_in_each_bead 2 --colormap magma_r --cpu 20 --Nmodels 50000 
+##python 4Cin.py data/AmphiIrx/final2/ Amphi_Irx_SuperUltra_high_res --from_dist 500 --to_dist 5000 --dist_bins 500 --fragments_in_each_bead 1 --colormap magma_r --cpu 1 --Nmodels 50000 --jump_step vhic --maximum_hic_value 900 --uZ 0.1 --lZ -0.1 --max_distance 1500 
 #Irx Fly
-#python 4Cin.py data/FLY_IRX/4c_virtual/final/ Fly_Irx_high_res --fragments_in_each_bead 1 --from_dist 1000 --colormap magma_r --cpu 20 --Nmodels 50000 
+#python 4Cin.py data/FLY_IRX/4c_virtual/final/ Fly_Irx_high_res2 --fragments_in_each_bead 1 --from_dist 500 --to_dist 3000 --dist_bins 500 --colormap magma_r --cpu 20 --Nmodels 50000 --ignore_beads 117 121 126 154 159 248 333
 #IrxAa
 #python 4Cin.py data/IrxAa/final/ IrxAa_new_models --fragments_in_each_bead 40  --colormap magma_r --cpu 20 --Nmodels 50000 
 #IrxBa
@@ -24,7 +25,10 @@ python 4Cin.py data/AmphiIrx/final2/ Amphi_Irx_SuperUltra_high_res --from_dist 5
 #python 4Cin.py data/IrxBa/final_binarized_W51H100/ IrxBa_new_models_binary --fragments_in_each_bead 30  --colormap magma_r --cpu 20 --Nmodels 50000 --binary_data
 #Irx Strigamia
 #python 4Cin.py data/Strigamia_IRX_data/final/ Irx_strigamia_models --fragments_in_each_bead 2  --colormap magma_r --cpu 20 --Nmodels 50000 --from_dist 1000 --to_dist 8000
+#irx strigamia more resolution
+python 4Cin.py data/Strigamia_IRX_data/final/ Irx_strigamia_models_high_res --fragments_in_each_bead 1  --colormap magma_r --cpu 20 --Nmodels 50000 --from_dist 500 --to_dist 5000 --dist_bins 500
 
+############## Carvajal MYF
 #WT2_MYF
 #python 4Cin.py data/myf5/wt_final2 Myf5_WT2_models --fragments_in_each_bead 5  --from_dist 1000 --to_dist 5000 --colormap magma_r --cpu 20 --Nmodels 10000 --ignore_beads 43 44 45 46 47 48 49
 #PAE2_Myf
