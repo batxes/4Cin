@@ -1162,13 +1162,40 @@ def calculate_representative_model(biggest_matrix):
     #mean model has the values in tuples of the mean for each bead
     #now get the model more similar to these mean values
     sum_of_distances = []
+    bead_variability = np.zeros((number_of_beads,len(models)))
+    model_counter = 0
     for model in all_models:
         d_sum = 0
         for bead in range(number_of_beads):
             d = (model[bead][0]-mean_model[bead][0])**2 + (model[bead][1]-mean_model[bead][1])**2 + (model[bead][2]-mean_model[bead][2])**2
             square_d = np.sqrt(d)
+            bead_variability[bead][model_counter] = square_d
             d_sum = d_sum + square_d
         sum_of_distances.append(d_sum)  
+        model_counter += 1
+    bead_count = 0
+    plot_data = []
+    for i_bead in bead_variability:
+        #value_mean = np.mean(i_bead)
+        value = np.std(i_bead)/max_distance
+        plot_data.append(value)
+        bead_count += 1
+    fig, ax = plt.subplots()
+    ax.set_xlabel('Bead number')
+    ax.set_ylabel('Standard deviation(A)/Max distance')
+    ax.set_xlim([-1,len(plot_data)])
+    bar_colors = ["grey"]*number_of_beads
+    c = 0
+    for i in show_fragments_in_vhic:
+        bar_colors[i] = color_of_fragments[c]
+        c+=1
+
+    ax.bar(range(0,len(plot_data)),plot_data, color=bar_colors, align='center')
+    pp = PdfPages('{}{}_std_dev.pdf'.format(root,prefix))
+    pp.savefig(fig)
+    pp.close()
+    print "Variability plot of models saved in: {}{}_std_dev.pdf".format(root,prefix)
+    
     print "Model closest to average (Representative):"
     # print sum_of_distances.index(min(sum_of_distances))
     print pdbFiles[sum_of_distances.index(min(sum_of_distances))][:-2]+"y"
