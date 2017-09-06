@@ -25,8 +25,47 @@ echo "Job started"
 #python 4Cin.py data/IrxBa/final_binarized_W51H100/ IrxBa_new_models_binary --fragments_in_each_bead 30  --colormap magma_r --cpu 20 --Nmodels 50000 --binary_data
 #Irx Strigamia
 #python 4Cin.py data/Strigamia_IRX_data/final/ Irx_strigamia_models --fragments_in_each_bead 2  --colormap magma_r --cpu 20 --Nmodels 50000 --from_dist 1000 --to_dist 8000
-#irx strigamia more resolution
-python 4Cin.py data/Strigamia_IRX_data/final/ Irx_strigamia_models_high_res --fragments_in_each_bead 1  --colormap magma_r --cpu 20 --Nmodels 50000 --from_dist 500 --to_dist 5000 --dist_bins 500
+#irx strigamia more resolution 
+#python 4Cin.py data/Strigamia_IRX_data/final/ Irx_strigamia_models_high_res --fragments_in_each_bead 1  --colormap magma_r --cpu 20 --Nmodels 50000 --from_dist 500 --to_dist 5000 --dist_bins 500
+
+##SSH SIX ARTICLE 4CIN
+
+#Does variability change if we have less models
+python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_100/ Six_zebra_100kmodels --cpu 20 --fragments_in_each_bead 33 --Nmodels 100000  --max_distance 12000 --uZ 0.1 --lZ -0.1 --jump_step pre_modeling
+python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_100/ Six_zebra_50kmodels --cpu 20 --fragments_in_each_bead 33 --Nmodels 50000  --max_distance 12000 --uZ 0.1 --lZ -0.1 --jump_step pre_modeling
+python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_100/ Six_zebra_25kmodels --cpu 20 --fragments_in_each_bead 33 --Nmodels 25000  --max_distance 12000 --uZ 0.1 --lZ -0.1 --jump_step pre_modeling
+python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_100/ Six_zebra_10kmodels --cpu 20 --fragments_in_each_bead 33 --Nmodels 10000  --max_distance 12000 --uZ 0.1 --lZ -0.1 --jump_step pre_modeling
+python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_100/ Six_zebra_5kmodels --cpu 20 --fragments_in_each_bead 33 --Nmodels 5000  --max_distance 12000 --uZ 0.1 --lZ -0.1 --jump_step pre_modeling
+python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_100/ Six_zebra_2kmodels --cpu 20 --fragments_in_each_bead 33 --Nmodels 2000  --max_distance 12000 --uZ 0.1 --lZ -0.1 --jump_step pre_modeling
+python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_100/ Six_zebra_1kmodels --cpu 20 --fragments_in_each_bead 33 --Nmodels 1000  --max_distance 12000 --uZ 0.1 --lZ -0.1 --jump_step pre_modeling
+python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_100/ Six_zebra_500models --cpu 20 --fragments_in_each_bead 33 --Nmodels 500  --max_distance 12000 --uZ 0.1 --lZ -0.1 --jump_step pre_modeling
+
+#Six_Zebra Downsampling OF 4C INPUT DATA
+#python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_100/ Six_zebra_downsampling_100 --fragments_in_each_bead 33 --colormap magma_r --cpu 20 --Nmodels 5000 --uZ 0.1 --lZ -0.1 --max_distance 12000 --jump_step pre_modeling
+#python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_80/ Six_zebra_downsampling_80 --fragments_in_each_bead 33 --colormap magma_r --cpu 20 --Nmodels 5000 --uZ 0.1 --lZ -0.1 --max_distance 12000 --jump_step pre_modeling
+#python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_60/ Six_zebra_downsampling_60 --fragments_in_each_bead 33 --colormap magma_r --cpu 20 --Nmodels 5000 --uZ 0.1 --lZ -0.1 --max_distance 12000 --jump_step pre_modeling 
+#python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_40/ Six_zebra_downsampling_40 --fragments_in_each_bead 33 --colormap magma_r --cpu 20 --Nmodels 5000 --uZ 0.1 --lZ -0.1 --max_distance 12000 --jump_step pre_modeling
+#python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_20/ Six_zebra_downsampling_20 --fragments_in_each_bead 33 --colormap magma_r --cpu 20 --Nmodels 5000 --uZ 0.1 --lZ -0.1 --max_distance 12000 --jump_step pre_modeling 
+#python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_10/ Six_zebra_downsampling_10 --fragments_in_each_bead 33 --colormap magma_r --cpu 20 --Nmodels 5000 --uZ 0.1 --lZ -0.1 --max_distance 12000 --jump_step pre_modeling 
+#python 4Cin.py ../Zebra_six_data/downsampling/smooth_data_5/ Six_zebra_downsampling_5 --fragments_in_each_bead 33 --colormap magma_r --cpu 20 --Nmodels 5000 --uZ 0.1 --lZ -0.1 --max_distance 12000 --jump_step pre_modeling 
+
+
+#Variability calculation for SIX and SHH models. Bioiformatics
+#python 4Cin.py data/six/six23/final/ Six_zebra_models --jump_step vhic --max_distance 13000 --uZ 0.1 --lZ -0.1 --cpu 20 --fragments_in_each_bead 33
+#python 4Cin.py data/4c_Six_mouse/final Six_mouse_models --jump_step vhic --max_distance 11000 --uZ 0.2 --lZ -0.1 --cpu 20 --fragments_in_each_bead 1 
+#python 4Cin.py ../SHH_IBAI/results/raw/wt/ SHH_WT_models --jump_step vhic --max_distance 11000 --uZ 0.1 --lZ -0.1 --cpu 20 --fragments_in_each_bead 100 
+#python 4Cin.py ../SHH_IBAI/results/raw/inv/ SHH_INV_models --jump_step vhic --max_distance 10000 --uZ 0.2 --lZ -0.1 --cpu 20 --fragments_in_each_bead 100 
+
+
+#jackniffing in mouse six
+#python 4Cin.py data/4c_Six_mouse/final_4left Six_mouse_models_4left --cpu 20 --fragments_in_each_bead 1 --uZ 0.1 --lZ -0.4 --max_distance 12000 --repaint_vhic --maximum_hic_value 5000
+#python 4Cin.py data/4c_Six_mouse/final_4center Six_mouse_models_4center --cpu 20 --fragments_in_each_bead 1 --uZ 0.5 --lZ -0.5 --max_distance 11000 --repaint_vhic --maximum_hic_value 5000
+#python 4Cin.py data/4c_Six_mouse/final_4right Six_mouse_models_4right --cpu 20 --fragments_in_each_bead 1 --uZ 0.1 --lZ -0.1 --max_distance 12000 --repaint_vhic --maximum_hic_value 5000
+#python 4Cin.py data/4c_Six_mouse/final Six_mouse_models --cpu 20 --fragments_in_each_bead 1 --uZ 0.2 --lZ -0.1 --max_distance 11000 --repaint_vhic --maximum_hic_value 5000
+
+#python 4Cin.py data/4c_Six_mouse/final_4promoter Six_mouse_models_4promoter --cpu 20 --fragments_in_each_bead 1 
+#python 4Cin.py data/4c_Six_mouse/final_4nopromoter Six_mouse_models_4nopromoter --cpu 20 --fragments_in_each_bead 1 
+
 
 ############## Carvajal MYF
 #WT2_MYF

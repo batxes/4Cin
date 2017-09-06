@@ -73,31 +73,32 @@ if True:
     print "pearson: "+str(pearsonr(max_list1,max_list2))
     print "spearman: "+str(spearmanr(max_list1,max_list2))
     max_value_vhic = max(max_list1)
+    min_value_vhic = min(max_list1)
     max_value_hic = max(max_list2)
-    print max_value_vhic
-    print max_value_hic
+    min_value_hic = min(max_list2)
+    print "max and min vhic: {} - {}:".format(max_value_vhic,min_value_vhic)
+    print "max and min hic: {} - {}:".format(max_value_hic,min_value_hic)
     max_list1 = []
     max_list2 = []
     for i in range(n_viewpoints):
         for j in range(n_viewpoints):
             if not j == i:
-                matrix_final[i][j] = 1-matrix[i][j]/max_distance
-                max_list1.append(1-matrix[i][j]/max_distance)
-                matrix_final[j][i] = matrix2[i][j]/max_value_hic
-                max_list2.append(matrix2[i][j]/max_value_hic)
+                vhic_value = 1-matrix[i][j]/max_distance
+                try:
+                    hic_value = matrix2[i][j]/max_value_hic
+                    if hic_value != 0.0 and vhic_value != 0.0:
+                        max_list1.append(vhic_value)
+                        max_list2.append(hic_value)
+                    matrix_final[i][j] = vhic_value 
+                    matrix_final[j][i] = hic_value
+                except:
+                    continue
 
-    print max(max_list1)
-    print max(max_list2)
     print "pearson: "+str(pearsonr(max_list1,max_list2))
     print "spearman: "+str(spearmanr(max_list1,max_list2))
 
-    print min(max_list1)
-    print min(max_list2)
-    print max(max_list1)
-    print max(max_list2)
-        
-    print matrix_final
-
+    print len(max_list1)
+    print len(max_list2)
 
     fig = plt.figure()
     ax = plt.subplot(1,1,1)
@@ -121,7 +122,7 @@ if True:
 
     fig.set_facecolor('white')
     plt.show()
-
+    print "Matrix saved in this directory."
     fig.savefig('HiC_comp.png',dpi = 300)
 
     #pp = PdfPages('HiC_comp.pdf')
@@ -129,7 +130,7 @@ if True:
     #pp.close()
 else:
     #supp fig 8
-
+    # to do a little matrix of correlations
 
     matrix_corr = np.zeros((5,5))
     matrix_corr[0][1] = 0.75187534318386928

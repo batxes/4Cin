@@ -1162,7 +1162,7 @@ def calculate_representative_model(biggest_matrix):
     #mean model has the values in tuples of the mean for each bead
     #now get the model more similar to these mean values
     sum_of_distances = []
-    bead_variability = np.zeros((number_of_beads,len(models)))
+    bead_variability = np.zeros((number_of_beads,len(all_models)))
     model_counter = 0
     for model in all_models:
         d_sum = 0
@@ -1194,6 +1194,7 @@ def calculate_representative_model(biggest_matrix):
     pp = PdfPages('{}{}_std_dev.pdf'.format(root,prefix))
     pp.savefig(fig)
     pp.close()
+    print "Average variability of models: {}".format(np.mean(plot_data))
     print "Variability plot of models saved in: {}{}_std_dev.pdf".format(root,prefix)
     
     print "Model closest to average (Representative):"
@@ -1453,6 +1454,7 @@ biggest_matrix = 0
 repaint_vhic = args.repaint_vhic
 colormap = args.colormap
 jump_step = [1]*5
+print "-------------------------------------- MODELING {} ----------------------------------".format(prefix)
 if step != "None":
     if step == "pre_modeling":
         jump_step[1] = 0

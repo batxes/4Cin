@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from data_manager import fileCheck, sizeReader,  calculateNWindowedDistances, calculate_fragment_number
 import argparse
+from scipy.stats.stats import pearsonr
+from scipy.stats.stats import spearmanr
 
 working_dir = (os.path.realpath(__file__)).split("/")[:-2]
 working_dir = "/".join(working_dir)+"/"
@@ -213,6 +215,16 @@ for i in range(number_of_spheres):
     for j in range(number_of_spheres):
         matrix_final[i][j] = matrix1[i][j]/distance
         matrix_final[j][i] = matrix2[i][j]/distance2
+
+#correlation
+list1 = []
+list2 = []
+for i in range(number_of_spheres):
+    for j in range(number_of_spheres):
+        list1.append(matrix_final[i][j])
+        list2.append(matrix_final[j][i])
+print "pearson: "+str(pearsonr(list1,list2)[0])
+print "spearman: "+str(spearmanr(list1,list2)[0])
 
 
 
