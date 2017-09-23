@@ -52,7 +52,7 @@ If you want to use it in your system or cluster without docker, go to https://gi
 ## Execute 4Cin without docker (The normal way)
 
 First we need to install all the dependencies (https://github.com/batxes/4Cin/blob/master/README.md#dependencies).
-Then u can check the fast usage (https://github.com/batxes/4Cin/blob/master/README.md#Fast-Usage) or the explained usage (https://github.com/batxes/4Cin/blob/master/README.md#Explained-Usage)
+Then u can check the fast usage (https://github.com/batxes/4Cin/blob/master/README.md#fast-usage) or the explained usage (https://github.com/batxes/4Cin/blob/master/README.md#explained-usage)
 
 ## Fast Usage
 
