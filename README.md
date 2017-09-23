@@ -1,7 +1,7 @@
 
 # 4Cin
 
-4Cin is a suite of scripts that lets you generate 3D models of the chromatin of your favourite locus, using 4C data as the only input. These 3D models are openned with UCSF Chimera. The pipeline creates Hi-C-like contact maps (or virtual Hi-C) of these 3D models and additional scripts are provided to analyze the region further. 
+4Cin is a suite of scripts that lets you generate 3D models of the chromatin of your favourite locus, using 4C-seq data as the only input. These 3D models are visualized with UCSF Chimera. The pipeline creates Hi-C-like contact maps (or virtual Hi-C) of these 3D models and additional scripts are provided to analyze the region further. 
 
 ## Using Docker to execute 4Cin
 A docker image can be downloaded from Docker Hub with all dependencies installed and ready to work. Steps are:
@@ -49,7 +49,10 @@ These scripts are available now:
 If you want to use it in your system or cluster without docker, go to https://github.com/batxes/4Cin/blob/master/README.md#dependencies.
 
 
+## Execute 4Cin without docker (The normal way)
 
+First we need to install all the dependencies (https://github.com/batxes/4Cin/blob/master/README.md#dependencies).
+Then u can check the fast usage (https://github.com/batxes/4Cin/blob/master/README.md#Fast-Usage) or the explained usage (https://github.com/batxes/4Cin/blob/master/README.md#Explained-Usage)
 
 ## Fast Usage
 
@@ -62,6 +65,9 @@ If you want to use it in your system or cluster without docker, go to https://gi
     viewpoint4 chr2:501421    
 3 - python 4Cin.py /path/to/data/ Name_of_your_locus
 ```
+
+A log.txt is generated in the modeling directory with all the variables used in the modeling.
+
 
 [Optionals]
 ```
@@ -250,6 +256,7 @@ green or other colors.
 
     python 4Cin.py /path/to/data/ Name_of_your_locus
 
+A log.txt is generated in the modeling directory with all the variables used in the modeling.
     
      
 Optional Steps:
