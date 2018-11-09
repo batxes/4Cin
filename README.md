@@ -1,3 +1,7 @@
+# Important Note
+
+If you have any problem with installation, running the code, or ANYTHING, write an email (batxes@gmail.com) so that I can help you. There is nothing more annoying than a program that does not work. 
+
 
 # 4Cin
 
