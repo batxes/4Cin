@@ -371,10 +371,11 @@ sudo apt-get install libcgal-dev
 sudo apt-get install python-dev
 sudo apt-get install libpcre3-dev
 ```
-Swig needs to be installed from source. Swig 3.0.12 is the last version. Check in: http://swig.org/
+Swig can be installed with: sudo apt-get install swig
+Or can be installed from source. Check in: http://swig.org/
 ```
-tar xvf swig-3.0.12.tar.gz
-cd swig-3.0.12
+tar xvf swig-version.tar.gz
+cd swig-version
 ./configure --prefix=/path/to/swig
 make & make install
 ```
