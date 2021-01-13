@@ -23,11 +23,22 @@ docker run -it batxes/4cin_ubuntu Mut_comp.py
 docker run -it batxes/4cin_ubuntu calculate_boundaries.py
 ...
 ```
-Generate a "volume" to access the data from the docker container:
+We can use volumes so docker can access the data that is in your computer:
 ```
 docker run -it -v /path/in/my/computer/to/4C/data:/data/ batxes/4cin_ubuntu data_manager.py /data/
-docker run -it -v /home/user/4Cin/data/Six_zebra/:/data/Six_zebra batxes/4cin_ubuntu 4Cin.py /data/Six_zebra/ Six_zebra_models --cpu 10 --fragments_in_each_bead 20 --colormap magma_r
 ```
+To run the modeling, we can mount two volumes: one will be for docker to access the 4C data. The other one to get the models that are generated in the docker container. 
+```
+sudo docker run -it -v <path_where_my_4C_data_is>:/data/ -v <path_where_I_want_my_new_models>:/opt/4Cin/<Name_of_my_models> batxes/4cin_ubuntu 4Cin.py /data/ <Name_of_my_models> --cpu 10 --fragments_in_each_bead 20 --colormap magma_r
+```
+You can test with the data that it is provided:
+```
+sudo docker run -it -v /home/<name>/Programs/4Cin-master/data/Six_zebra/:/data/Six_zebra -v /home/<name>/MyNewModels:/opt/4Cin/Six_zebra_models batxes/4cin_ubuntu 4Cin.py /data/Six_zebra/ Six_zebra_models --cpu 10 --fragments_in_each_bead 20 --colormap magma_r
+```
+The first volume links a folder in our computer with /data/Six_zebra. We use the later as a 4Cin parameter, the directory where the data is.
+
+The second volumne links a folder in our computer (MyNewModels will be a directory that it will be created when we run the program) with /opt/4Cin/Six_zebra_models. /opt/4Cin/Six_zebra_models is a directory that it will be created in the docker container because we specified Six_zebra_models as the name for the directory where our models will be created as a parameter. If we want our models to be called mouse_WT_rep2, then we will have to link the second volume like this: /home/<name>/MyNewModels:/opt/4Cin/mouse_WT_rep2
+
 These scripts are available now:
 >4Cin.py
 
