@@ -517,7 +517,10 @@ GenomePainting does not work.
     
 Modeling can't find my viewpoints or I can't show positions in the vHi-Cs.
     Check that your primers files (primers.txt, primers_vhic.txt and primers_evocomp.txt) are as follows:
-    NAME    chrX:position   
+    NAME    chrX:position  
+    
+I get this error when launching the program with docker: _tkinter.TclError: no display name and no $DISPLAY environment variable
+    add this parameter -e MPLBACKEND=Agg. Example: docker run -e MPLBACKEND=Agg -i -v ...
 
 ### references
 
